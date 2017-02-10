@@ -2,7 +2,7 @@
 
 ## Todo
 
-- [ ] Mockup the "Admin" frontend (the "back")
+- [x] Mockup the "Admin" frontend (the "back")
 - [ ] Establish dir structure
 - [ ] Establish build tool / process
 - [ ] Establish routes and read Navigation.elm docs
