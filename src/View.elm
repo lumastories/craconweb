@@ -39,6 +39,7 @@ viewBody model =
                     [ Textfield.label "Enter Email"
                     , Textfield.floatingLabel
                     , Textfield.text_
+                    , Options.onInput UpdateEmail
                     ]
                     []
                 , Textfield.render Mdl
@@ -47,18 +48,22 @@ viewBody model =
                     [ Textfield.label "Enter Password"
                     , Textfield.floatingLabel
                     , Textfield.password
+                    , Options.onInput UpdatePassword
                     ]
                     []
+                , Button.render Mdl
+                    [ 0 ]
+                    model.mdl
+                    [ Button.raised
+                    , Button.colored
+                    , Button.link "#games"
+                      -- TODO change to onClick,
+                    ]
+                    [ text "Let's Go!" ]
                 ]
     in
         div [ style [ ( "padding", "2rem" ) ] ]
-            [ Loading.indeterminate
+            [ login
             , Loading.spinner
-                [ Loading.active True ]
-            , login
-            , Button.render Mdl
-                [ 1 ]
-                model.mdl
-                []
-                [ text "Let's Go!" ]
+                [ Loading.active model.spin ]
             ]

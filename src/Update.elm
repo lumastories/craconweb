@@ -2,6 +2,7 @@ module Update exposing (..)
 
 import Model exposing (Model)
 import Material
+import Navigation
 
 
 type alias Slug =
@@ -24,6 +25,8 @@ type Msg
     = UpdateEmail String
     | UpdatePassword String
     | Mdl (Material.Msg Msg)
+    | UrlChange Navigation.Location
+    | LetsGo String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -37,3 +40,9 @@ update msg model =
 
         Mdl msg_ ->
             Material.update Mdl msg_ model
+
+        UrlChange location ->
+            ( { model | history = location :: model.history }, Cmd.none )
+
+        LetsGo place ->
+            ( model, Cmd.none )
