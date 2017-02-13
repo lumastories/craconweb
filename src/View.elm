@@ -1,7 +1,7 @@
 module View exposing (view)
 
 import Update exposing (..)
-import Models exposing (Model)
+import Model exposing (Model)
 import Html exposing (..)
 import Html.Events exposing (..)
 import Html.Attributes exposing (..)

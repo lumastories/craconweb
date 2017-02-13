@@ -1,6 +1,6 @@
 module Update exposing (..)
 
-import Models exposing (Model)
+import Model exposing (Model)
 import Material
 
 
