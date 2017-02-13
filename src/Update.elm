@@ -4,6 +4,22 @@ import Model exposing (Model)
 import Material
 
 
+type alias Slug =
+    String
+
+
+type Route
+    = LoginRoute
+    | GamesRoute
+    | GameRoute Slug
+    | BadgesRoute
+    | BadgeRoute Slug
+    | InstructionsRoute
+    | SettingsRoute
+    | LogoutRoute
+    | NotFound
+
+
 type Msg
     = UpdateEmail String
     | UpdatePassword String
