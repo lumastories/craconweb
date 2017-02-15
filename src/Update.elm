@@ -26,7 +26,8 @@ type Msg
     | UpdatePassword String
     | Mdl (Material.Msg Msg)
     | UrlChange Navigation.Location
-    | LetsGo String
+    | Authenticate
+    | Noop
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -44,5 +45,8 @@ update msg model =
         UrlChange location ->
             ( { model | history = location :: model.history }, Cmd.none )
 
-        LetsGo place ->
+        Authenticate ->
+            ( { model | spin = True }, Cmd.none )
+
+        Noop ->
             ( model, Cmd.none )

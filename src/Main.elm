@@ -4,7 +4,7 @@ import Model exposing (..)
 import Update exposing (..)
 import View exposing (..)
 import Navigation
-
+import Material
 
 main : Program Never Model Msg
 main =
@@ -15,6 +15,16 @@ main =
         , subscriptions = (\m -> Sub.none)
         }
 
+
+model : Navigation.Location -> Model
+model location =
+    { email = ""
+    , password = ""
+    , history = [ location ]
+    , mdl =
+        Material.model
+    , spin = False
+    }
 
 init : Navigation.Location -> ( Model, Cmd Msg )
 init location =
