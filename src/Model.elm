@@ -1,5 +1,4 @@
 module Model exposing (..)
-
 import Material
 import Navigation
 
@@ -8,22 +7,24 @@ type alias Model =
     { email : String
     , password : String
     , history : List Navigation.Location
-    , mdl :
-        Material.Model
+    , mdl : Material.Model
     , spin : Bool
+    , page : Page
     }
 
 
 type alias Mdl =
     Material.Model
 
+type Page
+    = LoginPage
+    | GamePage
+    | BadgePage
 
-model : Navigation.Location -> Model
-model location =
-    { email = ""
-    , password = ""
-    , history = [ location ]
-    , mdl =
-        Material.model
-    , spin = True
-    }
+
+type Msg
+    = UpdateEmail String
+    | UpdatePassword String
+    | Mdl (Material.Msg Msg)
+    | ChangePage Navigation.Location
+    | Noop

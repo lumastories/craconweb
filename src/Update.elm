@@ -1,33 +1,19 @@
 module Update exposing (..)
 
-import Model exposing (Model)
+import Model exposing (..)
 import Material
-import Navigation
 
 
-type alias Slug =
-    String
 
-
-type Route
-    = LoginRoute
-    | GamesRoute
-    | GameRoute Slug
-    | BadgesRoute
-    | BadgeRoute Slug
-    | InstructionsRoute
-    | SettingsRoute
-    | LogoutRoute
-    | NotFound
-
-
-type Msg
-    = UpdateEmail String
-    | UpdatePassword String
-    | Mdl (Material.Msg Msg)
-    | UrlChange Navigation.Location
-    | Authenticate
-    | Noop
+page : String -> Page
+page hash =
+    case hash of
+        "#games" -> 
+            GamePage
+        "#badges" -> 
+            BadgePage
+        _ ->
+            LoginPage
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -42,11 +28,11 @@ update msg model =
         Mdl msg_ ->
             Material.update Mdl msg_ model
 
-        UrlChange location ->
-            ( { model | history = location :: model.history }, Cmd.none )
-
-        Authenticate ->
-            ( { model | spin = True }, Cmd.none )
+        ChangePage location ->
+            let
+                newPage = page location.hash
+            in
+                ( { model | history = location :: model.history, page = newPage }, Cmd.none )
 
         Noop ->
             ( model, Cmd.none )
