@@ -1,38 +1,34 @@
 module Main exposing (..)
-import Html exposing (..)
 
--- Model & init
-type alias Model =
-    { things : List String
+import Model exposing (..)
+import Update exposing (..)
+import View exposing (..)
+import Navigation
+import Material
+
+
+model : Navigation.Location -> Model
+model location =
+    { email = ""
+    , password = ""
+    , history = [ location ]
+    , mdl =
+        Material.model
+    , spin = False
+    , page = LoginPage
     }
 
-init : ( Model, Cmd Msg )
-init =
-    ( Model [], Cmd.none )
 
-
--- View
-view : Model -> Html Msg
-view model =
-    text "hello"
-
-
--- Update
-type Msg
-    = DoThing String
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        DoThing stringy ->
-            ( model, Cmd.none )
-
--- main method
 main : Program Never Model Msg
 main =
-    Html.program
+    Navigation.program ChangePage
         { init = init
         , view = view
         , update = update
         , subscriptions = (\m -> Sub.none)
         }
+
+
+init : Navigation.Location -> ( Model, Cmd Msg )
+init location =
+    ( model location, Cmd.none )

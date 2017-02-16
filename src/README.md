@@ -17,4 +17,10 @@ In `Model.elm`, we contain the actual model for the view state of our program. S
 
 Inside `View.elm`, we define the view for our model and set up any event handlers we need.
 
-`Types.elm` describes the data we are working with using type aliasing to records.
+
+## TODO
+POST {username:"",password""} to /auth
+Store the token
+Navigate to /#games
+GET /user/:id (get user id from JWT payload, pass JWT as Authorization HTTP headers)
+ 
