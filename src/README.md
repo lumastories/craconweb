@@ -19,12 +19,11 @@ Inside `View.elm`, we define the view for our model and set up any event handler
 
 
 ## TODO
-POST {username:"",password""} to /auth
-Store the token
-Navigate to /#games
-GET /user/:id (get user id from JWT payload, pass JWT as Authorization HTTP headers)
+ - POST {username:"admin@example.com",password"insecure"} to `/api/auth`
+ - Store the token
+ - Then Navigate to /#games
+ - and get user `:id` from jwt and make another request to `/api/user/:id` with `Authentication Bearer <token>`
  
-
 ## Notes
 
 Navigation.Location...
