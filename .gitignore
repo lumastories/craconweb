@@ -1,1 +1,4 @@
-
+.DS_Store
+elm-format
+src/elm-stuff/
+*.js

@@ -24,3 +24,23 @@ Store the token
 Navigate to /#games
 GET /user/:id (get user id from JWT payload, pass JWT as Authorization HTTP headers)
  
+
+## Notes
+
+Navigation.Location...
+
+```
+type alias Location = 
+    { href : String
+    , host : String
+    , hostname : String
+    , protocol : String
+    , origin : String
+    , port_ : String
+    , pathname : String
+    , search : String
+    , hash : String
+    , username : String
+    , password : String
+    }
+```

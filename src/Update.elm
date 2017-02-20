@@ -1,19 +1,7 @@
-module Update exposing (..)
+module Update exposing (update)
 
 import Model exposing (..)
 import Material
-
-
-
-page : String -> Page
-page hash =
-    case hash of
-        "#games" -> 
-            GamePage
-        "#badges" -> 
-            BadgePage
-        _ ->
-            LoginPage
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -30,9 +18,23 @@ update msg model =
 
         ChangePage location ->
             let
-                newPage = page location.hash
+                newPage =
+                    page location.hash
             in
                 ( { model | history = location :: model.history, page = newPage }, Cmd.none )
 
         Noop ->
             ( model, Cmd.none )
+
+
+page : String -> Page
+page hash =
+    case hash of
+        "#games" ->
+            GamePage
+
+        "#badges" ->
+            BadgePage
+
+        _ ->
+            LoginPage

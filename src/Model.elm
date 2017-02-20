@@ -1,4 +1,5 @@
 module Model exposing (..)
+
 import Material
 import Navigation
 
@@ -10,11 +11,39 @@ type alias Model =
     , mdl : Material.Model
     , spin : Bool
     , page : Page
+    , api : String
     }
 
+init : Navigation.Location -> ( Model, Cmd Msg )
+init location =
+    let
+        model =
+            { email = ""
+            , password = ""
+            , history = [ location ]
+            , mdl =
+                Material.model
+            , spin = False
+            , page = LoginPage
+            , api = getApi location
+            }
+    in
+        ( model, Cmd.none )
 
-type alias Mdl =
-    Material.Model
+
+getApi : Navigation.Location -> String
+getApi location = 
+    let
+        logger =
+            Debug.log (toString location) 1
+    in
+        case location.protocol of
+            "file:" ->
+                "http://127.0.0.1:8680" -- dev api
+            _ ->
+                --location.protocol ++ "//" ++ location.hostname ++ "/api"
+                Debug.crash "Need API location for production enviornment"
+
 
 type Page
     = LoginPage
