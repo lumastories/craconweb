@@ -63,9 +63,11 @@ getApi location =
         logger =
             Debug.log (toString location) "getApi location"
     in
-        case location.protocol of
-            "file:" ->
-                "http://localhost:8680" -- dev api
+        case location.hostname of
+            "localhost" ->
+                "http://"++location.hostname++":8680" -- dev api
             _ ->
                 --location.protocol ++ "//" ++ location.hostname ++ "/api"
                 Debug.crash "Need API location for production enviornment"
+
+

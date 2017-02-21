@@ -24,15 +24,16 @@ authUrl model =
 
 defaultHeaders : List Http.Header
 defaultHeaders = 
-    [ Http.header "Access-Control-Allow-Origin" "localhost"
-    , Http.header "Accept" "application/json"
+    [ 
+    -- Http.header "Access-Control-Allow-Origin" "localhost"
+    --, Http.header "Accept" "application/json"
     --, Http.header "Accept-Encoding" "gzip, deflate, br"
-    , Http.header "Accept-Language" "en-US,en;q=0.8"
+    --, Http.header "Accept-Language" "en-US,en;q=0.8"
     --, Http.header "Connection" "keep-alive"
-    , Http.header "Content-Type" "application/json"
+    -- , Http.header "Content-Type" "application/json"
     --, Http.header "Cookie" "csrftoken=P5XEJBgoA1kkOPE8d1bUjQXLeoE0mbwN; djdt=show"
     --, Http.header "Host" "127.0.0.1:8680"
-    --, Http.header "Origin" "http://127.0.0.1:8680"
+    --, Http.header "Origin" "http://127.0.0.1:4001"
     ]
 
 
