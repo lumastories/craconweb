@@ -19,7 +19,7 @@ import Json.Encode as Encode
 
 authUrl : Model -> String
 authUrl model =
-    model.api ++ "/api/auth"
+    model.api ++ "/auth"
 
 
 defaultHeaders : List Http.Header
