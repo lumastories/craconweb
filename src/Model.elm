@@ -2,6 +2,7 @@ module Model exposing (..)
 
 import Material
 import Navigation
+import Http
 
 type alias Model =
     { email : String
@@ -11,7 +12,8 @@ type alias Model =
     , spin : Bool
     , page : Page
     , api : String
-    , token : String
+    , jwttoken : JwtToken
+    , error : String
     }
 
 type Msg
@@ -19,6 +21,8 @@ type Msg
     | UpdatePassword String
     | Mdl (Material.Msg Msg)
     | ChangePage Navigation.Location
+    | Login
+    | LoginResponse (Result Http.Error JwtToken)
 
 type Page
     = LoginPage
@@ -29,6 +33,10 @@ type alias Flags =
   { user : String
   , token : String
   }
+
+type alias JwtToken =
+    { token : String
+    }
 
 init : Flags -> Navigation.Location -> (Model, Cmd Msg)
 init flags location =
@@ -42,7 +50,8 @@ init flags location =
             , spin = False
             , page = LoginPage
             , api = getApi location
-            , token = flags.token
+            , jwttoken = JwtToken flags.token
+            , error = ""
             }
     in
         ( model, Cmd.none )
@@ -52,11 +61,11 @@ getApi : Navigation.Location -> String
 getApi location = 
     let
         logger =
-            Debug.log (toString location) 1
+            Debug.log (toString location) "getApi location"
     in
         case location.protocol of
             "file:" ->
-                "http://127.0.0.1:8680" -- dev api
+                "http://localhost:8680" -- dev api
             _ ->
                 --location.protocol ++ "//" ++ location.hostname ++ "/api"
                 Debug.crash "Need API location for production enviornment"

@@ -2,6 +2,8 @@ module Update exposing (update)
 
 import Model exposing (..)
 import Material
+import Api
+import Http
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -23,8 +25,24 @@ update msg model =
             in
                 ( { model | history = location :: model.history, page = newPage }, Cmd.none )
 
-        --_ ->
-        --    (model, Cmd.none)
+        Login ->
+            let
+                request =
+                    Api.postCreds model
+                cmd =
+                    Http.send LoginResponse request
+            in
+                ( { model | spin = True}, cmd )
+
+        LoginResponse (Ok newToken) ->
+            ( { model | jwttoken = newToken, spin=False}, Cmd.none )
+
+        LoginResponse (Err err) ->
+            let
+                logger =
+                    Debug.log (toString err) "LoginResponse err"
+            in 
+                ({ model | spin = False}, Cmd.none )
 
 
 page : String -> Page

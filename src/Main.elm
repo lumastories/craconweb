@@ -5,13 +5,15 @@ import Update exposing (..)
 import View exposing (..)
 import Navigation
 
+
 {-
 
-    On initialization we check localstorage for a JWT token
-    If it exists we store it in our model and...
-    Otherwise we store an empty string and...
+   On initialization we check localstorage for a JWT token
+   If it exists we store it in our model and...
+   Otherwise we store an empty string and...
 
 -}
+
 
 main : Program Flags Model Msg
 main =
