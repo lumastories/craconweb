@@ -3,7 +3,6 @@ module Model exposing (..)
 import Material
 import Navigation
 
-
 type alias Model =
     { email : String
     , password : String
@@ -12,10 +11,27 @@ type alias Model =
     , spin : Bool
     , page : Page
     , api : String
+    , token : String
     }
 
-init : Navigation.Location -> ( Model, Cmd Msg )
-init location =
+type Msg
+    = UpdateEmail String
+    | UpdatePassword String
+    | Mdl (Material.Msg Msg)
+    | ChangePage Navigation.Location
+
+type Page
+    = LoginPage
+    | GamePage
+    | BadgePage
+
+type alias Flags =
+  { user : String
+  , token : String
+  }
+
+init : Flags -> Navigation.Location -> (Model, Cmd Msg)
+init flags location =
     let
         model =
             { email = ""
@@ -26,6 +42,7 @@ init location =
             , spin = False
             , page = LoginPage
             , api = getApi location
+            , token = flags.token
             }
     in
         ( model, Cmd.none )
@@ -43,17 +60,3 @@ getApi location =
             _ ->
                 --location.protocol ++ "//" ++ location.hostname ++ "/api"
                 Debug.crash "Need API location for production enviornment"
-
-
-type Page
-    = LoginPage
-    | GamePage
-    | BadgePage
-
-
-type Msg
-    = UpdateEmail String
-    | UpdatePassword String
-    | Mdl (Material.Msg Msg)
-    | ChangePage Navigation.Location
-    | Noop

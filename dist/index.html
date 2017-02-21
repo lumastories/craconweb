@@ -12,14 +12,27 @@
             position:fixed;
         }
     </style>
+    <script type="text/javascript" src="js/app.js"></script>
 </head>
 <body>
-    <div id="app">
-    </div>
-    
-    <script type="text/javascript" src="js/app.js"></script>
-    <script type="text/javascript">
-        var app = Elm.Main.embed(document.getElementById('app'));
-    </script>
 </body>
+
+    <script type="text/javascript">
+        
+        // Initialize app with stored auth token (a jwt)
+        // Or an empty string if it does not exist
+        var jwt = localStorage.getItem('jwt-token');
+        var storedToken = jwt ? jwt : ""
+
+        var app = Elm.Main.fullscreen(storedToken);
+
+        // Receive a token to store locally
+        app.ports.jwtAuth.subscribe(function(token) {
+            localStorage.setItem('jwt-token', token);
+        });
+
+        
+
+    </script>
+
 </html>

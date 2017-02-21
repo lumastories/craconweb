@@ -23,8 +23,8 @@ update msg model =
             in
                 ( { model | history = location :: model.history, page = newPage }, Cmd.none )
 
-        Noop ->
-            ( model, Cmd.none )
+        --_ ->
+        --    (model, Cmd.none)
 
 
 page : String -> Page

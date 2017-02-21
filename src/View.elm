@@ -70,7 +70,7 @@ loginPage model =
                 [ Button.raised
                 , Button.colored
                 , Button.link "#games"
-                , Options.onClick Noop
+                --, Options.onClick Noop
                 ]
                 [ text "Let's Go!" ]
             , Loading.spinner [ Loading.active model.spin ]
