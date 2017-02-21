@@ -22,22 +22,3 @@
 - [ ] Read some NoRedInk [blogs](http://tech.noredink.com/)
 
 
-## Mockups
-### Login
-![](assets/mockups/front/login.png)
-![](assets/mockups/front/res.png)
-![](assets/mockups/front/thx.png)
-
-### Menu & Pages
-![](assets/mockups/front/menu.png)
-![](assets/mockups/front/games.png)
-![](assets/mockups/front/badges.png)
-![](assets/mockups/front/instr.png)
-![](assets/mockups/front/set.png)
-
-### Badge locking
-![](assets/mockups/front/locked.png)
-![](assets/mockups/front/ten.png)
-
-### A game!
-![](assets/mockups/front/vs.png)
