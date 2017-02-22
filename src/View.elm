@@ -3,83 +3,84 @@ module View exposing (view)
 import Html exposing (..)
 import Model exposing (..)
 import Html.Attributes exposing (..)
-import Material.Button as Button
-import Material.Options as Options exposing (css)
-import Material.Layout as Layout
-import Material.Spinner as Loading
-import Material.Textfield as Textfield
-import FNV
+import Html.Events exposing (..)
 
 
 view : Model -> Html Msg
 view model =
-    -- todo move case up
-    Layout.render Mdl
-        model.mdl
-        []
-        { header = []
-        , drawer = []
-        , tabs = ( [], [] )
-        , main = [ viewBody model ]
-        }
+    div [] [viewBody model]
 
 
 sizePx : Int -> String
 sizePx size =
     (toString size) ++ "px"
 
+sizeEm : Int -> String
+sizeEm size =
+    (toString size) ++ "em"
+
+sizeRem : Int -> String
+sizeRem size =
+    (toString size) ++ "rem"
+
+
+centerStyled = 
+    style [("text-align", "center")]
 
 logo : Int -> Html Msg
 logo size =
-    img [ src "img/logo.svg", style [ ( "max-width", sizePx size ) ] ] []
+    p [centerStyled] [img [ class "logo is-vcentered", src "img/logo.svg", style [ ( "max-width", sizePx size ) ] ] []]
 
-
-textfield : Model -> String -> (String -> Msg) -> String -> Html Msg
-textfield model defVal msg label =
-    Textfield.render Mdl
-        [ FNV.hashString label ]
-        model.mdl
-        [ Textfield.label label
-        , Options.onInput msg
-        , Textfield.value defVal
-        ]
-        []
-
+maxwidth : Int -> Attribute msg
+maxwidth size = 
+    style [ ( "max-width", sizeEm size ) ]
 
 loginPage : Model -> Html Msg
 loginPage model =
     let
-        width =
-            300
-    in
-        div [ style [ ( "margin", "0px auto" ), ( "width", sizePx width ) ] ]
-            [ logo width
-            , div [ style [ ( "padding", "1rem" ), ( "background", "white" ), ( "border-top", "1rem solid #eee" ) ] ]
-                [ textfield model model.email UpdateEmail "Email"
-                , Textfield.render Mdl
-                    [ FNV.hashString "Password" ]
-                    model.mdl
-                    [ Textfield.label "Password"
-                    , Options.onInput UpdatePassword
-                    , Textfield.value model.password
-                    , Textfield.password
-                    ]
-                    []
-                , Button.render Mdl
-                    [ FNV.hashString "#games" ]
-                    model.mdl
-                    [ Button.raised
-                    , Button.colored
-                      -- , Button.link "#games"
-                    , Options.onClick Login
-                    ]
-                    [ text "Let's Go!", Loading.spinner [ Loading.active model.spin ] ]
-                , br [] []
-                , em [] [ text model.error ]
-                ]
-              -- , ul [] (List.map (\l -> (li [] [text l.hash])) model.history)
-            ]
+        logoWidth =
+            200
+        
+        loginButtonClass =
+            case model.spin of
+                False ->
+                    "button is-dark"
+                True ->
+                    "button is-dark is-loading"
 
+    in
+        section [] [
+            div [ class "container" ]
+                [ div [ class "columns is-desktop" ]
+                    [ div [ class "column is-half is-offset-one-quarter" ]
+                        [ logo logoWidth 
+                        , div [ class "box" ]
+                            [ label [ class "label" ]
+                                [ text "Email" ]
+                            , p [ class "control" ]
+                                [ input [ class "input", placeholder "Email", type_ "email", onInput UpdateEmail ]
+                                    []
+                                ]
+                            , label [ class "label" ]
+                                [ text "Password" ]
+                            , p [ class "control" ]
+                                [ input [ class "input", placeholder "Password", type_ "password", onInput UpdatePassword ]
+                                    []
+                                ]
+                            , hr []
+                                []
+                            , p [ class "control" ]
+                                [ button [ class loginButtonClass, onClick Login, href "#games" ] [ text "Let's Go!" ]
+                                ]
+                            ]
+                        , p [ class "has-text-centered" ]
+                            [ em [] [ text model.error ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+                
 
 viewBody : Model -> Html Msg
 viewBody model =
