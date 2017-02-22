@@ -58,7 +58,7 @@ init flags location =
             , presses = []
             }
     in
-        ( model, Cmd.none )
+        ( model, Navigation.newUrl location.hash )
 
 
 getApi : Navigation.Location -> String
@@ -79,4 +79,7 @@ getApi location =
             _ ->
                 --location.protocol ++ "//" ++ location.hostname ++ "/api"
                 "http://" ++ location.hostname ++ ":81"
-                --Debug.crash "Need API location for production enviornment"
+
+
+
+--Debug.crash "Need API location for production enviornment"

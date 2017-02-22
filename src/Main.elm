@@ -7,6 +7,7 @@ import Navigation
 import Keyboard exposing (..)
 import Char
 
+
 {-
 
    On initialization we check localstorage for a JWT token

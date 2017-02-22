@@ -3,7 +3,7 @@ module Update exposing (update)
 import Model exposing (..)
 import Api
 import Http
-
+import Navigation
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -14,7 +14,6 @@ update msg model =
         UpdatePassword newPassword ->
             ( { model | password = newPassword }, Cmd.none )
 
-
         ChangePage location ->
             let
                 newPage =
@@ -24,33 +23,38 @@ update msg model =
 
         Login ->
             let
-                request =
-                    Api.postCreds model
-
                 cmd =
-                    Http.send LoginResponse request
-
-                l =
-                    Debug.log "Update.Login" 1
+                    Http.send LoginResponse (Api.postCreds model)
             in
                 ( { model | spin = True }, cmd )
 
         LoginResponse (Ok newToken) ->
-            let
-                l =
-                    Debug.log "LoginResponse.Login" 1
-            in
-                ( { model | jwttoken = newToken, spin = False, page = GamePage }, Cmd.none )
+            ( { model | jwttoken = newToken, spin = False, page = GamePage }, Navigation.newUrl "#games" )
 
         LoginResponse (Err err) ->
-            let
-                logger =
-                    Debug.log "LoginResponse err" (toString err)
-            in
-                ( { model | spin = False, error = "Uh oh! Try again." }, Cmd.none )
+            ( { model | spin = False, error = "Uh oh! Try again." }, Cmd.none )
 
         Presses code ->
-            ( { model | presses = code :: model.presses }, Cmd.none )
+            let
+                hitEnter =
+                    case code of
+                        '\x0D' ->
+                            True
+                        _ -> 
+                            False
+
+                cmd =
+                    case hitEnter of
+                        True ->
+                            if model.page == LoginPage then
+                                Http.send LoginResponse (Api.postCreds model)
+                            else
+                                Cmd.none
+                        False ->
+                            Cmd.none
+
+            in
+                ( { model | presses = code :: model.presses, spin = hitEnter }, cmd )
 
 
 page : String -> Page

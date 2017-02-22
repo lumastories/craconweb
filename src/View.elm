@@ -5,56 +5,58 @@ import Model exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-
 view : Model -> Html Msg
 view model =
-    div [] [viewBody model]
+    let
+        page =
+            case model.page of
+                LoginPage ->
+                    loginPage model
+
+                GamePage ->
+                    gamePage model
+
+                _ ->
+                    text "page coming soon"
+    in
+        div [] [ page ]
 
 
 sizePx : Int -> String
 sizePx size =
     (toString size) ++ "px"
 
-sizeEm : Int -> String
-sizeEm size =
-    (toString size) ++ "em"
 
-sizeRem : Int -> String
-sizeRem size =
-    (toString size) ++ "rem"
+centerStyled : Attribute msg
+centerStyled =
+    style [ ( "text-align", "center" ) ]
 
-
-centerStyled = 
-    style [("text-align", "center")]
 
 logo : Int -> Html Msg
 logo size =
-    p [centerStyled] [img [ class "logo is-vcentered", src "img/logo.svg", style [ ( "max-width", sizePx size ) ] ] []]
+    p [ centerStyled ] [ img [ class "logo is-vcentered", src "img/logo.svg", style [ ( "max-width", sizePx size ) ] ] [] ]
 
-maxwidth : Int -> Attribute msg
-maxwidth size = 
-    style [ ( "max-width", sizeEm size ) ]
 
 loginPage : Model -> Html Msg
 loginPage model =
     let
         logoWidth =
             200
-        
+
         loginButtonClass =
             case model.spin of
                 False ->
-                    "button is-dark"
-                True ->
-                    "button is-dark is-loading"
+                    "button is-purple"
 
+                True ->
+                    "button is-purple is-loading"
     in
-        section [] [
-            div [ class "container" ]
+        section []
+            [ div [ class "container" ]
                 [ div [ class "columns is-desktop" ]
                     [ div [ class "column is-half is-offset-one-quarter" ]
-                        [ logo logoWidth 
-                        , div [ class "box" ]
+                        [ logo logoWidth
+                        , div [ class "box purple" ]
                             [ label [ class "label" ]
                                 [ text "Email" ]
                             , p [ class "control" ]
@@ -70,7 +72,7 @@ loginPage model =
                             , hr []
                                 []
                             , p [ class "control" ]
-                                [ button [ class loginButtonClass, onClick Login, href "#games" ] [ text "Let's Go!" ]
+                                [ button [ class loginButtonClass, onClick Login ] [ text "Let's Go!" ]
                                 ]
                             ]
                         , p [ class "has-text-centered" ]
@@ -80,20 +82,14 @@ loginPage model =
                     ]
                 ]
             ]
-                
 
-viewBody : Model -> Html Msg
-viewBody model =
-    let
-        -- noise:
-        page =
-            case model.page of
-                LoginPage ->
-                    loginPage model
 
-                _ ->
-                    text "page coming soon"
-    in
-        div [ style [ ( "padding", "2rem" ) ] ]
-            [ page
+gamePage : Model -> Html Msg
+gamePage model =
+    section []
+        [ div [ class "container" ]
+            [ div [ class "columns is-desktop" ]
+                [ div [ class "column" ] [ h1 [ class "title" ] [ text "Welcome, Guest" ] ]
+                ]
             ]
+        ]
