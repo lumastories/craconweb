@@ -2,3 +2,4 @@
 elm-format
 src/elm-stuff/
 *.js
+node_modules/
