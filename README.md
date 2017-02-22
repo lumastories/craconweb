@@ -1,5 +1,10 @@
 # Craving Control Frontend
 
+To run in development, first ensure `craconapi` is running, then compile:
+
+ - cd `src/`
+ - `elm make Main.elm --output ../dist/js/app.js --debug —warn`
+
 ## Todo
 
 - [x] Mockup the "Admin" frontend (the "back")

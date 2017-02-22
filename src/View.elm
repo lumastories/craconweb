@@ -23,9 +23,11 @@ view model =
         , main = [ viewBody model ]
         }
 
+
 sizePx : Int -> String
 sizePx size =
     (toString size) ++ "px"
+
 
 logo : Int -> Html Msg
 logo size =
@@ -44,39 +46,39 @@ textfield model defVal msg label =
         []
 
 
-
 loginPage : Model -> Html Msg
 loginPage model =
     let
         width =
             300
     in
-    div [ style [ ( "margin", "0px auto" ), ( "width", sizePx width ) ] ]
-        [ logo width
-        , div [ style [ ( "padding", "1rem" ), ( "background", "white" ), ( "border-top", "1rem solid #eee" ) ] ]
-            [ textfield model model.email UpdateEmail "Email"
-            , Textfield.render Mdl
-                [ FNV.hashString "Password" ]
-                model.mdl
-                [ Textfield.label "Password"
-                , Options.onInput UpdatePassword
-                , Textfield.value model.password
-                , Textfield.password
+        div [ style [ ( "margin", "0px auto" ), ( "width", sizePx width ) ] ]
+            [ logo width
+            , div [ style [ ( "padding", "1rem" ), ( "background", "white" ), ( "border-top", "1rem solid #eee" ) ] ]
+                [ textfield model model.email UpdateEmail "Email"
+                , Textfield.render Mdl
+                    [ FNV.hashString "Password" ]
+                    model.mdl
+                    [ Textfield.label "Password"
+                    , Options.onInput UpdatePassword
+                    , Textfield.value model.password
+                    , Textfield.password
+                    ]
+                    []
+                , Button.render Mdl
+                    [ FNV.hashString "#games" ]
+                    model.mdl
+                    [ Button.raised
+                    , Button.colored
+                      -- , Button.link "#games"
+                    , Options.onClick Login
+                    ]
+                    [ text "Let's Go!", Loading.spinner [ Loading.active model.spin ] ]
+                , br [] []
+                , em [] [ text model.error ]
                 ]
-                []
-            , Button.render Mdl
-                [ FNV.hashString "#games" ]
-                model.mdl
-                [ Button.raised
-                , Button.colored
-                , Button.link "#games"
-                , Options.onClick Noop
-                ]
-                [ text "Let's Go!" ]
-            , Loading.spinner [ Loading.active model.spin ]
+              -- , ul [] (List.map (\l -> (li [] [text l.hash])) model.history)
             ]
-          -- , ul [] (List.map (\l -> (li [] [text l.hash])) model.history)
-        ]
 
 
 viewBody : Model -> Html Msg
