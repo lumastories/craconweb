@@ -4,3 +4,4 @@ src/elm-stuff/
 *.js
 node_modules/
 store.db
+notes.md

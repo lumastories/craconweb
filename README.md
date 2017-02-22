@@ -7,6 +7,17 @@ To run in development, first ensure `craconapi` is running, then compile:
  - Then `cd ../dist` and run `alfred` or something to serve the files
  - visit http://localhost:4001/
 
+Alternatively
+
+ - `npm run build`
+
+# Dev dependencies
+
+ - npm
+ - ruby -> gem -> sass (`sudo gem install sass`)
+ - 
+
+
 
 ## Todo
 

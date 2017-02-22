@@ -1,6 +1,5 @@
 module Model exposing (..)
 
-import Material
 import Navigation
 import Http
 
@@ -9,7 +8,6 @@ type alias Model =
     { email : String
     , password : String
     , history : List Navigation.Location
-    , mdl : Material.Model
     , spin : Bool
     , page : Page
     , api : String
@@ -22,7 +20,6 @@ type alias Model =
 type Msg
     = UpdateEmail String
     | UpdatePassword String
-    | Mdl (Material.Msg Msg)
     | ChangePage Navigation.Location
     | Login
     | LoginResponse (Result Http.Error JwtToken)
@@ -53,8 +50,6 @@ init flags location =
             { email = ""
             , password = ""
             , history = [ location ]
-            , mdl =
-                Material.model
             , spin = False
             , page = LoginPage
             , api = getApi location
@@ -83,4 +78,5 @@ getApi location =
             -- dev api
             _ ->
                 --location.protocol ++ "//" ++ location.hostname ++ "/api"
-                Debug.crash "Need API location for production enviornment"
+                "http://" ++ location.hostname ++ ":81"
+                --Debug.crash "Need API location for production enviornment"

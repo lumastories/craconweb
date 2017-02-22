@@ -1,7 +1,6 @@
 module Update exposing (update)
 
 import Model exposing (..)
-import Material
 import Api
 import Http
 
@@ -15,8 +14,6 @@ update msg model =
         UpdatePassword newPassword ->
             ( { model | password = newPassword }, Cmd.none )
 
-        Mdl msg_ ->
-            Material.update Mdl msg_ model
 
         ChangePage location ->
             let
