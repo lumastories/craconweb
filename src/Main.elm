@@ -1,4 +1,4 @@
-port module Main exposing (..)
+module Main exposing (..)
 
 import Model
 import Update
@@ -6,6 +6,7 @@ import View
 import Navigation
 import Keyboard exposing (..)
 import Char
+
 
 {-
 
@@ -29,6 +30,3 @@ main =
 subscriptions : Model.Model -> Sub Model.Msg
 subscriptions model =
     Keyboard.presses (\code -> Model.Presses (Char.fromCode code))
-
-
-port jwtAuth : String -> Cmd msg

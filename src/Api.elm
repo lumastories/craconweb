@@ -4,12 +4,7 @@ import Model exposing (..)
 import Http
 import Json.Decode as Decode
 import Json.Decode.Pipeline as JP
-
-
---import Html.Events exposing (..)
-
 import Json.Encode as Encode
-
 
 -- Application Programing Interface
 -- Uniform Resource Locators
@@ -44,9 +39,6 @@ postCreds model =
     let
         body =
             userEncoder model |> Http.jsonBody
-
-        l =
-            Debug.log (toString <| userEncoder model) "user encoder"
 
         url =
             authUrl model

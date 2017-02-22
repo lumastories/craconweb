@@ -2,6 +2,8 @@ module Model exposing (..)
 
 import Navigation
 import Http
+import Jwt
+import Auth
 
 
 type alias Model =
@@ -14,6 +16,7 @@ type alias Model =
     , jwttoken : JwtToken
     , error : String
     , presses : List Char
+    , payload : Result Jwt.JwtError Auth.JwtPayload
     }
 
 
@@ -56,9 +59,10 @@ init flags location =
             , jwttoken = JwtToken flags.token
             , error = ""
             , presses = []
+            , payload = Jwt.decodeToken Auth.decodeJwtPayload flags.token
             }
     in
-        ( model, Cmd.none )
+        ( model, Navigation.newUrl location.hash )
 
 
 getApi : Navigation.Location -> String
@@ -79,4 +83,7 @@ getApi location =
             _ ->
                 --location.protocol ++ "//" ++ location.hostname ++ "/api"
                 "http://" ++ location.hostname ++ ":81"
-                --Debug.crash "Need API location for production enviornment"
+
+
+
+--Debug.crash "Need API location for production enviornment"
