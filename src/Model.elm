@@ -2,6 +2,8 @@ module Model exposing (..)
 
 import Navigation
 import Http
+import Jwt
+import Auth
 
 
 type alias Model =
@@ -14,6 +16,7 @@ type alias Model =
     , jwttoken : JwtToken
     , error : String
     , presses : List Char
+    , payload : Result Jwt.JwtError Auth.JwtPayload
     }
 
 
@@ -56,6 +59,7 @@ init flags location =
             , jwttoken = JwtToken flags.token
             , error = ""
             , presses = []
+            , payload = Jwt.decodeToken Auth.decodeJwtPayload flags.token
             }
     in
         ( model, Navigation.newUrl location.hash )

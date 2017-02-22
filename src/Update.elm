@@ -6,6 +6,7 @@ import Http
 import Navigation
 import Port
 
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -30,7 +31,7 @@ update msg model =
                 ( { model | spin = True }, cmd )
 
         LoginResponse (Ok newToken) ->
-            ( { model | jwttoken = newToken, spin = False, page = GamePage }, Cmd.batch [Navigation.newUrl "#games", Port.jwtAuthSave newToken.token] )
+            ( { model | jwttoken = newToken, spin = False, page = GamePage }, Cmd.batch [ Navigation.newUrl "#games", Port.jwtAuthSave newToken.token ] )
 
         LoginResponse (Err err) ->
             ( { model | spin = False, error = "Uh oh! Try again." }, Cmd.none )

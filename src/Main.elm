@@ -30,6 +30,3 @@ main =
 subscriptions : Model.Model -> Sub Model.Msg
 subscriptions model =
     Keyboard.presses (\code -> Model.Presses (Char.fromCode code))
-
-
-

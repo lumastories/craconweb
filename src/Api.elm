@@ -6,7 +6,6 @@ import Json.Decode as Decode
 import Json.Decode.Pipeline as JP
 import Json.Encode as Encode
 
-
 -- Application Programing Interface
 -- Uniform Resource Locators
 -- REpresentational State Transfer
@@ -40,9 +39,6 @@ postCreds model =
     let
         body =
             userEncoder model |> Http.jsonBody
-
-        l =
-            Debug.log (toString <| userEncoder model) "user encoder"
 
         url =
             authUrl model
