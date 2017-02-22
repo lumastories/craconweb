@@ -14,7 +14,7 @@ view model =
                     loginPage model
 
                 GamePage ->
-                    gamePage model
+                    gamesPage model
 
                 _ ->
                     text "page coming soon"
@@ -46,17 +46,17 @@ loginPage model =
         loginButtonClass =
             case model.spin of
                 False ->
-                    "button is-purple"
+                    "button is-dark"
 
                 True ->
-                    "button is-purple is-loading"
+                    "button is-dark is-loading"
     in
         section []
             [ div [ class "container" ]
                 [ div [ class "columns is-desktop" ]
                     [ div [ class "column is-half is-offset-one-quarter" ]
                         [ logo logoWidth
-                        , div [ class "box purple" ]
+                        , div [ class "box" ]
                             [ label [ class "label" ]
                                 [ text "Email" ]
                             , p [ class "control" ]
@@ -83,13 +83,69 @@ loginPage model =
                 ]
             ]
 
+--mainMenu model = 
+--    nav [] [div [class "container"] []]
 
-gamePage : Model -> Html Msg
-gamePage model =
-    section []
-        [ div [ class "container" ]
-            [ div [ class "columns is-desktop" ]
-                [ div [ class "column" ] [ h1 [ class "title" ] [ text "Welcome, Guest" ] ]
+gamesHeader : Model -> Html Msg
+gamesHeader model = 
+    section
+        [ class "hero" ]
+        [ div
+            [ class "hero-body" ]
+            [ div
+                [ class "container" ]
+                [ h1
+                    [ class "title" ]
+                    [ text <| "Welcome, " ++ model.jwttoken.token]
+                , h2
+                    [ class "subtitle" ]
+                    [ text "Nice to see you"]
                 ]
             ]
+        ]
+
+gamesBodyHeader : Model -> Html Msg
+gamesBodyHeader model = 
+    section
+        [ class "section" ]
+        [ div
+            [ class "container" ]
+            [ div
+                [ class "heading" ]
+                [ h1
+                    [ class "title" ]
+                    [ text "Games"]
+                , h2
+                    [ class "subtitle" ]
+                    [ text "These should be fun"
+                    ]
+                ]
+            ]
+        ]
+
+gamesGrid : Model ->  Html Msg
+gamesGrid model = 
+    div [ class "columns" ] 
+        [ div [class "column"] [text "Visual Search"] 
+        , div [class "column"] [text "Dot Probe"] 
+        , div [class "column"] [text "Go/No-Go"] 
+        , div [class "column"] [text "Stop Signal"] 
+        , div [class "column"] [text "Respond Signal"] 
+        ]
+
+gamesBody : Model -> Html Msg
+gamesBody model = 
+    section
+        [ class "section" ]
+        [ div
+            [ class "container" ]
+            [ gamesGrid model ]
+        ]
+
+gamesPage : Model -> Html Msg
+gamesPage model =
+    section []
+        [ gamesHeader model
+        , gamesBodyHeader model 
+        , gamesBody model
         ]
