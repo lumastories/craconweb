@@ -1,4 +1,4 @@
-port module Main exposing (..)
+module Main exposing (..)
 
 import Model
 import Update
@@ -32,4 +32,4 @@ subscriptions model =
     Keyboard.presses (\code -> Model.Presses (Char.fromCode code))
 
 
-port jwtAuth : String -> Cmd msg
+

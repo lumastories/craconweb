@@ -4,10 +4,6 @@ import Model exposing (..)
 import Http
 import Json.Decode as Decode
 import Json.Decode.Pipeline as JP
-
-
---import Html.Events exposing (..)
-
 import Json.Encode as Encode
 
 

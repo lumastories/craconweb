@@ -4,6 +4,7 @@ import Model exposing (..)
 import Api
 import Http
 import Navigation
+import Port
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -29,7 +30,7 @@ update msg model =
                 ( { model | spin = True }, cmd )
 
         LoginResponse (Ok newToken) ->
-            ( { model | jwttoken = newToken, spin = False, page = GamePage }, Navigation.newUrl "#games" )
+            ( { model | jwttoken = newToken, spin = False, page = GamePage }, Cmd.batch [Navigation.newUrl "#games", Port.jwtAuthSave newToken.token] )
 
         LoginResponse (Err err) ->
             ( { model | spin = False, error = "Uh oh! Try again." }, Cmd.none )
@@ -40,7 +41,8 @@ update msg model =
                     case code of
                         '\x0D' ->
                             True
-                        _ -> 
+
+                        _ ->
                             False
 
                 cmd =
@@ -50,9 +52,9 @@ update msg model =
                                 Http.send LoginResponse (Api.postCreds model)
                             else
                                 Cmd.none
+
                         False ->
                             Cmd.none
-
             in
                 ( { model | presses = code :: model.presses, spin = hitEnter }, cmd )
 

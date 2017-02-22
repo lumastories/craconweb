@@ -5,6 +5,7 @@ import Model exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
+
 view : Model -> Html Msg
 view model =
     let
@@ -83,11 +84,14 @@ loginPage model =
                 ]
             ]
 
---mainMenu model = 
+
+
+--mainMenu model =
 --    nav [] [div [class "container"] []]
 
+
 gamesHeader : Model -> Html Msg
-gamesHeader model = 
+gamesHeader model =
     section
         [ class "hero" ]
         [ div
@@ -96,16 +100,17 @@ gamesHeader model =
                 [ class "container" ]
                 [ h1
                     [ class "title" ]
-                    [ text <| "Welcome, " ++ model.jwttoken.token]
+                    [ text <| "Welcome, " ++ model.jwttoken.token ]
                 , h2
                     [ class "subtitle" ]
-                    [ text "Nice to see you"]
+                    [ text "Nice to see you" ]
                 ]
             ]
         ]
 
+
 gamesBodyHeader : Model -> Html Msg
-gamesBodyHeader model = 
+gamesBodyHeader model =
     section
         [ class "section" ]
         [ div
@@ -114,7 +119,7 @@ gamesBodyHeader model =
                 [ class "heading" ]
                 [ h1
                     [ class "title" ]
-                    [ text "Games"]
+                    [ text "Games" ]
                 , h2
                     [ class "subtitle" ]
                     [ text "These should be fun"
@@ -123,18 +128,20 @@ gamesBodyHeader model =
             ]
         ]
 
-gamesGrid : Model ->  Html Msg
-gamesGrid model = 
-    div [ class "columns" ] 
-        [ div [class "column"] [text "Visual Search"] 
-        , div [class "column"] [text "Dot Probe"] 
-        , div [class "column"] [text "Go/No-Go"] 
-        , div [class "column"] [text "Stop Signal"] 
-        , div [class "column"] [text "Respond Signal"] 
+
+gamesGrid : Model -> Html Msg
+gamesGrid model =
+    div [ class "columns" ]
+        [ div [ class "column" ] [ text "Visual Search" ]
+        , div [ class "column" ] [ text "Dot Probe" ]
+        , div [ class "column" ] [ text "Go/No-Go" ]
+        , div [ class "column" ] [ text "Stop Signal" ]
+        , div [ class "column" ] [ text "Respond Signal" ]
         ]
 
+
 gamesBody : Model -> Html Msg
-gamesBody model = 
+gamesBody model =
     section
         [ class "section" ]
         [ div
@@ -142,10 +149,11 @@ gamesBody model =
             [ gamesGrid model ]
         ]
 
+
 gamesPage : Model -> Html Msg
 gamesPage model =
     section []
         [ gamesHeader model
-        , gamesBodyHeader model 
+        , gamesBodyHeader model
         , gamesBody model
         ]

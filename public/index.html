@@ -34,7 +34,7 @@
         var app = Elm.Main.fullscreen(flags);
 
         // Receive a token to store locally
-        app.ports.jwtAuth.subscribe(function(token) {
+        app.ports.jwtAuthSave.subscribe(function(token) {
             localStorage.setItem('jwt-token', token);
         });
 
