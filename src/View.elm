@@ -70,11 +70,12 @@ loginPage model =
                     model.mdl
                     [ Button.raised
                     , Button.colored
-                    -- , Button.link "#games"
+                      -- , Button.link "#games"
                     , Options.onClick Login
                     ]
-                    [ text "Let's Go!" ]
-                , Loading.spinner [ Loading.active model.spin ]
+                    [ text "Let's Go!", Loading.spinner [ Loading.active model.spin ] ]
+                , br [] []
+                , em [] [ text model.error ]
                 ]
               -- , ul [] (List.map (\l -> (li [] [text l.hash])) model.history)
             ]

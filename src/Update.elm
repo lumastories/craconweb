@@ -29,20 +29,31 @@ update msg model =
             let
                 request =
                     Api.postCreds model
+
                 cmd =
                     Http.send LoginResponse request
+
+                l =
+                    Debug.log "Update.Login" 1
             in
-                ( { model | spin = True}, cmd )
+                ( { model | spin = True }, cmd )
 
         LoginResponse (Ok newToken) ->
-            ( { model | jwttoken = newToken, spin=False}, Cmd.none )
+            let
+                l =
+                    Debug.log "LoginResponse.Login" 1
+            in
+                ( { model | jwttoken = newToken, spin = False, page = GamePage }, Cmd.none )
 
         LoginResponse (Err err) ->
             let
                 logger =
-                    Debug.log (toString err) "LoginResponse err"
-            in 
-                ({ model | spin = False}, Cmd.none )
+                    Debug.log "LoginResponse err" (toString err)
+            in
+                ( { model | spin = False, error = "Uh oh! Try again." }, Cmd.none )
+
+        Presses code ->
+            ( { model | presses = code :: model.presses }, Cmd.none )
 
 
 page : String -> Page

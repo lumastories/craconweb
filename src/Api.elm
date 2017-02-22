@@ -22,28 +22,29 @@ authUrl model =
     model.api ++ "/auth"
 
 
-defaultHeaders : List Http.Header
-defaultHeaders = 
-    [ 
-    -- Http.header "Access-Control-Allow-Origin" "localhost"
-    --, Http.header "Accept" "application/json"
-    --, Http.header "Accept-Encoding" "gzip, deflate, br"
-    --, Http.header "Accept-Language" "en-US,en;q=0.8"
-    --, Http.header "Connection" "keep-alive"
-    -- , Http.header "Content-Type" "application/json"
-    --, Http.header "Cookie" "csrftoken=P5XEJBgoA1kkOPE8d1bUjQXLeoE0mbwN; djdt=show"
-    --, Http.header "Host" "127.0.0.1:8680"
-    --, Http.header "Origin" "http://127.0.0.1:4001"
-    ]
+defaultHeaders : Model -> List Http.Header
+defaultHeaders model =
+    let
+        headers =
+            [ Http.header "Accept" "application/json" ]
+
+        authHeaders =
+            case model.jwttoken.token of
+                "" ->
+                    headers
+
+                _ ->
+                    (Http.header "Authorization" ("Bearer " ++ model.jwttoken.token)) :: headers
+    in
+        authHeaders
 
 
 postCreds : Model -> Http.Request JwtToken
 postCreds model =
     let
-
         body =
             userEncoder model |> Http.jsonBody
-        
+
         l =
             Debug.log (toString <| userEncoder model) "user encoder"
 
@@ -55,7 +56,7 @@ postCreds model =
     in
         Http.request
             { method = "POST"
-            , headers = defaultHeaders
+            , headers = defaultHeaders model
             , url = url
             , body = body
             , expect = Http.expectJson decoder
@@ -63,7 +64,6 @@ postCreds model =
             , withCredentials = False
             }
 
-  
 
 userEncoder : Model -> Encode.Value
 userEncoder model =
@@ -71,6 +71,7 @@ userEncoder model =
         [ ( "email", Encode.string model.email )
         , ( "password", Encode.string model.password )
         ]
+
 
 jwtDecoder : Decode.Decoder JwtToken
 jwtDecoder =

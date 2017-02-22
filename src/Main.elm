@@ -1,10 +1,11 @@
 port module Main exposing (..)
 
-import Model exposing (..)
-import Update exposing (..)
-import View exposing (..)
+import Model
+import Update
+import View
 import Navigation
-
+import Keyboard exposing (..)
+import Char
 
 {-
 
@@ -15,14 +16,19 @@ import Navigation
 -}
 
 
-main : Program Flags Model Msg
+main : Program Model.Flags Model.Model Model.Msg
 main =
-    Navigation.programWithFlags ChangePage
-        { init = init
-        , view = view
-        , update = update
-        , subscriptions = \model -> Sub.none
+    Navigation.programWithFlags Model.ChangePage
+        { init = Model.init
+        , view = View.view
+        , update = Update.update
+        , subscriptions = subscriptions
         }
+
+
+subscriptions : Model.Model -> Sub Model.Msg
+subscriptions model =
+    Keyboard.presses (\code -> Model.Presses (Char.fromCode code))
 
 
 port jwtAuth : String -> Cmd msg
