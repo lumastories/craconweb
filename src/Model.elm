@@ -36,8 +36,7 @@ type Page
 
 
 type alias Flags =
-    { user : String
-    , token : String
+    { token : String
     }
 
 

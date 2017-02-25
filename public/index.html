@@ -21,24 +21,13 @@
         // Initialize app with stored auth token (a jwt)
         // Or an empty string if it does not exist
         var jwt = localStorage.getItem('jwt-token');
-        var flags = {"token": jwt ? jwt : ""
-                    ,"user":""} // TODO expand flags to start up app w/ more data from localStorage
-        /*
-            in Model.elm:
-            type alias Flags =
-              { user : String
-              , token : String
-              }
-        */
-
+        var flags = {"token": jwt ? jwt : ""}
         var app = Elm.Main.fullscreen(flags);
 
         // Receive a token to store locally
         app.ports.jwtAuthSave.subscribe(function(token) {
             localStorage.setItem('jwt-token', token);
         });
-
-        
 
     </script>
 
