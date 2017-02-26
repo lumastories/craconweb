@@ -1,4 +1,27 @@
-module Model exposing (..)
+module Model exposing (Model, Flags, JwtToken, Page(..), Msg(..), init)
+
+{-| This is the Model, where we model and initialize our data.
+
+# Data to bootstrap the app
+@docs Flags
+
+# JSON Web Token string to decode
+@docs JwtToken
+
+# How our application data should look
+@docs Model
+
+# Messages to pass throughout the application
+@docs Msg
+
+# A page in the application
+@docs Page
+
+# Function that initializes the model with data
+@docs init
+
+
+-}
 
 import Navigation
 import Http
@@ -6,6 +29,9 @@ import Jwt
 import Auth
 
 
+{-| The data model for the entire application.
+
+-}
 type alias Model =
     { email : String
     , password : String
@@ -20,32 +46,43 @@ type alias Model =
     }
 
 
+{-| Represents messages to be passed throughout the application.
+Typically called from the View and handled by the Update to move the Model forward
+
+-}
 type Msg
-    = UpdateEmail String
-    | UpdatePassword String
+    = LoginEmail String
+    | LoginPassword String
     | ChangePage Navigation.Location
-    | Login
+    | LoginSend
     | LoginResponse (Result Http.Error JwtToken)
     | Presses Char
 
 
+{-| Represents where I am in the application
+-}
 type Page
     = LoginPage
     | GamePage
     | BadgePage
 
 
+{-| Represents what data I should start up with
+-}
 type alias Flags =
-    { user : String
-    , token : String
+    { token : String
     }
 
 
+{-| Represents a JSON Web Token string to be decoded
+-}
 type alias JwtToken =
     { token : String
     }
 
 
+{-| initialize the model with data
+-}
 init : Flags -> Navigation.Location -> ( Model, Cmd Msg )
 init flags location =
     let
@@ -65,6 +102,11 @@ init flags location =
         ( model, Navigation.newUrl location.hash )
 
 
+{-| Converts the window.location into an API base. Currently only useful for
+development and if the API is located on port 81 of the same server.
+
+    getApi location == "http://localhost:8680"
+-}
 getApi : Navigation.Location -> String
 getApi location =
     let
@@ -75,15 +117,8 @@ getApi location =
             "localhost" ->
                 "http://" ++ location.hostname ++ ":8680"
 
-            -- dev api
             "127.0.0.1" ->
                 "http://" ++ location.hostname ++ ":8680"
 
-            -- dev api
             _ ->
-                --location.protocol ++ "//" ++ location.hostname ++ "/api"
                 "http://" ++ location.hostname ++ ":81"
-
-
-
---Debug.crash "Need API location for production enviornment"

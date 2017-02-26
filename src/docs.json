@@ -1,0 +1,96 @@
+[
+  {
+    "name": "Model",
+    "comment": " This is the Model, where we model and initialize our data.\n\n# Data to bootstrap the app\n@docs Flags\n\n# JSON Web Token string to decode\n@docs JwtToken\n\n# How our application data should look\n@docs Model\n\n# Messages to pass throughout the application\n@docs Msg\n\n# A page in the application\n@docs Page\n\n# Function that initializes the model with data\n@docs init\n\n\n",
+    "aliases": [
+      {
+        "name": "Flags",
+        "comment": " Represents what data I should start up with\n",
+        "args": [],
+        "type": "{ token : String }"
+      },
+      {
+        "name": "JwtToken",
+        "comment": " Represents a JSON Web Token string to be decoded\n",
+        "args": [],
+        "type": "{ token : String }"
+      },
+      {
+        "name": "Model",
+        "comment": " The data model for the entire application.\n\n",
+        "args": [],
+        "type": "{ email : String , password : String , history : List Navigation.Location , spin : Bool , page : Model.Page , api : String , jwttoken : Model.JwtToken , error : String , presses : List Char , payload : Result.Result Jwt.JwtError Auth.JwtPayload }"
+      }
+    ],
+    "types": [
+      {
+        "name": "Msg",
+        "comment": " Represents messages to be passed throughout the application.\nTypically called from the View and handled by the Update to move the Model forward\n\n",
+        "args": [],
+        "cases": [
+          [
+            "LoginEmail",
+            [
+              "String"
+            ]
+          ],
+          [
+            "LoginPassword",
+            [
+              "String"
+            ]
+          ],
+          [
+            "ChangePage",
+            [
+              "Navigation.Location"
+            ]
+          ],
+          [
+            "LoginSend",
+            []
+          ],
+          [
+            "LoginResponse",
+            [
+              "Result.Result Http.Error Model.JwtToken"
+            ]
+          ],
+          [
+            "Presses",
+            [
+              "Char"
+            ]
+          ]
+        ]
+      },
+      {
+        "name": "Page",
+        "comment": " Represents where I am in the application\n",
+        "args": [],
+        "cases": [
+          [
+            "LoginPage",
+            []
+          ],
+          [
+            "GamePage",
+            []
+          ],
+          [
+            "BadgePage",
+            []
+          ]
+        ]
+      }
+    ],
+    "values": [
+      {
+        "name": "init",
+        "comment": " initialize the model with data\n",
+        "type": "Model.Flags -> Navigation.Location -> ( Model.Model, Platform.Cmd.Cmd Model.Msg )"
+      }
+    ],
+    "generated-with-elm-version": "0.18.0"
+  }
+]

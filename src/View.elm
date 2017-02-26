@@ -61,19 +61,19 @@ loginPage model =
                             [ label [ class "label" ]
                                 [ text "Email" ]
                             , p [ class "control" ]
-                                [ input [ class "input", placeholder "Email", type_ "email", onInput UpdateEmail ]
+                                [ input [ class "input", placeholder "Email", type_ "email", onInput LoginEmail ]
                                     []
                                 ]
                             , label [ class "label" ]
                                 [ text "Password" ]
                             , p [ class "control" ]
-                                [ input [ class "input", placeholder "Password", type_ "password", onInput UpdatePassword ]
+                                [ input [ class "input", placeholder "Password", type_ "password", onInput LoginPassword ]
                                     []
                                 ]
                             , hr []
                                 []
                             , p [ class "control" ]
-                                [ button [ class loginButtonClass, onClick Login ] [ text "Let's Go!" ]
+                                [ button [ class loginButtonClass, onClick LoginSend ] [ text "Let's Go!" ]
                                 ]
                             ]
                         , p [ class "has-text-centered" ]
@@ -83,11 +83,6 @@ loginPage model =
                     ]
                 ]
             ]
-
-
-
---mainMenu model =
---    nav [] [div [class "container"] []]
 
 
 gamesHeader : Model -> Html Msg
