@@ -1,4 +1,4 @@
-module Model exposing (Model, Flags, JwtToken, Page(..), Msg(..), init)
+module Model exposing (Model, User, Flags, JwtToken, Page(..), Msg(..), init)
 
 {-| This is the Model, where we model and initialize our data.
 
@@ -10,6 +10,9 @@ module Model exposing (Model, Flags, JwtToken, Page(..), Msg(..), init)
 
 # How our application data should look
 @docs Model
+
+# Name, email, id of User
+@docs User
 
 # Messages to pass throughout the application
 @docs Msg
@@ -43,6 +46,7 @@ type alias Model =
     , error : String
     , presses : List Char
     , payload : Result Jwt.JwtError Auth.JwtPayload
+    , user : User
     }
 
 
@@ -58,6 +62,28 @@ initialModel flags location =
     , error = ""
     , presses = []
     , payload = Jwt.decodeToken Auth.decodeJwtPayload flags.token
+    , user = initialUser
+    }
+
+
+initialUser : User
+initialUser =
+    { id = ""
+    , username = ""
+    , email = ""
+    , firstName = ""
+    , lastName = ""
+    }
+
+
+{-| A user!
+-}
+type alias User =
+    { id : String
+    , email : String
+    , username : String
+    , firstName : String
+    , lastName : String
     }
 
 
