@@ -19,7 +19,7 @@
         "name": "Model",
         "comment": " The data model for the entire application.\n\n",
         "args": [],
-        "type": "{ email : String , password : String , history : List Navigation.Location , spin : Bool , page : Model.Page , api : String , jwttoken : Model.JwtToken , error : String , presses : List Char , payload : Result.Result Jwt.JwtError Auth.JwtPayload , user : Model.User }"
+        "type": "{ email : String , password : String , history : List Navigation.Location , spin : Bool , page : Model.Page , api : String , jwttoken : Model.JwtToken , jwtpayload : Result.Result Jwt.JwtError Auth.JwtPayload , error : String , presses : List Char , user : Model.User }"
       },
       {
         "name": "User",
@@ -60,6 +60,12 @@
             "LoginResponse",
             [
               "Result.Result Http.Error Model.JwtToken"
+            ]
+          ],
+          [
+            "UserResponse",
+            [
+              "Result.Result Http.Error Model.User"
             ]
           ],
           [
