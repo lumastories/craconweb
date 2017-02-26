@@ -12,18 +12,11 @@ import Json.Encode as Encode
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        UpdateEmail newEmail ->
+        LoginEmail newEmail ->
             ( { model | email = newEmail }, Cmd.none )
 
-        UpdatePassword newPassword ->
+        LoginPassword newPassword ->
             ( { model | password = newPassword }, Cmd.none )
-
-        ChangePage location ->
-            let
-                newPage =
-                    page location.hash
-            in
-                ( { model | history = location :: model.history, page = newPage }, Cmd.none )
 
         LoginSend ->
             let
@@ -40,26 +33,34 @@ update msg model =
 
         Presses code ->
             let
-                hitEnter =
-                    case code of
-                        '\x0D' ->
-                            True
-
-                        _ ->
-                            False
-
-                cmd =
-                    case hitEnter of
-                        True ->
-                            if model.page == LoginPage then
-                                Http.send LoginResponse (postCreds model)
-                            else
-                                Cmd.none
-
-                        False ->
-                            Cmd.none
+                ( loading, cmd ) =
+                    if code == '\x0D' then
+                        cmdForEnterOnPage model
+                    else
+                        ( False, Cmd.none )
             in
-                ( { model | presses = code :: model.presses, spin = hitEnter }, cmd )
+                ( { model | spin = loading }, cmd )
+
+        ChangePage location ->
+            let
+                newPage =
+                    page location.hash
+            in
+                ( { model | history = location :: model.history, page = newPage }, Cmd.none )
+
+
+
+-- TODO better naming conventions for functions
+
+
+cmdForEnterOnPage : Model -> ( Bool, Cmd Msg )
+cmdForEnterOnPage model =
+    case model.page of
+        LoginPage ->
+            ( True, Http.send LoginResponse (postCreds model) )
+
+        _ ->
+            ( False, Cmd.none )
 
 
 page : String -> Page

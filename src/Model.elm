@@ -21,8 +21,8 @@ type alias Model =
 
 
 type Msg
-    = UpdateEmail String
-    | UpdatePassword String
+    = LoginEmail String
+    | LoginPassword String
     | ChangePage Navigation.Location
     | LoginSend
     | LoginResponse (Result Http.Error JwtToken)
