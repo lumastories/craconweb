@@ -22,6 +22,7 @@
         // Or an empty string if it does not exist
         var jwt = localStorage.getItem('jwt-token');
         var flags = {"token": jwt ? jwt : ""}
+        // var flags = {"token": "totallybullshittoken"}
         var app = Elm.Main.fullscreen(flags);
 
         // Receive a token to store locally
