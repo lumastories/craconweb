@@ -26,10 +26,24 @@ update msg model =
                 ( { model | spin = True }, cmd )
 
         LoginResponse (Ok newToken) ->
-            ( { model | jwttoken = newToken, spin = False, page = GamePage }, Cmd.batch [ Navigation.newUrl "#games", Port.jwtAuthSave newToken.token ] )
+            let
+                commands =
+                    [ (Http.send UserResponse (getUser model))
+                    , Navigation.newUrl "#games"
+                    , Port.jwtAuthSave newToken.token
+                    ]
+            in
+                ( { model | jwttoken = newToken, spin = False, page = GamePage }, Cmd.batch commands )
 
+        -- TODO Why is this glitching out even with good creds?
         LoginResponse (Err err) ->
             ( { model | spin = False, error = "Uh oh! Try again." }, Cmd.none )
+
+        UserResponse (Ok newUser) ->
+            ( model, Cmd.none )
+
+        UserResponse (Err err) ->
+            ( model, Cmd.none )
 
         Presses code ->
             let
@@ -130,10 +144,12 @@ getUser model =
         body =
             encodeCreds model |> Http.jsonBody
 
+        -- TODO: remove magic :id, get from model.jwttoken.sub
+        -- Maybe like this?
+        -- url = model.jwttoken.map \token -> model.api ++ "/user/" ++ token.sub
         url =
-            model.api ++ "/user/"
+            model.api ++ "/user/7239373074254188773"
 
-        -- ++ model.jwt
         decoder =
             decodeUser
     in
