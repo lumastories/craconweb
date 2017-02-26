@@ -95,7 +95,8 @@ gamesHeader model =
                 [ class "container" ]
                 [ h1
                     [ class "title" ]
-                    [ text <| "Welcome, " ++ model.jwttoken.token ]
+                    [ text <| "Welcome, " ++ model.user.firstName ]
+                  -- TODO save this in localStorage?
                 , h2
                     [ class "subtitle" ]
                     [ text "Nice to see you" ]

@@ -36,14 +36,15 @@ update msg model =
                 ( { model | jwttoken = newToken, spin = False, page = GamePage }, Cmd.batch commands )
 
         -- TODO Why is this glitching out even with good creds?
+        -- FIXED temporary - token had expired! need to check locally `(Jwt.isExpired time token) returns Result Bool`
         LoginResponse (Err err) ->
             ( { model | spin = False, error = "Uh oh! Try again." }, Cmd.none )
 
         UserResponse (Ok newUser) ->
-            ( model, Cmd.none )
+            ( { model | user = newUser }, Cmd.none )
 
         UserResponse (Err err) ->
-            ( model, Cmd.none )
+            ( { model | error = "Uh oh! User error." }, Cmd.none )
 
         Presses code ->
             let
@@ -144,9 +145,7 @@ getUser model =
         body =
             encodeCreds model |> Http.jsonBody
 
-        -- TODO: remove magic :id, get from model.jwttoken.sub
-        -- Maybe like this?
-        -- url = model.jwttoken.map \token -> model.api ++ "/user/" ++ token.sub
+        -- TODO break this down on the whiteboard
         url =
             model.api ++ "/user/7239373074254188773"
 
@@ -165,7 +164,7 @@ getUser model =
 
 
 
--- Decode and Encode
+-- Decoders and Encoders
 
 
 encodeCreds : Model -> Json.Encode.Value
