@@ -147,7 +147,7 @@ getUser model =
 
         -- TODO break this down on the whiteboard
         url =
-            model.api ++ "/user/7239373074254188773"
+            Result.withDefault "" (Result.map (\token -> model.api ++ "/user/" ++ token.sub) model.jwtpayload)
 
         decoder =
             decodeUser
