@@ -105,26 +105,6 @@ gamesHeader model =
         ]
 
 
-gamesBodyHeader : Model -> Html Msg
-gamesBodyHeader model =
-    section
-        [ class "section" ]
-        [ div
-            [ class "container" ]
-            [ div
-                [ class "heading" ]
-                [ h1
-                    [ class "title" ]
-                    [ text "Games" ]
-                , h2
-                    [ class "subtitle" ]
-                    [ text "These should be fun"
-                    ]
-                ]
-            ]
-        ]
-
-
 gamesGrid : Model -> Html Msg
 gamesGrid model =
     div [ class "columns" ]
@@ -150,6 +130,5 @@ gamesPage : Model -> Html Msg
 gamesPage model =
     section []
         [ gamesHeader model
-        , gamesBodyHeader model
         , gamesBody model
         ]
