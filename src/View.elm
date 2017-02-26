@@ -6,6 +6,15 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
 
+-- TODO add main menu with a link to instructions page (then, Badges, Settings, etc.)
+-- TODO Create a new logo (brain with CC - craving control, crave control)
+-- TODO Select a color pallette (check color blind compatability)
+-- TODO Create reset password modal
+-- TODO Write decoders and encoders for swagger
+-- TODO Auto generate models, encoders and decoders from swagger (whaaaa) or use IDL or GRPC -> elm
+-- TODO Rename the `dist` directory to something more fitting, check NoRedInk guidelines?
+
+
 view : Model -> Html Msg
 view model =
     let
@@ -114,6 +123,13 @@ gamesGrid model =
         , div [ class "column" ] [ text "Stop Signal" ]
         , div [ class "column" ] [ text "Respond Signal" ]
         ]
+
+
+
+-- TODO Add icons for games, link one to /#games/:id
+-- TODO fetch data for game, indicate loading progress
+-- TODO display stimuli and record user responses
+-- TODO track partial data, attempt to save
 
 
 gamesBody : Model -> Html Msg
