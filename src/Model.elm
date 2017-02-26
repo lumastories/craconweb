@@ -46,6 +46,21 @@ type alias Model =
     }
 
 
+initialModel : Flags -> Navigation.Location -> Model
+initialModel flags location =
+    { email = ""
+    , password = ""
+    , history = [ location ]
+    , spin = False
+    , page = LoginPage
+    , api = getApi location
+    , jwttoken = JwtToken flags.token
+    , error = ""
+    , presses = []
+    , payload = Jwt.decodeToken Auth.decodeJwtPayload flags.token
+    }
+
+
 {-| Represents messages to be passed throughout the application.
 Typically called from the View and handled by the Update to move the Model forward
 
@@ -85,21 +100,7 @@ type alias JwtToken =
 -}
 init : Flags -> Navigation.Location -> ( Model, Cmd Msg )
 init flags location =
-    let
-        model =
-            { email = ""
-            , password = ""
-            , history = [ location ]
-            , spin = False
-            , page = LoginPage
-            , api = getApi location
-            , jwttoken = JwtToken flags.token
-            , error = ""
-            , presses = []
-            , payload = Jwt.decodeToken Auth.decodeJwtPayload flags.token
-            }
-    in
-        ( model, Navigation.newUrl location.hash )
+    ( initialModel flags location, Navigation.newUrl location.hash )
 
 
 {-| Converts the window.location into an API base. Currently only useful for
