@@ -43,9 +43,9 @@ type alias Model =
     , page : Page
     , api : String
     , jwttoken : JwtToken
+    , jwtpayload : Result Jwt.JwtError Auth.JwtPayload
     , error : String
     , presses : List Char
-    , payload : Result Jwt.JwtError Auth.JwtPayload
     , user : User
     }
 
@@ -59,9 +59,9 @@ initialModel flags location =
     , page = LoginPage
     , api = getApi location
     , jwttoken = JwtToken flags.token
+    , jwtpayload = Jwt.decodeToken Auth.decodeJwtPayload flags.token
     , error = ""
     , presses = []
-    , payload = Jwt.decodeToken Auth.decodeJwtPayload flags.token
     , user = initialUser
     }
 
@@ -97,6 +97,7 @@ type Msg
     | ChangePage Navigation.Location
     | LoginSend
     | LoginResponse (Result Http.Error JwtToken)
+    | UserResponse (Result Http.Error User)
     | Presses Char
 
 
