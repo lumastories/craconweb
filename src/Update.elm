@@ -4,9 +4,9 @@ import Model exposing (..)
 import Http
 import Navigation
 import Port
-import Json.Decode as Decode
+import Json.Encode
+import Json.Decode
 import Json.Decode.Pipeline as JP
-import Json.Encode as Encode
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -43,6 +43,7 @@ update msg model =
 
         ChangePage location ->
             let
+                -- TODO change page to LoginPage if Token is bad
                 newPage =
                     page location.hash
             in
@@ -83,11 +84,6 @@ page hash =
 -- IOW, talk to Daved's code :)
 
 
-authUrl : Model -> String
-authUrl model =
-    model.api ++ "/auth"
-
-
 defaultHeaders : Model -> List Http.Header
 defaultHeaders model =
     let
@@ -109,13 +105,13 @@ postCreds : Model -> Http.Request JwtToken
 postCreds model =
     let
         body =
-            userEncoder model |> Http.jsonBody
+            encodeCreds model |> Http.jsonBody
 
         url =
-            authUrl model
+            model.api ++ "/auth"
 
         decoder =
-            jwtDecoder
+            decodeJwtToken
     in
         Http.request
             { method = "POST"
@@ -128,15 +124,64 @@ postCreds model =
             }
 
 
-userEncoder : Model -> Encode.Value
-userEncoder model =
-    Encode.object
-        [ ( "email", Encode.string model.email )
-        , ( "password", Encode.string model.password )
+getUser : Model -> Http.Request User
+getUser model =
+    let
+        body =
+            encodeCreds model |> Http.jsonBody
+
+        url =
+            model.api ++ "/user/"
+
+        -- ++ model.jwt
+        decoder =
+            decodeUser
+    in
+        Http.request
+            { method = "GET"
+            , headers = defaultHeaders model
+            , url = url
+            , body = body
+            , expect = Http.expectJson decoder
+            , timeout = Nothing
+            , withCredentials = False
+            }
+
+
+
+-- Decode and Encode
+
+
+encodeCreds : Model -> Json.Encode.Value
+encodeCreds model =
+    Json.Encode.object
+        [ ( "email", Json.Encode.string model.email )
+        , ( "password", Json.Encode.string model.password )
         ]
 
 
-jwtDecoder : Decode.Decoder JwtToken
-jwtDecoder =
+decodeJwtToken : Json.Decode.Decoder JwtToken
+decodeJwtToken =
     JP.decode JwtToken
-        |> JP.required "token" (Decode.string)
+        |> JP.required "token" (Json.Decode.string)
+
+
+decodeUser : Json.Decode.Decoder User
+decodeUser =
+    JP.decode User
+        |> JP.required "id" (Json.Decode.string)
+        |> JP.required "username" (Json.Decode.string)
+        |> JP.required "email" (Json.Decode.string)
+        |> JP.required "firstName" (Json.Decode.string)
+        |> JP.required "lastName" (Json.Decode.string)
+
+
+encodeUser : User -> Json.Encode.Value
+encodeUser record =
+    Json.Encode.object
+        [ ( "id", Json.Encode.string <| record.id )
+        , ( "username", Json.Encode.string <| record.username )
+        , ( "email", Json.Encode.string <| record.email )
+        , ( "firstName", Json.Encode.string <| record.firstName )
+        , ( "lastName", Json.Encode.string <| record.lastName )
+        ]

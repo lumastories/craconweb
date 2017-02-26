@@ -1,7 +1,7 @@
 [
   {
     "name": "Model",
-    "comment": " This is the Model, where we model and initialize our data.\n\n# Data to bootstrap the app\n@docs Flags\n\n# JSON Web Token string to decode\n@docs JwtToken\n\n# How our application data should look\n@docs Model\n\n# Messages to pass throughout the application\n@docs Msg\n\n# A page in the application\n@docs Page\n\n# Function that initializes the model with data\n@docs init\n\n\n",
+    "comment": " This is the Model, where we model and initialize our data.\n\n# Data to bootstrap the app\n@docs Flags\n\n# JSON Web Token string to decode\n@docs JwtToken\n\n# How our application data should look\n@docs Model\n\n# Name, email, id of User\n@docs User\n\n# Messages to pass throughout the application\n@docs Msg\n\n# A page in the application\n@docs Page\n\n# Function that initializes the model with data\n@docs init\n\n\n",
     "aliases": [
       {
         "name": "Flags",
@@ -19,7 +19,13 @@
         "name": "Model",
         "comment": " The data model for the entire application.\n\n",
         "args": [],
-        "type": "{ email : String , password : String , history : List Navigation.Location , spin : Bool , page : Model.Page , api : String , jwttoken : Model.JwtToken , error : String , presses : List Char , payload : Result.Result Jwt.JwtError Auth.JwtPayload }"
+        "type": "{ email : String , password : String , history : List Navigation.Location , spin : Bool , page : Model.Page , api : String , jwttoken : Model.JwtToken , error : String , presses : List Char , payload : Result.Result Jwt.JwtError Auth.JwtPayload , user : Model.User }"
+      },
+      {
+        "name": "User",
+        "comment": " A user!\n",
+        "args": [],
+        "type": "{ id : String , email : String , username : String , firstName : String , lastName : String }"
       }
     ],
     "types": [
