@@ -24,7 +24,7 @@ type Msg
     = UpdateEmail String
     | UpdatePassword String
     | ChangePage Navigation.Location
-    | Login
+    | LoginSend
     | LoginResponse (Result Http.Error JwtToken)
     | Presses Char
 

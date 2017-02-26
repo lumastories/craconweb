@@ -25,7 +25,7 @@ update msg model =
             in
                 ( { model | history = location :: model.history, page = newPage }, Cmd.none )
 
-        Login ->
+        LoginSend ->
             let
                 cmd =
                     Http.send LoginResponse (postCreds model)

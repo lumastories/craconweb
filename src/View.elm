@@ -73,7 +73,7 @@ loginPage model =
                             , hr []
                                 []
                             , p [ class "control" ]
-                                [ button [ class loginButtonClass, onClick Login ] [ text "Let's Go!" ]
+                                [ button [ class loginButtonClass, onClick LoginSend ] [ text "Let's Go!" ]
                                 ]
                             ]
                         , p [ class "has-text-centered" ]
