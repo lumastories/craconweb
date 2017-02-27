@@ -3,9 +3,10 @@ module Main exposing (..)
 import Model
 import Update
 import View
-import Navigation
 import Keyboard exposing (..)
 import Char
+import RouteUrl
+import Router exposing (..)
 
 
 {-
@@ -17,10 +18,12 @@ import Char
 -}
 
 
-main : Program Model.Flags Model.Model Model.Msg
+main : RouteUrl.RouteUrlProgram Model.Flags Model.Model Model.Msg
 main =
-    Navigation.programWithFlags Model.ChangePage
-        { init = Model.init
+    RouteUrl.programWithFlags
+        { delta2url = delta2url
+        , location2messages = location2messages
+        , init = Model.init
         , view = View.view
         , update = Update.update
         , subscriptions = subscriptions

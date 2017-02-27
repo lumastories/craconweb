@@ -7,6 +7,7 @@ import Port
 import Json.Encode
 import Json.Decode
 import Json.Decode.Pipeline as JP
+import Jwt
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -18,7 +19,7 @@ update msg model =
         LoginPassword newPassword ->
             ( { model | password = newPassword }, Cmd.none )
 
-        LoginSend ->
+        TryLogin ->
             let
                 cmd =
                     Http.send LoginResponse (postCreds model)
@@ -29,11 +30,11 @@ update msg model =
             let
                 commands =
                     [ (Http.send UserResponse (getUser model))
+                    , Port.setJwt newToken
                     , Navigation.newUrl "#games"
-                    , Port.jwtAuthSave newToken.token
                     ]
             in
-                ( { model | jwttoken = newToken, spin = False, page = GamePage }, Cmd.batch commands )
+                ( { model | jwtencoded = newToken, spin = False, activePage = Games }, Cmd.batch commands )
 
         -- TODO Why is this glitching out even with good creds?
         -- FIXED temporary - token had expired! need to check locally `(Jwt.isExpired time token) returns Result Bool`
@@ -46,50 +47,46 @@ update msg model =
         UserResponse (Err err) ->
             ( { model | error = "Uh oh! User error." }, Cmd.none )
 
-        Presses code ->
-            let
-                ( loading, cmd ) =
-                    if code == '\x0D' then
-                        cmdForEnterOnPage model
-                    else
-                        ( False, Cmd.none )
-            in
-                ( { model | spin = loading }, cmd )
+        SetActivePage page ->
+            -- TODO, check if token is valid
+            -- { model | activePage = setActivePageAccess True page } ! []
+            model ! []
 
-        ChangePage location ->
+        CheckTokenExpiry now ->
             let
-                -- TODO change page to LoginPage if Token is bad
-                newPage =
-                    page location.hash
+                tokenExpired =
+                    case (Jwt.isExpired now model.jwtencoded) of
+                        Ok _ ->
+                            False
+
+                        Err _ ->
+                            True
             in
-                ( { model | history = location :: model.history, page = newPage }, Cmd.none )
+                model ! [ Port.removeJwt True ]
+
+        Presses _ ->
+            model ! []
 
 
 
 -- TODO better naming conventions for functions
+-- TODO use this function
 
 
-cmdForEnterOnPage : Model -> ( Bool, Cmd Msg )
-cmdForEnterOnPage model =
-    case model.page of
-        LoginPage ->
-            ( True, Http.send LoginResponse (postCreds model) )
+setActivePageAccess : Bool -> Page -> Page
+setActivePageAccess validToken desiredPage =
+    case validToken of
+        True ->
+            if desiredPage == Login then
+                AccessDenied
+            else
+                desiredPage
 
-        _ ->
-            ( False, Cmd.none )
-
-
-page : String -> Page
-page hash =
-    case hash of
-        "#games" ->
-            GamePage
-
-        "#badges" ->
-            BadgePage
-
-        _ ->
-            LoginPage
+        False ->
+            if desiredPage == Games then
+                AccessDenied
+            else
+                desiredPage
 
 
 
@@ -106,17 +103,17 @@ defaultHeaders model =
             [ Http.header "Accept" "application/json" ]
 
         authHeaders =
-            case model.jwttoken.token of
+            case model.jwtencoded of
                 "" ->
                     headers
 
                 _ ->
-                    (Http.header "Authorization" ("Bearer " ++ model.jwttoken.token)) :: headers
+                    (Http.header "Authorization" ("Bearer " ++ model.jwtencoded)) :: headers
     in
         authHeaders
 
 
-postCreds : Model -> Http.Request JwtToken
+postCreds : Model -> Http.Request String
 postCreds model =
     let
         body =
@@ -125,8 +122,9 @@ postCreds model =
         url =
             model.api ++ "/auth"
 
+        decoder : Json.Decode.Decoder String
         decoder =
-            decodeJwtToken
+            Json.Decode.field "token" (Json.Decode.string)
     in
         Http.request
             { method = "POST"
@@ -145,10 +143,21 @@ getUser model =
         body =
             encodeCreds model |> Http.jsonBody
 
-        -- TODO break this down on the whiteboard
-        url =
-            Result.withDefault "" (Result.map (\token -> model.api ++ "/user/" ++ token.sub) model.jwtpayload)
+        users =
+            model.api ++ "/user/"
 
+        sub =
+            Result.map .sub model.jwtdecoded
+
+        url =
+            case sub of
+                Ok userId ->
+                    users ++ userId
+
+                Err _ ->
+                    ""
+
+        -- TODO send an error Http.send
         decoder =
             decodeUser
     in
@@ -175,12 +184,6 @@ encodeCreds model =
         ]
 
 
-decodeJwtToken : Json.Decode.Decoder JwtToken
-decodeJwtToken =
-    JP.decode JwtToken
-        |> JP.required "token" (Json.Decode.string)
-
-
 decodeUser : Json.Decode.Decoder User
 decodeUser =
     JP.decode User
@@ -189,14 +192,3 @@ decodeUser =
         |> JP.required "email" (Json.Decode.string)
         |> JP.required "firstName" (Json.Decode.string)
         |> JP.required "lastName" (Json.Decode.string)
-
-
-encodeUser : User -> Json.Encode.Value
-encodeUser record =
-    Json.Encode.object
-        [ ( "id", Json.Encode.string <| record.id )
-        , ( "username", Json.Encode.string <| record.username )
-        , ( "email", Json.Encode.string <| record.email )
-        , ( "firstName", Json.Encode.string <| record.firstName )
-        , ( "lastName", Json.Encode.string <| record.lastName )
-        ]

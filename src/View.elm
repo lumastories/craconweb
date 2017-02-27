@@ -19,15 +19,18 @@ view : Model -> Html Msg
 view model =
     let
         page =
-            case model.page of
-                LoginPage ->
+            case model.activePage of
+                Login ->
                     loginPage model
 
-                GamePage ->
+                Games ->
                     gamesPage model
 
+                AccessDenied ->
+                    text "nah nah nah, you can't be here."
+
                 _ ->
-                    text "page coming soon"
+                    text "umm..."
     in
         div [] [ page ]
 
@@ -49,49 +52,62 @@ logo size =
 
 loginPage : Model -> Html Msg
 loginPage model =
-    let
-        logoWidth =
-            200
-
-        loginButtonClass =
-            case model.spin of
-                False ->
-                    "button is-dark"
-
-                True ->
-                    "button is-dark is-loading"
-    in
-        section []
-            [ div [ class "container" ]
-                [ div [ class "columns is-desktop" ]
-                    [ div [ class "column is-half is-offset-one-quarter" ]
-                        [ logo logoWidth
-                        , div [ class "box" ]
-                            [ label [ class "label" ]
-                                [ text "Email" ]
-                            , p [ class "control" ]
-                                [ input [ class "input", placeholder "Email", type_ "email", onInput LoginEmail ]
-                                    []
-                                ]
-                            , label [ class "label" ]
-                                [ text "Password" ]
-                            , p [ class "control" ]
-                                [ input [ class "input", placeholder "Password", type_ "password", onInput LoginPassword ]
-                                    []
-                                ]
-                            , hr []
-                                []
-                            , p [ class "control" ]
-                                [ button [ class loginButtonClass, onClick LoginSend ] [ text "Let's Go!" ]
-                                ]
-                            ]
-                        , p [ class "has-text-centered" ]
-                            [ em [] [ text model.error ]
-                            ]
+    section []
+        [ div [ class "container" ]
+            [ div [ class "columns is-desktop" ]
+                [ div [ class "column is-half is-offset-one-quarter" ]
+                    [ logo logoWidth
+                    , loginBoxForm model
+                    , p [ class "has-text-centered" ]
+                        [ em [] [ text model.error ]
                         ]
                     ]
                 ]
             ]
+        ]
+
+
+logoWidth : Int
+logoWidth =
+    200
+
+
+loginButtonClass : Bool -> String
+loginButtonClass spin =
+    case spin of
+        False ->
+            "button is-dark"
+
+        True ->
+            "button is-dark is-loading"
+
+
+loginBoxForm : Model -> Html Msg
+loginBoxForm model =
+    div [ class "box" ]
+        [ Html.form
+            [ onSubmit TryLogin
+            , action "javascript:void(0);"
+            ]
+            [ label [ class "label" ]
+                [ text "Email" ]
+            , p [ class "control" ]
+                [ input [ class "input", placeholder "Email", type_ "email", onInput LoginEmail ]
+                    []
+                ]
+            , label [ class "label" ]
+                [ text "Password" ]
+            , p [ class "control" ]
+                [ input [ class "input", placeholder "Password", type_ "password", onInput LoginPassword ]
+                    []
+                ]
+            , hr []
+                []
+            , p [ class "control" ]
+                [ button [ class <| loginButtonClass model.spin, onClick TryLogin ] [ text "Let's Go!" ]
+                ]
+            ]
+        ]
 
 
 gamesHeader : Model -> Html Msg
@@ -148,3 +164,12 @@ gamesPage model =
         [ gamesHeader model
         , gamesBody model
         ]
+
+
+
+--classByPage : Page -> Page -> Attribute a
+--classByPage page activePage =
+--    classList
+--        [ ( "item", True )
+--        , ( "active", page == activePage )
+--        ]

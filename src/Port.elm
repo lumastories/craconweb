@@ -1,4 +1,7 @@
 port module Port exposing (..)
 
 
-port jwtAuthSave : String -> Cmd msg
+port setJwt : String -> Cmd msg
+
+
+port removeJwt : Bool -> Cmd msg

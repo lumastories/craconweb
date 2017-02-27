@@ -1,7 +1,7 @@
 [
   {
     "name": "Model",
-    "comment": " This is the Model, where we model and initialize our data.\n\n# Data to bootstrap the app\n@docs Flags\n\n# JSON Web Token string to decode\n@docs JwtToken\n\n# How our application data should look\n@docs Model\n\n# Name, email, id of User\n@docs User\n\n# Messages to pass throughout the application\n@docs Msg\n\n# A page in the application\n@docs Page\n\n# Function that initializes the model with data\n@docs init\n\n\n",
+    "comment": " This is the Model, where we model and initialize our data.\n\n# Data to bootstrap the app\n@docs Flags\n\n# How our application data should look\n@docs Model\n\n# Name, email, id of User\n@docs User\n\n# Messages to pass throughout the application\n@docs Msg\n\n# A page in the application\n@docs Page\n\n# Function that initializes the model with data\n@docs init\n\n\n",
     "aliases": [
       {
         "name": "Flags",
@@ -10,16 +10,10 @@
         "type": "{ token : String }"
       },
       {
-        "name": "JwtToken",
-        "comment": " Represents a JSON Web Token string to be decoded\n",
-        "args": [],
-        "type": "{ token : String }"
-      },
-      {
         "name": "Model",
         "comment": " The data model for the entire application.\n\n",
         "args": [],
-        "type": "{ email : String , password : String , history : List Navigation.Location , spin : Bool , page : Model.Page , api : String , jwttoken : Model.JwtToken , jwtpayload : Result.Result Jwt.JwtError Auth.JwtPayload , error : String , presses : List Char , user : Model.User }"
+        "type": "{ email : String , password : String , spin : Bool , activePage : Model.Page , api : String , jwtencoded : String , jwtdecoded : Result.Result Jwt.JwtError Auth.JwtPayload , error : String , presses : List Char , user : Model.User }"
       },
       {
         "name": "User",
@@ -47,19 +41,13 @@
             ]
           ],
           [
-            "ChangePage",
-            [
-              "Navigation.Location"
-            ]
-          ],
-          [
-            "LoginSend",
+            "TryLogin",
             []
           ],
           [
             "LoginResponse",
             [
-              "Result.Result Http.Error Model.JwtToken"
+              "Result.Result Http.Error String"
             ]
           ],
           [
@@ -73,6 +61,18 @@
             [
               "Char"
             ]
+          ],
+          [
+            "SetActivePage",
+            [
+              "Model.Page"
+            ]
+          ],
+          [
+            "CheckTokenExpiry",
+            [
+              "Time.Time"
+            ]
           ]
         ]
       },
@@ -82,15 +82,23 @@
         "args": [],
         "cases": [
           [
-            "LoginPage",
+            "AccessDenied",
             []
           ],
           [
-            "GamePage",
+            "PageNotFound",
             []
           ],
           [
-            "BadgePage",
+            "Login",
+            []
+          ],
+          [
+            "Games",
+            []
+          ],
+          [
+            "Badges",
             []
           ]
         ]
@@ -100,7 +108,7 @@
       {
         "name": "init",
         "comment": " initialize the model with data\n",
-        "type": "Model.Flags -> Navigation.Location -> ( Model.Model, Platform.Cmd.Cmd Model.Msg )"
+        "type": "Model.Flags -> ( Model.Model, Platform.Cmd.Cmd Model.Msg )"
       }
     ],
     "generated-with-elm-version": "0.18.0"

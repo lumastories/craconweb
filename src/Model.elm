@@ -1,12 +1,9 @@
-module Model exposing (Model, User, Flags, JwtToken, Page(..), Msg(..), init)
+module Model exposing (Model, User, Flags, Page(..), Msg(..), init)
 
 {-| This is the Model, where we model and initialize our data.
 
 # Data to bootstrap the app
 @docs Flags
-
-# JSON Web Token string to decode
-@docs JwtToken
 
 # How our application data should look
 @docs Model
@@ -26,10 +23,11 @@ module Model exposing (Model, User, Flags, JwtToken, Page(..), Msg(..), init)
 
 -}
 
-import Navigation
 import Http
 import Jwt
 import Auth
+import Time exposing (Time)
+import Task
 
 
 {-| The data model for the entire application.
@@ -38,28 +36,26 @@ import Auth
 type alias Model =
     { email : String
     , password : String
-    , history : List Navigation.Location
     , spin : Bool
-    , page : Page
+    , activePage : Page
     , api : String
-    , jwttoken : JwtToken
-    , jwtpayload : Result Jwt.JwtError Auth.JwtPayload
+    , jwtencoded : String
+    , jwtdecoded : Result Jwt.JwtError Auth.JwtPayload
     , error : String
     , presses : List Char
     , user : User
     }
 
 
-initialModel : Flags -> Navigation.Location -> Model
-initialModel flags location =
+initialModel : Flags -> Model
+initialModel flags =
     { email = ""
     , password = ""
-    , history = [ location ]
     , spin = False
-    , page = LoginPage
-    , api = getApi location
-    , jwttoken = JwtToken flags.token
-    , jwtpayload = Jwt.decodeToken Auth.decodeJwtPayload flags.token
+    , activePage = Login
+    , api = "http://localhost:8680"
+    , jwtencoded = flags.token
+    , jwtdecoded = Jwt.decodeToken Auth.decodeJwtPayload flags.token
     , error = ""
     , presses = []
     , user = initialUser
@@ -94,19 +90,22 @@ Typically called from the View and handled by the Update to move the Model forwa
 type Msg
     = LoginEmail String
     | LoginPassword String
-    | ChangePage Navigation.Location
-    | LoginSend
-    | LoginResponse (Result Http.Error JwtToken)
+    | TryLogin
+    | LoginResponse (Result Http.Error String)
     | UserResponse (Result Http.Error User)
     | Presses Char
+    | SetActivePage Page
+    | CheckTokenExpiry Time
 
 
 {-| Represents where I am in the application
 -}
 type Page
-    = LoginPage
-    | GamePage
-    | BadgePage
+    = AccessDenied
+    | PageNotFound
+    | Login
+    | Games
+    | Badges
 
 
 {-| Represents what data I should start up with
@@ -116,37 +115,8 @@ type alias Flags =
     }
 
 
-{-| Represents a JSON Web Token string to be decoded
--}
-type alias JwtToken =
-    { token : String
-    }
-
-
 {-| initialize the model with data
 -}
-init : Flags -> Navigation.Location -> ( Model, Cmd Msg )
-init flags location =
-    ( initialModel flags location, Navigation.newUrl location.hash )
-
-
-{-| Converts the window.location into an API base. Currently only useful for
-development and if the API is located on port 81 of the same server.
-
-    getApi location == "http://localhost:8680"
--}
-getApi : Navigation.Location -> String
-getApi location =
-    let
-        logger =
-            Debug.log (toString location) "getApi location"
-    in
-        case location.hostname of
-            "localhost" ->
-                "http://" ++ location.hostname ++ ":8680"
-
-            "127.0.0.1" ->
-                "http://" ++ location.hostname ++ ":8680"
-
-            _ ->
-                "http://" ++ location.hostname ++ ":81"
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    ( initialModel flags, Task.perform CheckTokenExpiry Time.now )
