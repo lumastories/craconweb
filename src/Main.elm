@@ -5,25 +5,13 @@ import Update
 import View
 import Keyboard exposing (..)
 import Char
-import RouteUrl
-import Router exposing (..)
+import Navigation
 
 
-{-
-
-   On initialization we check localstorage for a JWT token
-   If it exists we store it in our model and...
-   Otherwise we store an empty string and...
-
--}
-
-
-main : RouteUrl.RouteUrlProgram Model.Flags Model.Model Model.Msg
+main : Program Model.Flags Model.Model Model.Msg
 main =
-    RouteUrl.programWithFlags
-        { delta2url = delta2url
-        , location2messages = location2messages
-        , init = Model.init
+    Navigation.programWithFlags Model.OnLocationChange
+        { init = Model.init
         , view = View.view
         , update = Update.update
         , subscriptions = subscriptions

@@ -7,16 +7,29 @@ import Port
 import Json.Encode
 import Json.Decode
 import Json.Decode.Pipeline as JP
-import Jwt
+import Navigation
+import Routing exposing (..)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        LoginEmail newEmail ->
+        -- Routing
+        ChangeLocation path ->
+            ( { model | changes = model.changes + 1 }, Navigation.newUrl path )
+
+        OnLocationChange location ->
+            let
+                newRoute =
+                    parseLocation location
+            in
+                ( { model | activeRoute = newRoute }, Cmd.none )
+
+        -- Actions
+        ChangeEmail newEmail ->
             ( { model | email = newEmail }, Cmd.none )
 
-        LoginPassword newPassword ->
+        ChangePassword newPassword ->
             ( { model | password = newPassword }, Cmd.none )
 
         TryLogin ->
@@ -26,67 +39,27 @@ update msg model =
             in
                 ( { model | spin = True }, cmd )
 
+        -- HTTP Responses
         LoginResponse (Ok newToken) ->
             let
                 commands =
                     [ (Http.send UserResponse (getUser model))
                     , Port.setJwt newToken
-                    , Navigation.newUrl "#games"
                     ]
             in
-                ( { model | jwtencoded = newToken, spin = False, activePage = Games }, Cmd.batch commands )
+                ( { model | jwtencoded = newToken, spin = False }, Cmd.batch commands )
 
-        -- TODO Why is this glitching out even with good creds?
-        -- FIXED temporary - token had expired! need to check locally `(Jwt.isExpired time token) returns Result Bool`
         LoginResponse (Err err) ->
             ( { model | spin = False, error = "Uh oh! Try again." }, Cmd.none )
 
         UserResponse (Ok newUser) ->
-            ( { model | user = newUser }, Cmd.none )
+            ( { model | user = newUser, activeRoute = HomeRoute }, Navigation.newUrl "/" )
 
         UserResponse (Err err) ->
             ( { model | error = "Uh oh! User error." }, Cmd.none )
 
-        SetActivePage page ->
-            -- TODO, check if token is valid
-            -- { model | activePage = setActivePageAccess True page } ! []
-            model ! []
-
-        CheckTokenExpiry now ->
-            let
-                tokenExpired =
-                    case (Jwt.isExpired now model.jwtencoded) of
-                        Ok _ ->
-                            False
-
-                        Err _ ->
-                            True
-            in
-                model ! [ Port.removeJwt True ]
-
         Presses _ ->
             model ! []
-
-
-
--- TODO better naming conventions for functions
--- TODO use this function
-
-
-setActivePageAccess : Bool -> Page -> Page
-setActivePageAccess validToken desiredPage =
-    case validToken of
-        True ->
-            if desiredPage == Login then
-                AccessDenied
-            else
-                desiredPage
-
-        False ->
-            if desiredPage == Games then
-                AccessDenied
-            else
-                desiredPage
 
 
 

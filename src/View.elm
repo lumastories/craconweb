@@ -4,6 +4,7 @@ import Html exposing (..)
 import Model exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Routing exposing (..)
 
 
 -- TODO add main menu with a link to instructions page (then, Badges, Settings, etc.)
@@ -19,18 +20,21 @@ view : Model -> Html Msg
 view model =
     let
         page =
-            case model.activePage of
-                Login ->
+            case model.activeRoute of
+                LoginRoute ->
                     loginPage model
 
-                Games ->
+                HomeRoute ->
                     gamesPage model
 
-                AccessDenied ->
-                    text "nah nah nah, you can't be here."
+                AccessDeniedRoute ->
+                    text "Access Denied route"
 
-                _ ->
-                    text "umm..."
+                NotFoundRoute ->
+                    text "umm... 404!"
+
+                BadgesRoute ->
+                    text "BADGES. Coming soon... ;)"
     in
         div [] [ page ]
 
@@ -55,7 +59,7 @@ loginPage model =
     section []
         [ div [ class "container" ]
             [ div [ class "columns is-desktop" ]
-                [ div [ class "column is-half is-offset-one-quarter" ]
+                [ div [ class "column is-half is-offset-one-quarter", marginS ]
                     [ logo logoWidth
                     , loginBoxForm model
                     , p [ class "has-text-centered" ]
@@ -82,6 +86,11 @@ loginButtonClass spin =
             "button is-dark is-loading"
 
 
+marginS : Attribute msg
+marginS =
+    style [ ( "margin", ".7em" ) ]
+
+
 loginBoxForm : Model -> Html Msg
 loginBoxForm model =
     div [ class "box" ]
@@ -92,13 +101,13 @@ loginBoxForm model =
             [ label [ class "label" ]
                 [ text "Email" ]
             , p [ class "control" ]
-                [ input [ class "input", placeholder "Email", type_ "email", onInput LoginEmail ]
+                [ input [ class "input", placeholder "Email", type_ "email", onInput ChangeEmail ]
                     []
                 ]
             , label [ class "label" ]
                 [ text "Password" ]
             , p [ class "control" ]
-                [ input [ class "input", placeholder "Password", type_ "password", onInput LoginPassword ]
+                [ input [ class "input", placeholder "Password", type_ "password", onInput ChangePassword ]
                     []
                 ]
             , hr []

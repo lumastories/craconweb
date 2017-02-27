@@ -1,4 +1,4 @@
-module Model exposing (Model, User, Flags, Page(..), Msg(..), init)
+module Model exposing (Model, User, Flags, Msg(..), init)
 
 {-| This is the Model, where we model and initialize our data.
 
@@ -14,8 +14,6 @@ module Model exposing (Model, User, Flags, Page(..), Msg(..), init)
 # Messages to pass throughout the application
 @docs Msg
 
-# A page in the application
-@docs Page
 
 # Function that initializes the model with data
 @docs init
@@ -26,8 +24,8 @@ module Model exposing (Model, User, Flags, Page(..), Msg(..), init)
 import Http
 import Jwt
 import Auth
-import Time exposing (Time)
-import Task
+import Navigation
+import Routing exposing (..)
 
 
 {-| The data model for the entire application.
@@ -37,7 +35,8 @@ type alias Model =
     { email : String
     , password : String
     , spin : Bool
-    , activePage : Page
+    , activeRoute : Route
+    , changes : Int
     , api : String
     , jwtencoded : String
     , jwtdecoded : Result Jwt.JwtError Auth.JwtPayload
@@ -47,12 +46,15 @@ type alias Model =
     }
 
 
-initialModel : Flags -> Model
-initialModel flags =
+initialModel : Flags -> Navigation.Location -> Model
+initialModel flags location =
     { email = ""
     , password = ""
     , spin = False
-    , activePage = Login
+    , activeRoute =
+        -- initial Route
+        parseLocation location
+    , changes = 0
     , api = "http://localhost:8680"
     , jwtencoded = flags.token
     , jwtdecoded = Jwt.decodeToken Auth.decodeJwtPayload flags.token
@@ -88,24 +90,14 @@ Typically called from the View and handled by the Update to move the Model forwa
 
 -}
 type Msg
-    = LoginEmail String
-    | LoginPassword String
+    = ChangeEmail String
+    | ChangePassword String
     | TryLogin
     | LoginResponse (Result Http.Error String)
     | UserResponse (Result Http.Error User)
     | Presses Char
-    | SetActivePage Page
-    | CheckTokenExpiry Time
-
-
-{-| Represents where I am in the application
--}
-type Page
-    = AccessDenied
-    | PageNotFound
-    | Login
-    | Games
-    | Badges
+    | ChangeLocation String
+    | OnLocationChange Navigation.Location
 
 
 {-| Represents what data I should start up with
@@ -117,6 +109,6 @@ type alias Flags =
 
 {-| initialize the model with data
 -}
-init : Flags -> ( Model, Cmd Msg )
-init flags =
-    ( initialModel flags, Task.perform CheckTokenExpiry Time.now )
+init : Flags -> Navigation.Location -> ( Model, Cmd Msg )
+init flags location =
+    ( initialModel flags location, Cmd.none )
