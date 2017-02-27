@@ -17,12 +17,6 @@ In `Model.elm`, we contain the actual model for the view state of our program. S
 
 Inside `View.elm`, we define the view for our model and set up any event handlers we need.
 
-
-## TODO
- - POST {username:"admin@example.com",password"insecure"} to `/api/auth`
- - Store the token
- - Then Navigate to /#games
- - and get user `:id` from jwt and make another request to `/api/user/:id` with `Authentication Bearer <token>`
  
 ## Notes
 
