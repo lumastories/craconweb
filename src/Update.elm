@@ -9,6 +9,7 @@ import Json.Decode
 import Json.Decode.Pipeline as JP
 import Navigation
 import Routing exposing (..)
+import Thing
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -44,7 +45,7 @@ update msg model =
             let
                 commands =
                     [ (Http.send UserResponse (getUser model))
-                    , Port.setJwt newToken
+                    , Port.setItem ( "token", newToken )
                     ]
             in
                 ( { model | jwtencoded = newToken, spin = False }, Cmd.batch commands )
@@ -53,7 +54,13 @@ update msg model =
             ( { model | spin = False, error = "Uh oh! Try again." }, Cmd.none )
 
         UserResponse (Ok newUser) ->
-            ( { model | user = newUser, activeRoute = HomeRoute }, Navigation.newUrl "/" )
+            let
+                cmds =
+                    [ Port.setItem ( "firstName", newUser.firstName )
+                    , Navigation.newUrl "/"
+                    ]
+            in
+                ( { model | user = newUser, activeRoute = HomeRoute }, Cmd.batch cmds )
 
         UserResponse (Err err) ->
             ( { model | error = "Uh oh! User error." }, Cmd.none )
@@ -110,7 +117,7 @@ postCreds model =
             }
 
 
-getUser : Model -> Http.Request User
+getUser : Model -> Http.Request Thing.User
 getUser model =
     let
         body =
@@ -157,9 +164,9 @@ encodeCreds model =
         ]
 
 
-decodeUser : Json.Decode.Decoder User
+decodeUser : Json.Decode.Decoder Thing.User
 decodeUser =
-    JP.decode User
+    JP.decode Thing.User
         |> JP.required "id" (Json.Decode.string)
         |> JP.required "username" (Json.Decode.string)
         |> JP.required "email" (Json.Decode.string)

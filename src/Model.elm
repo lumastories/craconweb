@@ -1,4 +1,4 @@
-module Model exposing (Model, User, Flags, Msg(..), init)
+module Model exposing (Model, Flags, Msg(..), init)
 
 {-| This is the Model, where we model and initialize our data.
 
@@ -7,9 +7,6 @@ module Model exposing (Model, User, Flags, Msg(..), init)
 
 # How our application data should look
 @docs Model
-
-# Name, email, id of User
-@docs User
 
 # Messages to pass throughout the application
 @docs Msg
@@ -26,6 +23,7 @@ import Jwt
 import Auth
 import Navigation
 import Routing exposing (..)
+import Thing
 
 
 {-| The data model for the entire application.
@@ -42,7 +40,7 @@ type alias Model =
     , jwtdecoded : Result Jwt.JwtError Auth.JwtPayload
     , error : String
     , presses : List Char
-    , user : User
+    , user : Thing.User
     }
 
 
@@ -51,37 +49,24 @@ initialModel flags location =
     { email = ""
     , password = ""
     , spin = False
-    , activeRoute =
-        -- initial Route
-        parseLocation location
+    , activeRoute = parseLocation location
     , changes = 0
     , api = "http://localhost:8680"
     , jwtencoded = flags.token
     , jwtdecoded = Jwt.decodeToken Auth.decodeJwtPayload flags.token
     , error = ""
     , presses = []
-    , user = initialUser
+    , user = initialUser flags.firstName
     }
 
 
-initialUser : User
-initialUser =
+initialUser : String -> Thing.User
+initialUser firstName =
     { id = ""
     , username = ""
     , email = ""
-    , firstName = ""
+    , firstName = firstName
     , lastName = ""
-    }
-
-
-{-| A user!
--}
-type alias User =
-    { id : String
-    , email : String
-    , username : String
-    , firstName : String
-    , lastName : String
     }
 
 
@@ -94,7 +79,7 @@ type Msg
     | ChangePassword String
     | TryLogin
     | LoginResponse (Result Http.Error String)
-    | UserResponse (Result Http.Error User)
+    | UserResponse (Result Http.Error Thing.User)
     | Presses Char
     | ChangeLocation String
     | OnLocationChange Navigation.Location
@@ -104,6 +89,7 @@ type Msg
 -}
 type alias Flags =
     { token : String
+    , firstName : String
     }
 
 
@@ -111,4 +97,13 @@ type alias Flags =
 -}
 init : Flags -> Navigation.Location -> ( Model, Cmd Msg )
 init flags location =
-    ( initialModel flags location, Cmd.none )
+    let
+        -- if token is valid, populate the user
+        -- else Navigation.newUrl "/login"
+        commands =
+            [ Cmd.none ]
+
+        --[ (Http.send UserResponse (getUser flags.sub))
+        --]
+    in
+        ( initialModel flags location, Cmd.batch commands )

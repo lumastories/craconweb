@@ -1,7 +1,13 @@
 port module Port exposing (..)
 
+-- Ports to localStorage
 
-port setJwt : String -> Cmd msg
+
+port removeItem : String -> Cmd msg
 
 
-port removeJwt : Bool -> Cmd msg
+type alias KeyValue =
+    ( String, String )
+
+
+port setItem : KeyValue -> Cmd msg

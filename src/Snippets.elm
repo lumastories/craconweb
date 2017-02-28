@@ -4,7 +4,7 @@
 module Main exposing (..)
 
 
-encodeUser : User -> Json.Encode.Value
+encodeUser : Thing.User -> Json.Encode.Value
 encodeUser user =
     Json.Encode.object
         [ ( "id", Json.Encode.string <| user.id )

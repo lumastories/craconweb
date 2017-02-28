@@ -18,21 +18,33 @@
 
     <script type="text/javascript">
         
-        // Initialize app with stored auth token (a jwt)
-        // Or an empty string if it does not exist
-        var jwt = localStorage.getItem('jwt-token');
-        var flags = {"token": jwt ? jwt : ""}
-        //var flags = {"token": "totallybullshittoken"}
+        /* Initialize app with:
+         - jwt
+         - firstName
+         - ?
+         */
+
+        function fetch(key) {
+            var value = localStorage.getItem(key);
+            return value ? value : "";
+        }
+
+        var flags = {"token": fetch("token")
+                    ,"firstName": fetch("firstName")
+                    }
+
         var app = Elm.Main.fullscreen(flags);
 
-        // Receive a token to store locally
-        app.ports.setJwt.subscribe(function(token) {
-            localStorage.setItem('jwt-token', token);
+        app.ports.setItem.subscribe(function(keyValue) {
+            var [key, value] = keyValue;
+            localStorage.setItem(key, value);
         });
-        
-        app.ports.removeJwt.subscribe(function(goodfornothingbool) {
-            localStorage.removeItem('jwt-token');
+
+        app.ports.removeItem.subscribe(function(key) {
+            localStorage.removeItem(key);
         });
+
+
     </script>
 
 </html>

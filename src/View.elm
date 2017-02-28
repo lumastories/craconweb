@@ -59,7 +59,7 @@ loginPage model =
     section []
         [ div [ class "container" ]
             [ div [ class "columns is-desktop" ]
-                [ div [ class "column is-half is-offset-one-quarter", marginS ]
+                [ div [ class "column is-half is-offset-one-quarter" ]
                     [ logo logoWidth
                     , loginBoxForm model
                     , p [ class "has-text-centered" ]
@@ -93,7 +93,7 @@ marginS =
 
 loginBoxForm : Model -> Html Msg
 loginBoxForm model =
-    div [ class "box" ]
+    div [ class "box", marginS ]
         [ Html.form
             [ onSubmit TryLogin
             , action "javascript:void(0);"
@@ -146,7 +146,10 @@ gamesGrid model =
         , div [ class "column" ] [ text "Dot Probe" ]
         , div [ class "column" ] [ text "Go/No-Go" ]
         , div [ class "column" ] [ text "Stop Signal" ]
-        , div [ class "column" ] [ text "Respond Signal" ]
+        , div [ class "column" ]
+            [ text "Respond Signal"
+            , a [ href loginPath, onLinkClick <| ChangeLocation loginPath ] [ text "Go to login" ]
+            ]
         ]
 
 

@@ -1,4 +1,4 @@
-module Routing exposing (parseLocation, homePath, loginPath, Route(..))
+module Routing exposing (onLinkClick, parseLocation, homePath, loginPath, Route(..))
 
 import Navigation
 import UrlParser
@@ -41,10 +41,12 @@ type Route
     | BadgesRoute
 
 
+homePath : String
 homePath =
     "/"
 
 
+loginPath : String
 loginPath =
     "/login"
 
