@@ -3,23 +3,14 @@ module Main exposing (..)
 import Model
 import Update
 import View
-import Navigation
 import Keyboard exposing (..)
 import Char
-
-
-{-
-
-   On initialization we check localstorage for a JWT token
-   If it exists we store it in our model and...
-   Otherwise we store an empty string and...
-
--}
+import Navigation
 
 
 main : Program Model.Flags Model.Model Model.Msg
 main =
-    Navigation.programWithFlags Model.ChangePage
+    Navigation.programWithFlags Model.OnUpdateLocation
         { init = Model.init
         , view = View.view
         , update = Update.update

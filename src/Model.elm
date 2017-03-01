@@ -1,12 +1,9 @@
-module Model exposing (Model, Flags, JwtToken, Page(..), Msg(..), init)
+module Model exposing (Model, Flags, Msg(..), init)
 
 {-| This is the Model, where we model and initialize our data.
 
 # Data to bootstrap the app
 @docs Flags
-
-# JSON Web Token string to decode
-@docs JwtToken
 
 # How our application data should look
 @docs Model
@@ -14,8 +11,6 @@ module Model exposing (Model, Flags, JwtToken, Page(..), Msg(..), init)
 # Messages to pass throughout the application
 @docs Msg
 
-# A page in the application
-@docs Page
 
 # Function that initializes the model with data
 @docs init
@@ -23,10 +18,12 @@ module Model exposing (Model, Flags, JwtToken, Page(..), Msg(..), init)
 
 -}
 
-import Navigation
 import Http
 import Jwt
 import Auth
+import Navigation
+import Routing exposing (..)
+import Thing
 
 
 {-| The data model for the entire application.
@@ -35,14 +32,16 @@ import Auth
 type alias Model =
     { email : String
     , password : String
-    , history : List Navigation.Location
     , spin : Bool
-    , page : Page
+    , activeRoute : Route
+    , changes : Int
     , api : String
-    , jwttoken : JwtToken
+    , jwtencoded : String
+    , jwtdecoded : Result Jwt.JwtError Auth.JwtPayload
     , error : String
     , presses : List Char
-    , payload : Result Jwt.JwtError Auth.JwtPayload
+    , user : Thing.User
+    , menuActive : Bool
     }
 
 
@@ -50,14 +49,26 @@ initialModel : Flags -> Navigation.Location -> Model
 initialModel flags location =
     { email = ""
     , password = ""
-    , history = [ location ]
     , spin = False
-    , page = LoginPage
-    , api = getApi location
-    , jwttoken = JwtToken flags.token
+    , activeRoute = parseLocation location
+    , changes = 0
+    , api = "http://localhost:8680"
+    , jwtencoded = flags.token
+    , jwtdecoded = Jwt.decodeToken Auth.decodeJwtPayload flags.token
     , error = ""
     , presses = []
-    , payload = Jwt.decodeToken Auth.decodeJwtPayload flags.token
+    , user = initialUser flags.firstName
+    , menuActive = False
+    }
+
+
+initialUser : String -> Thing.User
+initialUser firstName =
+    { id = ""
+    , username = ""
+    , email = ""
+    , firstName = firstName
+    , lastName = ""
     }
 
 
@@ -66,33 +77,22 @@ Typically called from the View and handled by the Update to move the Model forwa
 
 -}
 type Msg
-    = LoginEmail String
-    | LoginPassword String
-    | ChangePage Navigation.Location
-    | LoginSend
-    | LoginResponse (Result Http.Error JwtToken)
+    = UpdateEmail String
+    | UpdatePassword String
+    | TryLogin
+    | LoginResponse (Result Http.Error String)
+    | UserResponse (Result Http.Error Thing.User)
     | Presses Char
-
-
-{-| Represents where I am in the application
--}
-type Page
-    = LoginPage
-    | GamePage
-    | BadgePage
+    | UpdateLocation String
+    | OnUpdateLocation Navigation.Location
+    | MainMenu Bool
 
 
 {-| Represents what data I should start up with
 -}
 type alias Flags =
     { token : String
-    }
-
-
-{-| Represents a JSON Web Token string to be decoded
--}
-type alias JwtToken =
-    { token : String
+    , firstName : String
     }
 
 
@@ -100,26 +100,13 @@ type alias JwtToken =
 -}
 init : Flags -> Navigation.Location -> ( Model, Cmd Msg )
 init flags location =
-    ( initialModel flags location, Navigation.newUrl location.hash )
-
-
-{-| Converts the window.location into an API base. Currently only useful for
-development and if the API is located on port 81 of the same server.
-
-    getApi location == "http://localhost:8680"
--}
-getApi : Navigation.Location -> String
-getApi location =
     let
-        logger =
-            Debug.log (toString location) "getApi location"
+        -- if token is valid, populate the user
+        -- else Navigation.newUrl "/login"
+        commands =
+            [ Cmd.none ]
+
+        --[ (Http.send UserResponse (getUser flags.sub))
+        --]
     in
-        case location.hostname of
-            "localhost" ->
-                "http://" ++ location.hostname ++ ":8680"
-
-            "127.0.0.1" ->
-                "http://" ++ location.hostname ++ ":8680"
-
-            _ ->
-                "http://" ++ location.hostname ++ ":81"
+        ( initialModel flags location, Cmd.batch commands )
