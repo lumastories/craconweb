@@ -1,7 +1,7 @@
-module Routing exposing (onLinkClick, parseLocation, homePath, loginPath, Route(..))
+module Routing exposing (..)
 
 import Navigation
-import UrlParser
+import UrlParser exposing (..)
 import Json.Decode as Decode
 import Html.Events exposing (onWithOptions)
 import Html exposing (Attribute)
@@ -38,7 +38,10 @@ type Route
     | NotFoundRoute
     | LoginRoute
     | HomeRoute
+    | GameRoute String
     | BadgesRoute
+    | SettingsRoute
+    | InstructionsRoute
 
 
 homePath : String
@@ -49,6 +52,26 @@ homePath =
 loginPath : String
 loginPath =
     "/login"
+
+
+logoutPath : String
+logoutPath =
+    "/logout"
+
+
+badgesPath : String
+badgesPath =
+    "/badges"
+
+
+settingsPath : String
+settingsPath =
+    "/settings"
+
+
+instructionsPath : String
+instructionsPath =
+    "/instructions"
 
 
 
@@ -63,5 +86,8 @@ matchers =
     UrlParser.oneOf
         [ UrlParser.map HomeRoute UrlParser.top
         , UrlParser.map LoginRoute (UrlParser.s "login")
-          -- TODO add to this, also use #
+        , UrlParser.map GameRoute (UrlParser.s "game" </> UrlParser.string)
+        , UrlParser.map BadgesRoute (UrlParser.s "badges")
+        , UrlParser.map SettingsRoute (UrlParser.s "settings")
+        , UrlParser.map InstructionsRoute (UrlParser.s "instructions")
         ]

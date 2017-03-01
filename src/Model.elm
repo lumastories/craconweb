@@ -41,6 +41,7 @@ type alias Model =
     , error : String
     , presses : List Char
     , user : Thing.User
+    , menuActive : Bool
     }
 
 
@@ -57,6 +58,7 @@ initialModel flags location =
     , error = ""
     , presses = []
     , user = initialUser flags.firstName
+    , menuActive = False
     }
 
 
@@ -75,14 +77,15 @@ Typically called from the View and handled by the Update to move the Model forwa
 
 -}
 type Msg
-    = ChangeEmail String
-    | ChangePassword String
+    = UpdateEmail String
+    | UpdatePassword String
     | TryLogin
     | LoginResponse (Result Http.Error String)
     | UserResponse (Result Http.Error Thing.User)
     | Presses Char
-    | ChangeLocation String
-    | OnLocationChange Navigation.Location
+    | UpdateLocation String
+    | OnUpdateLocation Navigation.Location
+    | MainMenu Bool
 
 
 {-| Represents what data I should start up with

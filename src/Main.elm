@@ -10,7 +10,7 @@ import Navigation
 
 main : Program Model.Flags Model.Model Model.Msg
 main =
-    Navigation.programWithFlags Model.OnLocationChange
+    Navigation.programWithFlags Model.OnUpdateLocation
         { init = Model.init
         , view = View.view
         , update = Update.update

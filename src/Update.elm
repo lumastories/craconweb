@@ -16,21 +16,21 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         -- Routing
-        ChangeLocation path ->
+        UpdateLocation path ->
             ( { model | changes = model.changes + 1 }, Navigation.newUrl path )
 
-        OnLocationChange location ->
+        OnUpdateLocation location ->
             let
                 newRoute =
                     parseLocation location
             in
-                ( { model | activeRoute = newRoute }, Cmd.none )
+                ( { model | activeRoute = newRoute, menuActive = False }, Cmd.none )
 
         -- Actions
-        ChangeEmail newEmail ->
+        UpdateEmail newEmail ->
             ( { model | email = newEmail }, Cmd.none )
 
-        ChangePassword newPassword ->
+        UpdatePassword newPassword ->
             ( { model | password = newPassword }, Cmd.none )
 
         TryLogin ->
@@ -67,6 +67,9 @@ update msg model =
 
         Presses _ ->
             model ! []
+
+        MainMenu active ->
+            ( { model | menuActive = active }, Cmd.none )
 
 
 
