@@ -51,7 +51,11 @@ update msg model =
                 ( { model | jwtencoded = newToken, spin = False }, Cmd.batch commands )
 
         LoginResponse (Err err) ->
-            ( { model | spin = False, error = "Uh oh! Try again." }, Cmd.none )
+            let
+                l =
+                    Debug.log "err" (toString err)
+            in
+                ( { model | spin = False, error = "Auth related error" }, Cmd.none )
 
         UserResponse (Ok newUser) ->
             let
@@ -63,13 +67,27 @@ update msg model =
                 ( { model | user = newUser, activeRoute = HomeRoute }, Cmd.batch cmds )
 
         UserResponse (Err err) ->
-            ( { model | error = "Uh oh! User error." }, Cmd.none )
+            let
+                l =
+                    Debug.log "err" (toString err) 1
+            in
+                ( { model | error = "User related error" }, Cmd.none )
 
         Presses _ ->
             model ! []
 
         MainMenu active ->
             ( { model | menuActive = active }, Cmd.none )
+
+
+
+-- TODO decode json, ask for human friendly errors? Or Not
+-- TODO this should probably only happen in development, otherwise
+-- process error through a case and return helpful errors for the user.
+
+
+humanizeErr err =
+    toString err
 
 
 
