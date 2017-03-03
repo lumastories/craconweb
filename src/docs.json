@@ -1,25 +1,19 @@
 [
   {
     "name": "Model",
-    "comment": " This is the Model, where we model and initialize our data.\n\n# Data to bootstrap the app\n@docs Flags\n\n# How our application data should look\n@docs Model\n\n# Name, email, id of User\n@docs User\n\n# Messages to pass throughout the application\n@docs Msg\n\n\n# Function that initializes the model with data\n@docs init\n\n\n",
+    "comment": " This is the Model, where we model and initialize our data.\n\n# Data to bootstrap the app\n@docs Flags\n\n# How our application data should look\n@docs Model\n\n# Messages to pass throughout the application\n@docs Msg\n\n\n# Function that initializes the model with data\n@docs init\n\n\n",
     "aliases": [
       {
         "name": "Flags",
         "comment": " Represents what data I should start up with\n",
         "args": [],
-        "type": "{ token : String }"
+        "type": "{ token : String, firstName : String }"
       },
       {
         "name": "Model",
         "comment": " The data model for the entire application.\n\n",
         "args": [],
-        "type": "{ email : String , password : String , spin : Bool , activeRoute : Routing.Route , changes : Int , api : String , jwtencoded : String , jwtdecoded : Result.Result Jwt.JwtError Auth.JwtPayload , error : String , presses : List Char , user : Model.User }"
-      },
-      {
-        "name": "User",
-        "comment": " A user!\n",
-        "args": [],
-        "type": "{ id : String , email : String , username : String , firstName : String , lastName : String }"
+        "type": "{ email : String , password : String , spin : Bool , activeRoute : Routing.Route , changes : Int , api : String , jwtencoded : String , jwtdecoded : Result.Result Jwt.JwtError Auth.JwtPayload , error : String , presses : List Char , user : Thing.User , menuIsActive : Bool }"
       }
     ],
     "types": [
@@ -29,13 +23,13 @@
         "args": [],
         "cases": [
           [
-            "ChangeEmail",
+            "UpdateEmail",
             [
               "String"
             ]
           ],
           [
-            "ChangePassword",
+            "UpdatePassword",
             [
               "String"
             ]
@@ -53,7 +47,7 @@
           [
             "UserResponse",
             [
-              "Result.Result Http.Error Model.User"
+              "Result.Result Http.Error Thing.User"
             ]
           ],
           [
@@ -63,15 +57,21 @@
             ]
           ],
           [
-            "ChangeLocation",
+            "UpdateLocation",
             [
               "String"
             ]
           ],
           [
-            "OnLocationChange",
+            "OnUpdateLocation",
             [
               "Navigation.Location"
+            ]
+          ],
+          [
+            "MainMenu",
+            [
+              "Bool"
             ]
           ]
         ]

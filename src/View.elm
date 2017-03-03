@@ -168,7 +168,7 @@ homePageHeader model =
                     [ class "subtitle" ]
                     [ text "Nice to see you" ]
                 , mainMenuButton
-                , mainMenu model.activeRoute model.menuActive
+                , mainMenu model.activeRoute model.menuIsActive
                 ]
             ]
         ]
@@ -318,12 +318,13 @@ settingsPage model =
 gamePage : Model -> String -> Html Msg
 gamePage model gameSlug =
     section []
-        [ homePageHeader model
-        , section
+        [ section
             [ class "section" ]
             [ div
                 [ class "container" ]
-                [ h1 [ class "title is-1" ] [ text "Game" ]
+                [ mainMenuButton
+                , mainMenu model.activeRoute model.menuIsActive
+                , h1 [ class "title is-1" ] [ text "Game" ]
                 , h3 [] [ text <| "You are on game: " ++ gameSlug ]
                 ]
             ]

@@ -34,6 +34,8 @@
                     ,"firstName": fetch("firstName")
                     }
 
+        console.log(flags);
+
         var app = Elm.Main.fullscreen(flags);
 
         app.ports.setItem.subscribe(function(keyValue) {

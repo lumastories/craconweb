@@ -41,7 +41,7 @@ type alias Model =
     , error : String
     , presses : List Char
     , user : Thing.User
-    , menuActive : Bool
+    , menuIsActive : Bool
     }
 
 
@@ -58,7 +58,7 @@ initialModel flags location =
     , error = ""
     , presses = []
     , user = initialUser flags.firstName
-    , menuActive = False
+    , menuIsActive = False
     }
 
 

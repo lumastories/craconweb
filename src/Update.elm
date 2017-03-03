@@ -24,7 +24,7 @@ update msg model =
                 newRoute =
                     parseLocation location
             in
-                ( { model | activeRoute = newRoute, menuActive = False }, Cmd.none )
+                ( { model | activeRoute = newRoute, menuIsActive = False }, Cmd.none )
 
         -- Actions
         UpdateEmail newEmail ->
@@ -69,7 +69,7 @@ update msg model =
         UserResponse (Err err) ->
             let
                 l =
-                    Debug.log "err" (toString err) 1
+                    Debug.log "err" (toString err)
             in
                 ( { model | error = "User related error" }, Cmd.none )
 
@@ -77,7 +77,7 @@ update msg model =
             model ! []
 
         MainMenu active ->
-            ( { model | menuActive = active }, Cmd.none )
+            ( { model | menuIsActive = active }, Cmd.none )
 
 
 
