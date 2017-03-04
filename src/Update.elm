@@ -76,8 +76,44 @@ update msg model =
         Presses _ ->
             model ! []
 
-        MainMenu active ->
-            ( { model | menuIsActive = active }, Cmd.none )
+        MainMenuToggle ->
+            let
+                active =
+                    if model.menuIsActive then
+                        False
+                    else
+                        True
+            in
+                ( { model | menuIsActive = active }, Cmd.none )
+
+        Logout ->
+            let
+                cmds =
+                    [ Port.clearLocalStorage True
+                    , Navigation.newUrl "/login"
+                    ]
+
+                emptyFlags =
+                    { token = ""
+                    , firstName = ""
+                    }
+            in
+                ( initialModel emptyFlags emptyLocation, Cmd.batch cmds )
+
+
+emptyLocation =
+    { href = ""
+    , host = ""
+    , hostname = ""
+    , protocol = ""
+    , origin = ""
+    , port_ = ""
+    , pathname = ""
+    , search = ""
+    , hash = ""
+    , username = ""
+    , password = ""
+    }
 
 
 
@@ -129,7 +165,7 @@ postCreds model =
     in
         Http.request
             { method = "POST"
-            , headers = defaultHeaders model
+            , headers = []
             , url = url
             , body = body
             , expect = Http.expectJson decoder

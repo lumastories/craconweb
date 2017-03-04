@@ -1,7 +1,7 @@
 [
   {
     "name": "Model",
-    "comment": " This is the Model, where we model and initialize our data.\n\n# Data to bootstrap the app\n@docs Flags\n\n# How our application data should look\n@docs Model\n\n# Messages to pass throughout the application\n@docs Msg\n\n\n# Function that initializes the model with data\n@docs init\n\n\n",
+    "comment": " This is the Model, where we model and initialize our data.\n\n# Data to bootstrap the app\n@docs Flags\n\n# How our application data should look\n@docs Model\n\n# Messages to pass throughout the application\n@docs Msg\n\n\n# Function that initializes the model with data\n@docs init\n\n# initial model data\n@docs initialModel\n\n",
     "aliases": [
       {
         "name": "Flags",
@@ -13,7 +13,7 @@
         "name": "Model",
         "comment": " The data model for the entire application.\n\n",
         "args": [],
-        "type": "{ email : String , password : String , spin : Bool , activeRoute : Routing.Route , changes : Int , api : String , jwtencoded : String , jwtdecoded : Result.Result Jwt.JwtError Auth.JwtPayload , error : String , presses : List Char , user : Thing.User , menuIsActive : Bool }"
+        "type": "{ email : String , password : String , spin : Bool , activeRoute : Routing.Route , changes : Int , api : String , jwtencoded : String , jwtdecoded : Result.Result Jwt.JwtError Auth.JwtPayload , error : String , presses : List Char , user : Thing.User , menuIsActive : Bool , mainMenuItems : List Routing.MenuItem , games : List Thing.Game }"
       }
     ],
     "types": [
@@ -69,10 +69,12 @@
             ]
           ],
           [
-            "MainMenu",
-            [
-              "Bool"
-            ]
+            "MainMenuToggle",
+            []
+          ],
+          [
+            "Logout",
+            []
           ]
         ]
       }
@@ -82,6 +84,11 @@
         "name": "init",
         "comment": " initialize the model with data\n",
         "type": "Model.Flags -> Navigation.Location -> ( Model.Model, Platform.Cmd.Cmd Model.Msg )"
+      },
+      {
+        "name": "initialModel",
+        "comment": " The data model as it is, was and will be\n\n",
+        "type": "Model.Flags -> Navigation.Location -> Model.Model"
       }
     ],
     "generated-with-elm-version": "0.18.0"

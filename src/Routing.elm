@@ -7,6 +7,34 @@ import Html.Events exposing (onWithOptions)
 import Html exposing (Attribute)
 
 
+type alias MenuItem =
+    { name : String
+    , route : Route
+    , path : String
+    }
+
+
+initialMenuItems : List MenuItem
+initialMenuItems =
+    [ { name = "Home"
+      , route = HomeRoute
+      , path = homePath
+      }
+    , { name = "Badges"
+      , route = BadgesRoute
+      , path = badgesPath
+      }
+    , { name = "Instructions"
+      , route = InstructionsRoute
+      , path = instructionsPath
+      }
+    , { name = "Settings"
+      , route = SettingsRoute
+      , path = settingsPath
+      }
+    ]
+
+
 {-|
 Match a location given by the Navigation package and return the matched route.
 -}
@@ -38,7 +66,16 @@ type Route
     | NotFoundRoute
     | LoginRoute
     | HomeRoute
-    | GameRoute String
+      -- Visual Search
+    | GameRouteVs
+      -- Dot probe
+    | GameRouteDp
+      -- Go/No-go
+    | GameRouteGn
+      -- Stop Signale
+    | GameRouteSs
+      -- Respond Signal
+    | GameRouteRs
     | BadgesRoute
     | SettingsRoute
     | InstructionsRoute
@@ -86,7 +123,10 @@ matchers =
     UrlParser.oneOf
         [ UrlParser.map HomeRoute UrlParser.top
         , UrlParser.map LoginRoute (UrlParser.s "login")
-        , UrlParser.map GameRoute (UrlParser.s "game" </> UrlParser.string)
+        , UrlParser.map GameRouteVs (UrlParser.s "vs")
+        , UrlParser.map GameRouteDp (UrlParser.s "dp")
+        , UrlParser.map GameRouteGn (UrlParser.s "gn")
+        , UrlParser.map GameRouteSs (UrlParser.s "ss")
         , UrlParser.map BadgesRoute (UrlParser.s "badges")
         , UrlParser.map SettingsRoute (UrlParser.s "settings")
         , UrlParser.map InstructionsRoute (UrlParser.s "instructions")

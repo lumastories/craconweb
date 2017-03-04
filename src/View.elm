@@ -37,38 +37,25 @@ view model =
                 R.SettingsRoute ->
                     settingsPage model
 
-                R.GameRoute gameSlug ->
-                    gamePicker model gameSlug
+                R.InstructionsRoute ->
+                    instructionsPage model
 
-                _ ->
-                    p []
-                        [ i [ class "fa fa-certificate" ] []
-                        , text "route not implemented yet"
-                        ]
+                R.GameRouteVs ->
+                    gamePage model
+
+                R.GameRouteDp ->
+                    gamePage model
+
+                R.GameRouteGn ->
+                    gamePage model
+
+                R.GameRouteSs ->
+                    gamePage model
+
+                R.GameRouteRs ->
+                    gamePage model
     in
         div [] [ page ]
-
-
-gamePicker : Model -> String -> Html Msg
-gamePicker model gameSlug =
-    case gameSlug of
-        "vs" ->
-            gamePage model "vs"
-
-        "dp" ->
-            gamePage model "dp"
-
-        "gn" ->
-            gamePage model "gn"
-
-        "ss" ->
-            gamePage model "ss"
-
-        "rs" ->
-            gamePage model "rs"
-
-        _ ->
-            gamePage model "could not find this game, sorry!"
 
 
 
@@ -117,7 +104,6 @@ loginPageBoxForm model =
     div [ class "box", marginS ]
         [ Html.form
             [ onSubmit TryLogin
-            , action "javascript:void(0);"
             ]
             [ label [ class "label" ]
                 [ text "Email" ]
@@ -141,61 +127,113 @@ loginPageBoxForm model =
 
 
 
+-- NAV BAR
+
+
+aattrs linkPath =
+    [ href linkPath, R.onLinkClick <| UpdateLocation linkPath ]
+
+
+navLink text_ activeRoute ( route, linkPath ) =
+    let
+        class_ =
+            if route == activeRoute then
+                "nav-item is-tab is-hidden-mobile is-active"
+            else
+                "nav-item is-tab is-hidden-mobile"
+
+        onClick_ =
+            R.onLinkClick <| UpdateLocation linkPath
+    in
+        a
+            [ class class_, href linkPath, onClick_ ]
+            [ text text_ ]
+
+
+navToggle =
+    span
+        [ class "nav-toggle" ]
+        [ span [] []
+        , span [] []
+        , span [] []
+        ]
+
+
+navBarMenuLeftItems model =
+    let
+        logo =
+            a [ class "nav-item", href <| R.homePath, R.onLinkClick <| UpdateLocation R.homePath ] [ img [ src "img/logo.png" ] [] ]
+
+        toItem i =
+            navLink i.name model.activeRoute ( i.route, i.path )
+    in
+        logo :: List.map toItem model.mainMenuItems
+
+
+navBar model =
+    nav
+        [ class "nav has-shadow" ]
+        [ div
+            [ class "container" ]
+            [ div
+                [ class "nav-left" ]
+                (navBarMenuLeftItems model)
+            , span
+                [ class "nav-toggle", onClick MainMenuToggle ]
+                [ span [] [], span [] [], span [] [] ]
+            , navRight model
+            ]
+        ]
+
+
+navRight model =
+    div
+        [ class "nav-right nav-menu" ]
+        [ a
+            [ class "nav-item is-tab", onClick Logout ]
+            [ text "Log out"
+            ]
+        ]
+
+
+
 -- HOME PAGE
 
 
 homePage : Model -> Html Msg
 homePage model =
-    section []
-        [ homePageHeader model
+    div []
+        [ navBar model
         , homePageBody model
-        ]
-
-
-homePageHeader : Model -> Html Msg
-homePageHeader model =
-    section
-        [ class "hero" ]
-        [ div
-            [ class "hero-body" ]
-            [ div
-                [ class "container" ]
-                [ logoSmall
-                , h1
-                    [ class "title" ]
-                    [ text <| "Welcome, " ++ model.user.firstName ]
-                , h2
-                    [ class "subtitle" ]
-                    [ text "Nice to see you" ]
-                , mainMenuButton
-                , mainMenu model.activeRoute model.menuIsActive
-                ]
-            ]
         ]
 
 
 homePageBody : Model -> Html Msg
 homePageBody model =
     section
-        [ class "section" ]
+        [ class "hero is-primary" ]
         [ div
-            [ class "container" ]
-            [ homePageGrid model ]
+            [ class "hero-body" ]
+            [ div
+                [ class "container" ]
+                [ homePageGrid model
+                ]
+            ]
         ]
+
+
+homePageGameCards model =
+    let
+        toCard g =
+            div [ class "column" ] [ homePageGameCard g.slug g.icon g.name g.about ]
+    in
+        List.map toCard model.games
 
 
 homePageGrid : Model -> Html Msg
 homePageGrid model =
     div [ class "columns" ]
-        [ div [ class "column" ] [ homePageGameCard "vs" "img/icons1.png" "Visual Search" "Find the right thing." "This game is very interesting. Here is even more info about the game" ]
-        , div [ class "column" ] [ homePageGameCard "dp" "img/icons2.png" "Dot Probe" "Watch the dot." "This game is very interesting. Here is even more info about the game" ]
-        , div [ class "column" ] [ homePageGameCard "gn" "img/icons3.png" "Go/No-Go" "Don't hesitate." "This game is very interesting. Here is even more info about the game" ]
-        , div [ class "column" ] [ homePageGameCard "ss" "img/icons4.png" "Stop Signal" "Watch for the signal!" "This game is very interesting. Here is even more info about the game" ]
-        , div [ class "column" ] [ homePageGameCard "rs" "img/icons5.png" "Respond Signal" "Respond. Oh the signalling!" "This game is very interesting. Here is even more info about the game" ]
-          --[ text "Respond Signal"
-          --, a [ href loginPath, onLinkClick <| UpdateLocation loginPath ] [ text "Go to login" ]
-          --]
-        ]
+        (homePageGameCards model)
 
 
 
@@ -205,17 +243,19 @@ homePageGrid model =
 -- Tags: http://bulma.io/documentation/elements/tag/
 -- Progress: http://bulma.io/documentation/elements/progress/
 -- Notification:
+-- links!
+-- a [ href loginPath, onLinkClick <| UpdateLocation loginPath ] [ text "Go to login" ]
 
 
-homePageGameCard : String -> String -> String -> String -> String -> Html Msg
-homePageGameCard gameSlug src_ title subtitle about =
+homePageGameCard : String -> String -> String -> String -> Html Msg
+homePageGameCard gameSlug src_ title about =
     div
         [ class "card", style <| toStyle "border-radius:1em;" ]
         [ div
             [ class "card-image" ]
             [ figure
                 [ class "image is-4by3" ]
-                [ a [ href <| "/game/" ++ gameSlug, R.onLinkClick <| UpdateLocation <| "/game/" ++ gameSlug ]
+                [ a [ href <| gameSlug, R.onLinkClick <| UpdateLocation <| gameSlug ]
                     [ img
                         [ src src_, alt title ]
                         []
@@ -228,13 +268,9 @@ homePageGameCard gameSlug src_ title subtitle about =
                 [ class "media" ]
                 [ div
                     [ class "media-content" ]
-                    [ p
-                        [ class "title is-4" ]
+                    [ strong
+                        []
                         [ text title
-                        ]
-                    , p
-                        [ class "subtitle is-6" ]
-                        [ text subtitle
                         ]
                     ]
                 ]
@@ -250,47 +286,49 @@ homePageGameCard gameSlug src_ title subtitle about =
         ]
 
 
-accessDeniedPage : Model -> Html Msg
-accessDeniedPage model =
+
+-- The parent of basic pages.
+
+
+basicPage model children =
     section []
-        [ homePageHeader model
+        [ navBar model
         , section
             [ class "section" ]
-            [ div
-                [ class "container" ]
-                [ h1 [ class "title is-1" ] [ text "Access Restricted." ]
-                , h3 [] [ text "Maybe you are in the wrong place?" ]
-                ]
+            children
+        ]
+
+
+accessDeniedPage : Model -> Html Msg
+accessDeniedPage model =
+    basicPage model
+        [ div
+            [ class "container" ]
+            [ h1 [ class "title is-1" ] [ text "Access Restricted." ]
+            , h3 [] [ text "Maybe you are in the wrong place?" ]
             ]
         ]
 
 
 notFoundPage : Model -> Html Msg
 notFoundPage model =
-    section []
-        [ homePageHeader model
-        , section
-            [ class "section" ]
-            [ div
-                [ class "container" ]
-                [ h1 [ class "title is-1" ] [ text "Page Not Found (Oops!)" ]
-                , h3 [] [ text "Maybe you are in the wrong place?" ]
-                ]
+    basicPage model
+        [ div
+            [ class "container" ]
+            [ h1 [ class "title is-1" ] [ text "Page Not Found (Oops!)" ]
+            , h3 [] [ text "Maybe you are in the wrong place?" ]
             ]
         ]
 
 
 badgesPage : Model -> Html Msg
 badgesPage model =
-    section []
-        [ homePageHeader model
-        , section
-            [ class "section" ]
-            [ div
-                [ class "container" ]
-                [ h1 [ class "title is-1" ] [ text "Badges" ]
-                , h3 [] [ text "This feature is coming soon!" ]
-                ]
+    basicPage model
+        [ div
+            [ class "container" ]
+            [ h1 [ class "title is-1" ] [ text "Badges" ]
+            , h3 [] [ text "This feature is coming soon!" ]
+            , i [ class "fa fa-certificate" ] []
             ]
         ]
 
@@ -302,31 +340,30 @@ badgesPage model =
 
 settingsPage : Model -> Html Msg
 settingsPage model =
-    section []
-        [ homePageHeader model
-        , section
-            [ class "section" ]
-            [ div
-                [ class "container" ]
-                [ h1 [ class "title is-1" ] [ text "Settings" ]
-                , h3 [] [ text "This feature is coming soon!" ]
-                ]
+    basicPage model
+        [ div
+            [ class "container" ]
+            [ h1 [ class "title is-1" ] [ text "Settings" ]
+            , h3 [] [ text "This feature is coming soon!" ]
             ]
         ]
 
 
-gamePage : Model -> String -> Html Msg
-gamePage model gameSlug =
-    section []
-        [ section
-            [ class "section" ]
-            [ div
-                [ class "container" ]
-                [ mainMenuButton
-                , mainMenu model.activeRoute model.menuIsActive
-                , h1 [ class "title is-1" ] [ text "Game" ]
-                , h3 [] [ text <| "You are on game: " ++ gameSlug ]
-                ]
+gamePage : Model -> Html Msg
+gamePage model =
+    basicPage model
+        [ div
+            [ class "container" ]
+            [ h1 [ class "title is-1" ] [ text "A Game is coming soon" ]
+            ]
+        ]
+
+
+instructionsPage model =
+    basicPage model
+        [ div
+            [ class "container" ]
+            [ h1 [ class "title is-1" ] [ text "Instructions" ]
             ]
         ]
 
@@ -335,73 +372,12 @@ gamePage model gameSlug =
 -- TODO fetch data for game, indicate loading progress
 -- TODO display stimuli and record user responses
 -- TODO track partial data, attempt to save
-
-
-mainMenuButton : Html Msg
-mainMenuButton =
-    a
-        [ class "button is-primary is-large modal-button", attribute "data-target" "#menu", onClick <| MainMenu True ]
-        [ text "MENU" ]
-
-
-mainMenu : R.Route -> Bool -> Html Msg
-mainMenu activeRoute_ menuIsActive =
-    let
-        class_ =
-            if menuIsActive then
-                "modal is-active"
-            else
-                "modal"
-    in
-        div
-            [ class class_, id "menu" ]
-            [ div
-                [ class "modal-background" ]
-                []
-            , div
-                [ class "modal-content" ]
-                [ mainMenu_ activeRoute_ ]
-            , button
-                [ class "modal-close", onClick <| MainMenu False ]
-                []
-            ]
-
-
-mainMenu_ : R.Route -> Html Msg
-mainMenu_ activeRoute_ =
-    div
-        [ class "box" ]
-        [ article
-            [ class "media" ]
-            [ div
-                [ class "media-content" ]
-                [ div
-                    [ class "content" ]
-                    [ mainMenuLink "Home" R.homePath (activeRoute_ == R.HomeRoute)
-                    , mainMenuLink "Badges" R.badgesPath (activeRoute_ == R.BadgesRoute)
-                    , mainMenuLink "Instructions" R.instructionsPath (activeRoute_ == R.InstructionsRoute)
-                    , mainMenuLink "Settings" R.settingsPath (activeRoute_ == R.SettingsRoute)
-                    ]
-                ]
-            ]
-        ]
-
-
-mainMenuLink : String -> String -> Bool -> Html Msg
-mainMenuLink title linkPath active =
-    let
-        styles =
-            if active then
-                style_ "text-decoration:underline;font-weight:bold"
-            else
-                style []
-    in
-        h1
-            []
-            [ a [ styles, href <| linkPath, R.onLinkClick <| UpdateLocation linkPath ] [ text title ] ]
-
-
-
+{--TODO map over model.mainMenuItems and return
+[ mainMenuLink "Home" R.homePath (activeRoute_ == R.HomeRoute)
+, mainMenuLink "Badges" R.badgesPath (activeRoute_ == R.BadgesRoute)
+, mainMenuLink "Instructions" R.instructionsPath (activeRoute_ == R.InstructionsRoute)
+, mainMenuLink "Settings" R.settingsPath (activeRoute_ == R.SettingsRoute) ]
+--}
 -- HELPERS
 
 
@@ -450,15 +426,3 @@ centerStyled =
 logo : Int -> Html Msg
 logo size =
     p [ centerStyled ] [ img [ class "logo is-vcentered", src "img/logo.svg", style [ ( "max-width", sizePx size ) ] ] [] ]
-
-
-
---link_ : String ->
-
-
-link_ linkPath title children =
-    a [ href <| linkPath, R.onLinkClick <| UpdateLocation linkPath ] children
-
-
-logoSmall =
-    link_ R.homePath "" [ img [ class "logo", src "img/logo.svg", style_ "max-width:60px;float:left;" ] [] ]

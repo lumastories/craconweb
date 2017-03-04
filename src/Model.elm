@@ -1,4 +1,4 @@
-module Model exposing (Model, Flags, Msg(..), init)
+module Model exposing (Model, Flags, Msg(..), init, initialModel)
 
 {-| This is the Model, where we model and initialize our data.
 
@@ -15,6 +15,8 @@ module Model exposing (Model, Flags, Msg(..), init)
 # Function that initializes the model with data
 @docs init
 
+# initial model data
+@docs initialModel
 
 -}
 
@@ -42,9 +44,14 @@ type alias Model =
     , presses : List Char
     , user : Thing.User
     , menuIsActive : Bool
+    , mainMenuItems : List MenuItem
+    , games : List Thing.Game
     }
 
 
+{-| The data model as it is, was and will be
+
+-}
 initialModel : Flags -> Navigation.Location -> Model
 initialModel flags location =
     { email = ""
@@ -57,18 +64,10 @@ initialModel flags location =
     , jwtdecoded = Jwt.decodeToken Auth.decodeJwtPayload flags.token
     , error = ""
     , presses = []
-    , user = initialUser flags.firstName
+    , user = Thing.initialUser flags.firstName
     , menuIsActive = False
-    }
-
-
-initialUser : String -> Thing.User
-initialUser firstName =
-    { id = ""
-    , username = ""
-    , email = ""
-    , firstName = firstName
-    , lastName = ""
+    , mainMenuItems = initialMenuItems
+    , games = Thing.initialGames
     }
 
 
@@ -85,7 +84,8 @@ type Msg
     | Presses Char
     | UpdateLocation String
     | OnUpdateLocation Navigation.Location
-    | MainMenu Bool
+    | MainMenuToggle
+    | Logout
 
 
 {-| Represents what data I should start up with
