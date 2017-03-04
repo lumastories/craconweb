@@ -47,6 +47,10 @@
             localStorage.removeItem(key);
         });
 
+        app.ports.clearLocalStorage.subscribe(function(clear) {
+            localStorage.clear();
+        });
+        
 
     </script>
 

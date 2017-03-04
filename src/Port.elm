@@ -11,3 +11,6 @@ type alias KeyValue =
 
 
 port setItem : KeyValue -> Cmd msg
+
+
+port clearLocalStorage : Bool -> Cmd msg
