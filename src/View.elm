@@ -102,9 +102,8 @@ loginPageButtonClass spin =
 loginPageBoxForm : Model -> Html Msg
 loginPageBoxForm model =
     div [ class "box", marginS ]
-        [ Html.form
-            [ onSubmit TryLogin
-            ]
+        [ div
+            []
             [ label [ class "label" ]
                 [ text "Email" ]
             , p [ class "control" ]

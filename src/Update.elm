@@ -10,6 +10,8 @@ import Json.Decode.Pipeline as JP
 import Navigation
 import Routing exposing (..)
 import Thing
+import Auth
+import Jwt
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -41,37 +43,32 @@ update msg model =
                 ( { model | spin = True }, cmd )
 
         -- HTTP Responses
-        LoginResponse (Ok newToken) ->
+        LoginResponse (Ok newJwtencoded) ->
             let
                 commands =
-                    [ (Http.send UserResponse (getUser model))
-                    , Port.setItem ( "token", newToken )
+                    [ Port.setItem ( "token", newJwtencoded )
+                    , (Http.send UserResponse (getUser model))
                     ]
+
+                newJwtdecoded =
+                    Jwt.decodeToken Auth.decodeJwtPayload newJwtencoded
             in
-                ( { model | jwtencoded = newToken, spin = False }, Cmd.batch commands )
+                ( { model | jwtencoded = newJwtencoded, spin = False }, Cmd.batch commands )
 
         LoginResponse (Err err) ->
-            let
-                l =
-                    Debug.log "err" (toString err)
-            in
-                ( { model | spin = False, error = "Auth related error" }, Cmd.none )
+            ( { model | spin = False, error = (toString err) }, Cmd.none )
 
         UserResponse (Ok newUser) ->
             let
-                cmds =
+                commands =
                     [ Port.setItem ( "firstName", newUser.firstName )
                     , Navigation.newUrl "/"
                     ]
             in
-                ( { model | user = newUser, activeRoute = HomeRoute }, Cmd.batch cmds )
+                ( { model | user = newUser, activeRoute = HomeRoute }, Cmd.batch commands )
 
         UserResponse (Err err) ->
-            let
-                l =
-                    Debug.log "err" (toString err)
-            in
-                ( { model | error = "User related error" }, Cmd.none )
+            ( { model | error = (toString err) }, Cmd.none )
 
         Presses _ ->
             model ! []
@@ -183,8 +180,11 @@ getUser model =
         users =
             model.api ++ "/user/"
 
+        newJwtdecoded =
+            (Jwt.decodeToken Auth.decodeJwtPayload model.jwtencoded)
+
         sub =
-            Result.map .sub model.jwtdecoded
+            Result.map .sub newJwtdecoded
 
         url =
             case sub of
