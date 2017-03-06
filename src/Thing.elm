@@ -31,7 +31,13 @@ type alias Game =
 
 initialGames : List Game
 initialGames =
-    [ { slug = "vs"
+    [ { slug = "gn"
+      , icon = "img/icons3.png"
+      , name = "Go/No-Go"
+      , about = "Don't hesitate. This game is very interesting. Here is even more info about the game"
+      , data = goNoGoGameData
+      }
+    , { slug = "vs"
       , icon = "img/icons1.png"
       , name = "Visual Search"
       , about = "Find the right thing. This game is very interesting. Here is even more info about the game"
@@ -41,12 +47,6 @@ initialGames =
       , icon = "img/icons2.png"
       , name = "Dot Probe"
       , about = "Watch the dot. This game is very interesting. Here is even more info about the game"
-      , data = goNoGoGameData
-      }
-    , { slug = "gn"
-      , icon = "img/icons3.png"
-      , name = "Go/No-Go"
-      , about = "Don't hesitate. This game is very interesting. Here is even more info about the game"
       , data = goNoGoGameData
       }
     , { slug = "ss"
@@ -77,6 +77,13 @@ type alias GameData =
     , decTrigger : Int
     , interval : Int
     , fixCross : Bool
+    , stimuli : List Stimulus
+    }
+
+
+type alias Stimulus =
+    { src : String
+    , isValid : Bool
     }
 
 
@@ -114,4 +121,17 @@ goNoGoGameData =
     , decTrigger = -1
     , interval = 500
     , fixCross = False
+    , stimuli = someStims
     }
+
+
+someStims =
+    [ Stimulus "img/dev/i1.png" False
+    , Stimulus "img/dev/i2.png" False
+    , Stimulus "img/dev/i3.png" False
+    , Stimulus "img/dev/i4.png" False
+    , Stimulus "img/dev/v1.png" True
+    , Stimulus "img/dev/v2.png" True
+    , Stimulus "img/dev/v3.png" True
+    , Stimulus "img/dev/v4.png" True
+    ]

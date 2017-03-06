@@ -5,8 +5,6 @@ import Model exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Routing as R
-import Time
-import Date
 
 
 -- TODO Create a new logo (brain with CC - craving control, crave control)
@@ -140,10 +138,12 @@ loginPageBoxForm model =
 -- NAV BAR
 
 
+aattrs : String -> List (Attribute Msg)
 aattrs linkPath =
     [ href linkPath, R.onLinkClick <| UpdateLocation linkPath ]
 
 
+navLink : String -> R.Route -> ( R.Route, String ) -> Html Msg
 navLink text_ activeRoute ( route, linkPath ) =
     let
         class_ =
@@ -160,6 +160,7 @@ navLink text_ activeRoute ( route, linkPath ) =
             [ text text_ ]
 
 
+navToggle : Html Msg
 navToggle =
     span
         [ class "nav-toggle" ]
@@ -169,6 +170,7 @@ navToggle =
         ]
 
 
+navBarMenuLeftItems : Model -> List (Html Msg)
 navBarMenuLeftItems model =
     let
         logo =
@@ -180,6 +182,7 @@ navBarMenuLeftItems model =
         logo :: List.map toItem model.mainMenuItems
 
 
+navBar : Model -> Html Msg
 navBar model =
     nav
         [ class "nav has-shadow" ]
@@ -196,6 +199,7 @@ navBar model =
         ]
 
 
+navRight : Model -> Html Msg
 navRight model =
     div
         [ class "nav-right nav-menu" ]
@@ -232,6 +236,7 @@ homePageBody model =
         ]
 
 
+homePageGameCards : Model -> List (Html Msg)
 homePageGameCards model =
     let
         toCard g =
@@ -300,6 +305,7 @@ homePageGameCard gameSlug src_ title about =
 -- The parent of basic pages.
 
 
+basicPage : Model -> List (Html Msg) -> Html Msg
 basicPage model children =
     section []
         [ navBar model
@@ -370,21 +376,15 @@ gamePage model =
 
 
 
--- ***
--- TODO http://package.elm-lang.org/packages/elm-lang/animation-frame/1.0.1/AnimationFrame
--- Subscribe to the current time, given in lockstep with the browser's natural rerender speed.
---Task.perform NewTime Time.now
---currentMs : Time.Time -> String
---currentMs t =
---    Date.fromTime t
---        |> Date.millisecond
---        |> toString
+-- TODO try this pattern out some where else
 
 
+setTime : Msg
 setTime =
     GetTimeAndThen (\time -> SetTime time)
 
 
+setDeltaTime : Msg
 setDeltaTime =
     GetTimeAndThen (\time -> SetDeltaTime time)
 
@@ -400,15 +400,30 @@ goNoGoGame model =
                     [ li [] [ button [ class "button is-dark" ] [ text "Start Game!" ] ]
                     , li [] [ button [ class "button is-primary", onClick setTime ] [ text "set currentTime" ] ]
                     , li [] [ button [ class "button is-danger", onClick setDeltaTime ] [ text "set currentTimeDelta" ] ]
-                    , li [] [ text "hmmm" ]
                     ]
                 , h3 [ class "title is-3" ] [ text <| "currentTimeDelta: " ++ (toString model.currentTimeDelta) ]
                 , h3 [ class "title is-3" ] [ text <| "currentTime: " ++ (toString model.currentTime) ]
+                , ul [] [ li [] [ text (listOfStims model) ] ]
                 ]
             ]
         ]
 
 
+liImg : String -> Html Msg
+liImg src_ =
+    li [] [ img [ src src_ ] [] ]
+
+
+listOfStims : Model -> String
+listOfStims model =
+    -- converts game data into a list of images
+    List.filter (\g -> g.slug == "gn") model.games
+        |> List.map .data
+        |> List.map .stimuli
+        |> toString
+
+
+instructionsPage : Model -> Html Msg
 instructionsPage model =
     basicPage model
         [ div
