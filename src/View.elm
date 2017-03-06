@@ -41,10 +41,10 @@ view model =
                     instructionsPage model
 
                 R.GameRouteVs ->
-                    gamePage model
+                    visualSearchGame model
 
                 R.GameRouteDp ->
-                    gamePage model
+                    dotProbeGame model
 
                 R.GameRouteGn ->
                     goNoGoGame model
@@ -375,6 +375,26 @@ gamePage model =
         ]
 
 
+visualSearchGame model =
+    basicPage model
+        [ div
+            [ class "container" ]
+            [ h1 [ class "title is-1" ] [ text "Visual Search" ]
+            , iframe [ src "http://lumastories.github.io/ebodyproject_trainings/VisualSearch/visualsearch.html", width 1200, height 650 ] []
+            ]
+        ]
+
+
+goNoGoGame model =
+    basicPage model
+        [ div
+            [ class "container" ]
+            [ h1 [ class "title is-1" ] [ text "Go/No-Go" ]
+            , iframe [ src "http://lumastories.github.io/ebodyproject_trainings/Go-No-go/gonogo.html", width 1200, height 650 ] []
+            ]
+        ]
+
+
 
 -- TODO try this pattern out some where else
 
@@ -389,12 +409,13 @@ setDeltaTime =
     GetTimeAndThen (\time -> SetDeltaTime time)
 
 
-goNoGoGame : Model -> Html Msg
-goNoGoGame model =
+dotProbeGame : Model -> Html Msg
+dotProbeGame model =
     basicPage model
         [ div
             [ class "container" ]
-            [ h1 [ class "title is-1" ] [ text "Go/No-Go" ]
+            [ h1 [ class "title is-1" ] [ text "Dot Probe" ]
+            , h3 [ class "subtitle is-3" ] [ text "work in progress" ]
             , div []
                 [ ul []
                     [ li [] [ button [ class "button is-dark" ] [ text "Start Game!" ] ]
@@ -418,7 +439,6 @@ listOfStims : Model -> String
 listOfStims model =
     -- converts game data into a list of images
     List.filter (\g -> g.slug == "gn") model.games
-        |> List.map .data
         |> List.map .stimuli
         |> toString
 

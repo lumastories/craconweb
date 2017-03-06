@@ -21,53 +21,11 @@ initialUser firstName =
 
 
 type alias Game =
-    { slug : String
-    , icon : String
+    { id : String
+    , slug : String
     , name : String
     , about : String
-    , data : GameData
-    }
-
-
-initialGames : List Game
-initialGames =
-    [ { slug = "gn"
-      , icon = "img/icons3.png"
-      , name = "Go/No-Go"
-      , about = "Don't hesitate. This game is very interesting. Here is even more info about the game"
-      , data = goNoGoGameData
-      }
-    , { slug = "vs"
-      , icon = "img/icons1.png"
-      , name = "Visual Search"
-      , about = "Find the right thing. This game is very interesting. Here is even more info about the game"
-      , data = goNoGoGameData
-      }
-    , { slug = "dp"
-      , icon = "img/icons2.png"
-      , name = "Dot Probe"
-      , about = "Watch the dot. This game is very interesting. Here is even more info about the game"
-      , data = goNoGoGameData
-      }
-    , { slug = "ss"
-      , icon = "img/icons4.png"
-      , name = "Stop Signal"
-      , about = "Watch for the signal! This game is very interesting. Here is even more info about the game"
-      , data = goNoGoGameData
-      }
-    , { slug = "rs"
-      , icon = "img/icons5.png"
-      , name = "Respond Signal"
-      , about = "Respond to a signal! This game is very interesting. Here is even more info about the game"
-      , data = goNoGoGameData
-      }
-    ]
-
-
-type alias GameData =
-    { id : String
-    , name : String
-    , slug : String
+    , icon : String
     , durIncrement : Int
     , durDecrement : Int
     , duration : Int
@@ -81,6 +39,95 @@ type alias GameData =
     }
 
 
+
+-- TODO change initialGames data based on freshly flattened type
+
+
+initialGames : List Game
+initialGames =
+    [ { id = ""
+      , slug = "gn"
+      , name = "Go/No-Go"
+      , about = "Don't hesitate. This game is very interesting. Here is even more info about the game"
+      , icon = "img/icons3.png"
+      , durIncrement = -1
+      , durDecrement = -1
+      , duration = 1250
+      , trialCount = 400
+      , blockCount = 8
+      , incTrigger = -1
+      , decTrigger = -1
+      , interval = 500
+      , fixCross = False
+      , stimuli = someStims
+      }
+    , { id = ""
+      , slug = "vs"
+      , name = "Visual Search"
+      , about = "Find the right thing. This game is very interesting. Here is even more info about the game"
+      , icon = "img/icons1.png"
+      , durIncrement = -1
+      , durDecrement = -1
+      , duration = 1250
+      , trialCount = 400
+      , blockCount = 8
+      , incTrigger = -1
+      , decTrigger = -1
+      , interval = 500
+      , fixCross = False
+      , stimuli = someStims
+      }
+    , { id = ""
+      , slug = "dp"
+      , name = "Dot Probe"
+      , about = "Watch the dot. This game is very interesting. Here is even more info about the game"
+      , icon = "img/icons2.png"
+      , durIncrement = -1
+      , durDecrement = -1
+      , duration = 1250
+      , trialCount = 400
+      , blockCount = 8
+      , incTrigger = -1
+      , decTrigger = -1
+      , interval = 500
+      , fixCross = False
+      , stimuli = someStims
+      }
+    , { id = ""
+      , slug = "ss"
+      , name = "Stop Signal"
+      , about = "Watch for the signal! This game is very interesting. Here is even more info about the game"
+      , icon = "img/icons4.png"
+      , durIncrement = -1
+      , durDecrement = -1
+      , duration = 1250
+      , trialCount = 400
+      , blockCount = 8
+      , incTrigger = -1
+      , decTrigger = -1
+      , interval = 500
+      , fixCross = False
+      , stimuli = someStims
+      }
+    , { id = ""
+      , slug = "rs"
+      , name = "Respond Signal"
+      , about = "Respond to a signal! This game is very interesting. Here is even more info about the game"
+      , icon = "img/icons5.png"
+      , durIncrement = -1
+      , durDecrement = -1
+      , duration = 1250
+      , trialCount = 400
+      , blockCount = 8
+      , incTrigger = -1
+      , decTrigger = -1
+      , interval = 500
+      , fixCross = False
+      , stimuli = someStims
+      }
+    ]
+
+
 type alias Stimulus =
     { src : String
     , isValid : Bool
@@ -88,11 +135,6 @@ type alias Stimulus =
 
 
 
-{--
-
-
-
-  --}
 -- TODO augment game data model for stop-signal to include response frame duration
 {--
   Stair casing: increase or decrease
@@ -106,23 +148,6 @@ type alias Stimulus =
   how long between trials
   wether to show a fixation cross during interval
   --}
-
-
-goNoGoGameData =
-    { id = ""
-    , name = "Go/No-Go"
-    , slug = "gonogo"
-    , durIncrement = -1
-    , durDecrement = -1
-    , duration = 1250
-    , trialCount = 400
-    , blockCount = 8
-    , incTrigger = -1
-    , decTrigger = -1
-    , interval = 500
-    , fixCross = False
-    , stimuli = someStims
-    }
 
 
 someStims =
