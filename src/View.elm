@@ -5,6 +5,8 @@ import Model exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Routing as R
+import Time
+import Date
 
 
 -- TODO Create a new logo (brain with CC - craving control, crave control)
@@ -47,7 +49,7 @@ view model =
                     gamePage model
 
                 R.GameRouteGn ->
-                    gamePage model
+                    goNoGoGame model
 
                 R.GameRouteSs ->
                     gamePage model
@@ -71,7 +73,8 @@ loginPage model =
                     [ logo loginPageLogoWidth
                     , loginPageBoxForm model
                     , p [ class "has-text-centered" ]
-                        [ em [] [ text model.error ]
+                        [ em [] [ text model.greeting ]
+                        , em [] [ text model.error ]
                         ]
                     ]
                 ]
@@ -99,11 +102,19 @@ loginPageButtonClass spin =
             "button is-dark is-loading"
 
 
+
+-- onWithOptions
+-- onWithOptions
+--"click"
+--{ preventDefault = True, stopPropagation = True }
+--(Json.succeed msg)
+
+
 loginPageBoxForm : Model -> Html Msg
 loginPageBoxForm model =
     div [ class "box", marginS ]
-        [ div
-            []
+        [ Html.form
+            [ onSubmit TryLogin ]
             [ label [ class "label" ]
                 [ text "Email" ]
             , p [ class "control" ]
@@ -358,6 +369,46 @@ gamePage model =
         ]
 
 
+
+-- ***
+-- TODO http://package.elm-lang.org/packages/elm-lang/animation-frame/1.0.1/AnimationFrame
+-- Subscribe to the current time, given in lockstep with the browser's natural rerender speed.
+--Task.perform NewTime Time.now
+--currentMs : Time.Time -> String
+--currentMs t =
+--    Date.fromTime t
+--        |> Date.millisecond
+--        |> toString
+
+
+setTime =
+    GetTimeAndThen (\time -> SetTime time)
+
+
+setDeltaTime =
+    GetTimeAndThen (\time -> SetDeltaTime time)
+
+
+goNoGoGame : Model -> Html Msg
+goNoGoGame model =
+    basicPage model
+        [ div
+            [ class "container" ]
+            [ h1 [ class "title is-1" ] [ text "Go/No-Go" ]
+            , div []
+                [ ul []
+                    [ li [] [ button [ class "button is-dark" ] [ text "Start Game!" ] ]
+                    , li [] [ button [ class "button is-primary", onClick setTime ] [ text "set currentTime" ] ]
+                    , li [] [ button [ class "button is-danger", onClick setDeltaTime ] [ text "set currentTimeDelta" ] ]
+                    , li [] [ text "hmmm" ]
+                    ]
+                , h3 [ class "title is-3" ] [ text <| "currentTimeDelta: " ++ (toString model.currentTimeDelta) ]
+                , h3 [ class "title is-3" ] [ text <| "currentTime: " ++ (toString model.currentTime) ]
+                ]
+            ]
+        ]
+
+
 instructionsPage model =
     basicPage model
         [ div
@@ -368,6 +419,9 @@ instructionsPage model =
 
 
 
+-- TODO make things more gamey with animations!
+-- https://github.com/mdgriffith/elm-style-animation/blob/master/examples/Showcase.elm
+-- ***
 -- TODO fetch data for game, indicate loading progress
 -- TODO display stimuli and record user responses
 -- TODO track partial data, attempt to save

@@ -26,6 +26,8 @@ import Auth
 import Navigation
 import Routing exposing (..)
 import Thing
+import Time
+import Task
 
 
 {-| The data model for the entire application.
@@ -46,6 +48,10 @@ type alias Model =
     , menuIsActive : Bool
     , mainMenuItems : List MenuItem
     , games : List Thing.Game
+    , greeting : String
+    , test : String
+    , currentTime : Time.Time
+    , currentTimeDelta : Time.Time
     }
 
 
@@ -68,6 +74,10 @@ initialModel flags location =
     , menuIsActive = False
     , mainMenuItems = initialMenuItems
     , games = Thing.initialGames
+    , greeting = ""
+    , test = ""
+    , currentTime = 0
+    , currentTimeDelta = 0
     }
 
 
@@ -86,6 +96,12 @@ type Msg
     | OnUpdateLocation Navigation.Location
     | MainMenuToggle
     | Logout
+    | Tick Time.Time
+    | SetGreeting Time.Time
+    | VerifyToken Time.Time
+    | SetTime Time.Time
+    | SetDeltaTime Time.Time
+    | GetTimeAndThen (Time.Time -> Msg)
 
 
 {-| Represents what data I should start up with
@@ -101,12 +117,7 @@ type alias Flags =
 init : Flags -> Navigation.Location -> ( Model, Cmd Msg )
 init flags location =
     let
-        -- if token is valid, populate the user
-        -- else Navigation.newUrl "/login"
         commands =
-            [ Cmd.none ]
-
-        --[ (Http.send UserResponse (getUser flags.sub))
-        --]
+            [ Task.perform SetGreeting Time.now ]
     in
         ( initialModel flags location, Cmd.batch commands )

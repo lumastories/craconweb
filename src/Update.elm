@@ -12,6 +12,9 @@ import Routing exposing (..)
 import Thing
 import Auth
 import Jwt
+import Time
+import Date
+import Task
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -19,7 +22,29 @@ update msg model =
     case msg of
         -- Routing
         UpdateLocation path ->
-            ( { model | changes = model.changes + 1 }, Navigation.newUrl path )
+            let
+                cmds =
+                    [ Navigation.newUrl path
+                    , Task.perform VerifyToken Time.now
+                    ]
+            in
+                ( { model | changes = model.changes + 1 }, Cmd.batch cmds )
+
+        VerifyToken now ->
+            let
+                jwtExpired =
+                    Jwt.isExpired now model.jwtencoded
+
+                jwtExpiredCmd =
+                    case jwtExpired of
+                        Ok _ ->
+                            Cmd.none
+
+                        -- TODO Logout!
+                        Err _ ->
+                            Cmd.none
+            in
+                ( model, jwtExpiredCmd )
 
         OnUpdateLocation location ->
             let
@@ -56,7 +81,11 @@ update msg model =
                 ( { model | jwtencoded = newJwtencoded, spin = False }, Cmd.batch commands )
 
         LoginResponse (Err err) ->
-            ( { model | spin = False, error = (toString err) }, Cmd.none )
+            let
+                l =
+                    Debug.log "login" (toString err)
+            in
+                ( { model | spin = False, error = "Login related error" }, Cmd.none )
 
         UserResponse (Ok newUser) ->
             let
@@ -68,7 +97,11 @@ update msg model =
                 ( { model | user = newUser, activeRoute = HomeRoute }, Cmd.batch commands )
 
         UserResponse (Err err) ->
-            ( { model | error = (toString err) }, Cmd.none )
+            let
+                l =
+                    Debug.log "login" (toString err)
+            in
+                ( { model | error = "User related error" }, Cmd.none )
 
         Presses _ ->
             model ! []
@@ -96,6 +129,32 @@ update msg model =
                     }
             in
                 ( initialModel emptyFlags emptyLocation, Cmd.batch cmds )
+
+        Tick t ->
+            ( { model | currentTime = t }, Cmd.none )
+
+        SetGreeting t ->
+            let
+                newGreeting =
+                    if (Date.fromTime t |> Date.hour) < 12 then
+                        "Good morning."
+                    else
+                        "Good evening."
+            in
+                ( { model | greeting = newGreeting }, Cmd.none )
+
+        SetTime time ->
+            ( { model | currentTime = time }, Cmd.none )
+
+        SetDeltaTime time ->
+            ( { model | currentTimeDelta = time - model.currentTime }, Cmd.none )
+
+        GetTimeAndThen successHandler ->
+            ( model, (Task.perform successHandler Time.now) )
+
+
+
+-- Task.perform SetGreeting Time.now
 
 
 emptyLocation =
