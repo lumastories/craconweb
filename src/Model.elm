@@ -52,6 +52,8 @@ type alias Model =
     , test : String
     , currentTime : Time.Time
     , currentTimeDelta : Time.Time
+    , stimuli : List Thing.Stimulus
+    , gameActions : List Thing.GameAction
     }
 
 
@@ -78,6 +80,8 @@ initialModel flags location =
     , test = ""
     , currentTime = 0
     , currentTimeDelta = 0
+    , stimuli = Thing.someStims
+    , gameActions = []
     }
 
 
@@ -102,6 +106,8 @@ type Msg
     | SetTime Time.Time
     | SetDeltaTime Time.Time
     | GetTimeAndThen (Time.Time -> Msg)
+    | GameStartAndThen (Time.Time -> Msg)
+    | GameTimeStamp Time.Time
 
 
 {-| Represents what data I should start up with

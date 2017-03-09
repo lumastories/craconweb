@@ -15,6 +15,7 @@ import Jwt
 import Time
 import Date
 import Task
+import Process
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -152,9 +153,20 @@ update msg model =
         GetTimeAndThen successHandler ->
             ( model, (Task.perform successHandler Time.now) )
 
+        GameStartAndThen next ->
+            ( model, (Task.perform next Time.now) )
+
+        GameTimeStamp time ->
+            ( { model | currentTime = time }, Cmd.none )
 
 
--- Task.perform SetGreeting Time.now
+delay : Time.Time -> Msg -> Cmd Msg
+delay t msg =
+    Process.sleep t |> Task.perform (\_ -> msg)
+
+
+
+-- delay (Time.Time.millisecond*500) cmdMsg
 
 
 emptyLocation =

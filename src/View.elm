@@ -143,14 +143,14 @@ aattrs linkPath =
     [ href linkPath, R.onLinkClick <| UpdateLocation linkPath ]
 
 
-navLink : String -> R.Route -> ( R.Route, String ) -> Html Msg
-navLink text_ activeRoute ( route, linkPath ) =
+navLink : String -> R.Route -> ( R.Route, String ) -> String -> Html Msg
+navLink text_ activeRoute ( route, linkPath ) hidden =
     let
         class_ =
             if route == activeRoute then
-                "nav-item is-tab is-hidden-mobile is-active"
+                "nav-item is-tab is-active " ++ hidden
             else
-                "nav-item is-tab is-hidden-mobile"
+                "nav-item is-tab " ++ hidden
 
         onClick_ =
             R.onLinkClick <| UpdateLocation linkPath
@@ -177,9 +177,18 @@ navBarMenuLeftItems model =
             a [ class "nav-item", href <| R.homePath, R.onLinkClick <| UpdateLocation R.homePath ] [ img [ src "img/logo.png" ] [] ]
 
         toItem i =
-            navLink i.name model.activeRoute ( i.route, i.path )
+            navLink i.name model.activeRoute ( i.route, i.path ) "is-hidden-mobile"
     in
         logo :: List.map toItem model.mainMenuItems
+
+
+navBarMenuMobileItems : Model -> List (Html Msg)
+navBarMenuMobileItems model =
+    let
+        toItem i =
+            navLink i.name model.activeRoute ( i.route, i.path ) "is-hidden-tablet"
+    in
+        List.map toItem model.mainMenuItems
 
 
 navBar : Model -> Html Msg
@@ -201,13 +210,13 @@ navBar model =
 
 navRight : Model -> Html Msg
 navRight model =
-    div
-        [ class "nav-right nav-menu" ]
-        [ a
-            [ class "nav-item is-tab", onClick Logout ]
-            [ text "Log out"
-            ]
-        ]
+    let
+        logout =
+            a [ class "nav-item is-tab", onClick Logout ] [ text "Log out" ]
+    in
+        div
+            [ class "nav-right nav-menu" ]
+            (logout :: (navBarMenuMobileItems model))
 
 
 
@@ -337,14 +346,20 @@ notFoundPage model =
         ]
 
 
+badge text_ =
+    p [] [ i [ class "fa fa-certificate fa-5x" ] [], text text_ ]
+
+
 badgesPage : Model -> Html Msg
 badgesPage model =
     basicPage model
         [ div
             [ class "container" ]
             [ h1 [ class "title is-1" ] [ text "Badges" ]
-            , h3 [] [ text "This feature is coming soon!" ]
-            , i [ class "fa fa-certificate" ] []
+            , h3 [] [ text "Select a badge below to see how to unlock it" ]
+            , badge "1"
+            , badge "2"
+            , badge "3"
             ]
         ]
 
@@ -380,7 +395,7 @@ visualSearchGame model =
         [ div
             [ class "container" ]
             [ h1 [ class "title is-1" ] [ text "Visual Search" ]
-            , iframe [ src "http://lumastories.github.io/ebodyproject_trainings/VisualSearch/visualsearch.html", width 1200, height 650 ] []
+            , div [] [ text "game goes here" ]
             ]
         ]
 
@@ -390,7 +405,7 @@ goNoGoGame model =
         [ div
             [ class "container" ]
             [ h1 [ class "title is-1" ] [ text "Go/No-Go" ]
-            , iframe [ src "http://lumastories.github.io/ebodyproject_trainings/Go-No-go/gonogo.html", width 1200, height 650 ] []
+            , div [] [ text "game goes here" ]
             ]
         ]
 
@@ -409,6 +424,11 @@ setDeltaTime =
     GetTimeAndThen (\time -> SetDeltaTime time)
 
 
+startGame : Msg
+startGame =
+    GameStartAndThen (\initialTime -> GameTimeStamp initialTime)
+
+
 dotProbeGame : Model -> Html Msg
 dotProbeGame model =
     basicPage model
@@ -424,7 +444,7 @@ dotProbeGame model =
                     ]
                 , h3 [ class "title is-3" ] [ text <| "currentTimeDelta: " ++ (toString model.currentTimeDelta) ]
                 , h3 [ class "title is-3" ] [ text <| "currentTime: " ++ (toString model.currentTime) ]
-                , ul [] [ li [] [ text (listOfStims model) ] ]
+                , ul [] (listOfStims model)
                 ]
             ]
         ]
@@ -435,12 +455,12 @@ liImg src_ =
     li [] [ img [ src src_ ] [] ]
 
 
-listOfStims : Model -> String
+listOfStims : Model -> List (Html Msg)
 listOfStims model =
     -- converts game data into a list of images
-    List.filter (\g -> g.slug == "gn") model.games
-        |> List.map .stimuli
-        |> toString
+    model.stimuli
+        |> List.map .src
+        |> List.map liImg
 
 
 instructionsPage : Model -> Html Msg
@@ -456,17 +476,6 @@ instructionsPage model =
 
 -- TODO make things more gamey with animations!
 -- https://github.com/mdgriffith/elm-style-animation/blob/master/examples/Showcase.elm
--- ***
--- TODO fetch data for game, indicate loading progress
--- TODO display stimuli and record user responses
--- TODO track partial data, attempt to save
-{--TODO map over model.mainMenuItems and return
-[ mainMenuLink "Home" R.homePath (activeRoute_ == R.HomeRoute)
-, mainMenuLink "Badges" R.badgesPath (activeRoute_ == R.BadgesRoute)
-, mainMenuLink "Instructions" R.instructionsPath (activeRoute_ == R.InstructionsRoute)
-, mainMenuLink "Settings" R.settingsPath (activeRoute_ == R.SettingsRoute) ]
---}
--- HELPERS
 
 
 marginS : Attribute msg
@@ -481,24 +490,20 @@ style_ rawStyles =
 
 toStyle : String -> List ( String, String )
 toStyle styles =
-    -- "a:b;c:d;" -> ["a:b", "c:d", ""]
-    -- ["a:b", "c:d"] -> [["a", "b"], ["c","d"], [""]]
-    -- [["a", "b"], ["c","d"]]
-    -- [["a", "b"], ["c","d"]] -> [("a", "b"), ("c","d")]
-    String.split ";" styles
-        |> List.map (\s -> String.split ":" s)
-        |> List.filter (\e -> e /= [ "" ])
-        |> List.map toStylesHelper
+    -- "a:b;c:d;" |>|>|> [("a", "b"), ("c","d")]
+    let
+        toTuple list =
+            case list of
+                [ a, b ] ->
+                    ( a, b )
 
-
-toStylesHelper : List String -> ( String, String )
-toStylesHelper list =
-    case list of
-        [ a, b ] ->
-            ( a, b )
-
-        _ ->
-            ( "", "" )
+                _ ->
+                    ( "", "" )
+    in
+        String.split ";" styles
+            |> List.map (\s -> String.split ":" s)
+            |> List.filter (\e -> e /= [ "" ])
+            |> List.map toTuple
 
 
 sizePx : Int -> String
