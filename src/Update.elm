@@ -13,7 +13,6 @@ import Thing
 import Auth
 import Jwt
 import Time
-import Date
 import Task
 import Process
 
@@ -134,30 +133,11 @@ update msg model =
         Tick t ->
             ( { model | currentTime = t }, Cmd.none )
 
-        SetGreeting t ->
-            let
-                newGreeting =
-                    if (Date.fromTime t |> Date.hour) < 12 then
-                        "Good morning."
-                    else
-                        "Good evening."
-            in
-                ( { model | greeting = newGreeting }, Cmd.none )
-
-        SetTime time ->
-            ( { model | currentTime = time }, Cmd.none )
-
-        SetDeltaTime time ->
+        CalcTimeDelta time ->
             ( { model | currentTimeDelta = time - model.currentTime }, Cmd.none )
 
         GetTimeAndThen successHandler ->
             ( model, (Task.perform successHandler Time.now) )
-
-        GameStartAndThen next ->
-            ( model, (Task.perform next Time.now) )
-
-        GameTimeStamp time ->
-            ( { model | currentTime = time }, Cmd.none )
 
 
 delay : Time.Time -> Msg -> Cmd Msg

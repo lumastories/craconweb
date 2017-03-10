@@ -27,7 +27,6 @@ import Navigation
 import Routing exposing (..)
 import Thing
 import Time
-import Task
 
 
 {-| The data model for the entire application.
@@ -100,14 +99,10 @@ type Msg
     | OnUpdateLocation Navigation.Location
     | MainMenuToggle
     | Logout
-    | Tick Time.Time
-    | SetGreeting Time.Time
-    | VerifyToken Time.Time
-    | SetTime Time.Time
-    | SetDeltaTime Time.Time
     | GetTimeAndThen (Time.Time -> Msg)
-    | GameStartAndThen (Time.Time -> Msg)
-    | GameTimeStamp Time.Time
+    | CalcTimeDelta Time.Time
+    | Tick Time.Time
+    | VerifyToken Time.Time
 
 
 {-| Represents what data I should start up with
@@ -124,6 +119,6 @@ init : Flags -> Navigation.Location -> ( Model, Cmd Msg )
 init flags location =
     let
         commands =
-            [ Task.perform SetGreeting Time.now ]
+            []
     in
         ( initialModel flags location, Cmd.batch commands )

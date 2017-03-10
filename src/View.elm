@@ -416,17 +416,7 @@ goNoGoGame model =
 
 setTime : Msg
 setTime =
-    GetTimeAndThen (\time -> SetTime time)
-
-
-setDeltaTime : Msg
-setDeltaTime =
-    GetTimeAndThen (\time -> SetDeltaTime time)
-
-
-startGame : Msg
-startGame =
-    GameStartAndThen (\initialTime -> GameTimeStamp initialTime)
+    GetTimeAndThen (\time -> CalcTimeDelta time)
 
 
 dotProbeGame : Model -> Html Msg
@@ -439,8 +429,7 @@ dotProbeGame model =
             , div []
                 [ ul []
                     [ li [] [ button [ class "button is-dark" ] [ text "Start Game!" ] ]
-                    , li [] [ button [ class "button is-primary", onClick setTime ] [ text "set currentTime" ] ]
-                    , li [] [ button [ class "button is-danger", onClick setDeltaTime ] [ text "set currentTimeDelta" ] ]
+                    , li [] [ button [ class "button is-primary", onClick setTime ] [ text "calc time delta" ] ]
                     ]
                 , h3 [ class "title is-3" ] [ text <| "currentTimeDelta: " ++ (toString model.currentTimeDelta) ]
                 , h3 [ class "title is-3" ] [ text <| "currentTime: " ++ (toString model.currentTime) ]
