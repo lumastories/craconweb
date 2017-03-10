@@ -13,7 +13,7 @@
         "name": "Model",
         "comment": " The data model for the entire application.\n\n",
         "args": [],
-        "type": "{ email : String , password : String , spin : Bool , activeRoute : Routing.Route , changes : Int , api : String , jwtencoded : String , jwtdecoded : Result.Result Jwt.JwtError Auth.JwtPayload , error : String , presses : List Char , user : Thing.User , menuIsActive : Bool , mainMenuItems : List Routing.MenuItem , games : List Thing.Game , greeting : String , test : String , currentTime : Time.Time , currentTimeDelta : Time.Time }"
+        "type": "{ email : String , password : String , spin : Bool , activeRoute : Routing.Route , changes : Int , api : String , jwtencoded : String , jwtdecoded : Result.Result Jwt.JwtError Auth.JwtPayload , error : String , presses : List Char , user : Thing.User , menuIsActive : Bool , mainMenuItems : List Routing.MenuItem , games : List Thing.Game , greeting : String , test : String , currentTime : Time.Time , currentTimeDelta : Time.Time , stimuli : List Thing.Stimulus , gameActions : List Thing.GameAction }"
       }
     ],
     "types": [
@@ -77,13 +77,19 @@
             []
           ],
           [
-            "Tick",
+            "GetTimeAndThen",
+            [
+              "Time.Time -> Model.Msg"
+            ]
+          ],
+          [
+            "CalcTimeDelta",
             [
               "Time.Time"
             ]
           ],
           [
-            "SetGreeting",
+            "Tick",
             [
               "Time.Time"
             ]
@@ -92,24 +98,6 @@
             "VerifyToken",
             [
               "Time.Time"
-            ]
-          ],
-          [
-            "SetTime",
-            [
-              "Time.Time"
-            ]
-          ],
-          [
-            "SetDeltaTime",
-            [
-              "Time.Time"
-            ]
-          ],
-          [
-            "GetTimeAndThen",
-            [
-              "Time.Time -> Model.Msg"
             ]
           ]
         ]

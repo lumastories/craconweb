@@ -7,13 +7,6 @@ import Html.Events exposing (..)
 import Routing as R
 
 
--- TODO Create a new logo (brain with CC - craving control, crave control)
--- TODO Select a color pallette (check color blind compatability)
--- TODO Create reset password modal
--- TODO Write decoders and encoders for swagger
--- TODO Auto generate models, encoders and decoders from swagger (whaaaa) or use IDL or GRPC -> elm
-
-
 view : Model -> Html Msg
 view model =
     let
@@ -346,6 +339,7 @@ notFoundPage model =
         ]
 
 
+badge : String -> Html Msg
 badge text_ =
     p [] [ i [ class "fa fa-certificate fa-5x" ] [], text text_ ]
 

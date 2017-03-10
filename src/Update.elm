@@ -149,6 +149,7 @@ delay t msg =
 -- delay (Time.Time.millisecond*500) cmdMsg
 
 
+emptyLocation : Navigation.Location
 emptyLocation =
     { href = ""
     , host = ""
@@ -162,23 +163,6 @@ emptyLocation =
     , username = ""
     , password = ""
     }
-
-
-
--- TODO decode json, ask for human friendly errors? Or Not
--- TODO this should probably only happen in development, otherwise
--- process error through a case and return helpful errors for the user.
-
-
-humanizeErr err =
-    toString err
-
-
-
--- Application Programing Interface
--- Uniform Resource Locators
--- REpresentational State Transfer
--- IOW, talk to Daved's code :)
 
 
 defaultHeaders : Model -> List Http.Header
