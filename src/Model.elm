@@ -1,6 +1,6 @@
-module Model exposing (Model, Flags, Msg(..), init, initialModel)
+module Model exposing (Model, Flags, Msg(..), init, initModel)
 
-{-| This is the Model, where we model and initialize our data.
+{-| This is the Model, where we model and initize our data.
 
 # Data to bootstrap the app
 @docs Flags
@@ -12,11 +12,11 @@ module Model exposing (Model, Flags, Msg(..), init, initialModel)
 @docs Msg
 
 
-# Function that initializes the model with data
+# Function that initizes the model with data
 @docs init
 
-# initial model data
-@docs initialModel
+# init model data
+@docs initModel
 
 -}
 
@@ -25,16 +25,16 @@ import Jwt
 import Auth
 import Navigation
 import Routing exposing (..)
-import Thing
+import Entity
 import Time
+import Genesis
 
 
 {-| The data model for the entire application.
 
 -}
 type alias Model =
-    { email : String
-    , password : String
+    { authRecord : Entity.AuthRecord
     , spin : Bool
     , activeRoute : Route
     , changes : Int
@@ -43,26 +43,25 @@ type alias Model =
     , jwtdecoded : Result Jwt.JwtError Auth.JwtPayload
     , error : String
     , presses : List Char
-    , user : Thing.User
+    , user : Entity.User
     , menuIsActive : Bool
     , mainMenuItems : List MenuItem
-    , games : List Thing.Game
+    , games : List Entity.Game
     , greeting : String
     , test : String
     , currentTime : Time.Time
     , currentTimeDelta : Time.Time
-    , stimuli : List Thing.Stimulus
-    , gameActions : List Thing.GameAction
+    , gimages : List Entity.Gimage
+    , gameActions : List { time : Int, stimulus : Entity.Gameplay }
     }
 
 
 {-| The data model as it is, was and will be
 
 -}
-initialModel : Flags -> Navigation.Location -> Model
-initialModel flags location =
-    { email = ""
-    , password = ""
+initModel : Flags -> Navigation.Location -> Model
+initModel flags location =
+    { authRecord = Genesis.initAuthRecord
     , spin = False
     , activeRoute = parseLocation location
     , changes = 0
@@ -71,15 +70,15 @@ initialModel flags location =
     , jwtdecoded = Jwt.decodeToken Auth.decodeJwtPayload flags.token
     , error = ""
     , presses = []
-    , user = Thing.initialUser flags.firstName
+    , user = Genesis.initUser
     , menuIsActive = False
-    , mainMenuItems = initialMenuItems
-    , games = Thing.initialGames
+    , mainMenuItems = initMenuItems
+    , games = []
     , greeting = ""
     , test = ""
     , currentTime = 0
     , currentTimeDelta = 0
-    , stimuli = Thing.someStims
+    , gimages = []
     , gameActions = []
     }
 
@@ -92,8 +91,8 @@ type Msg
     = UpdateEmail String
     | UpdatePassword String
     | TryLogin
-    | LoginResponse (Result Http.Error String)
-    | UserResponse (Result Http.Error Thing.User)
+    | LoginResponse (Result Http.Error Entity.Auth)
+    | UserResponse (Result Http.Error Entity.User)
     | Presses Char
     | UpdateLocation String
     | OnUpdateLocation Navigation.Location
@@ -121,4 +120,4 @@ init flags location =
         commands =
             []
     in
-        ( initialModel flags location, Cmd.batch commands )
+        ( initModel flags location, Cmd.batch commands )

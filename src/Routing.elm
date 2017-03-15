@@ -14,8 +14,8 @@ type alias MenuItem =
     }
 
 
-initialMenuItems : List MenuItem
-initialMenuItems =
+initMenuItems : List MenuItem
+initMenuItems =
     [ { name = "Home"
       , route = HomeRoute
       , path = homePath

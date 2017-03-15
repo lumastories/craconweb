@@ -1,7 +1,7 @@
 [
   {
     "name": "Model",
-    "comment": " This is the Model, where we model and initialize our data.\n\n# Data to bootstrap the app\n@docs Flags\n\n# How our application data should look\n@docs Model\n\n# Messages to pass throughout the application\n@docs Msg\n\n\n# Function that initializes the model with data\n@docs init\n\n# initial model data\n@docs initialModel\n\n",
+    "comment": " This is the Model, where we model and initize our data.\n\n# Data to bootstrap the app\n@docs Flags\n\n# How our application data should look\n@docs Model\n\n# Messages to pass throughout the application\n@docs Msg\n\n\n# Function that initizes the model with data\n@docs init\n\n# init model data\n@docs initModel\n\n",
     "aliases": [
       {
         "name": "Flags",
@@ -13,7 +13,7 @@
         "name": "Model",
         "comment": " The data model for the entire application.\n\n",
         "args": [],
-        "type": "{ email : String , password : String , spin : Bool , activeRoute : Routing.Route , changes : Int , api : String , jwtencoded : String , jwtdecoded : Result.Result Jwt.JwtError Auth.JwtPayload , error : String , presses : List Char , user : Thing.User , menuIsActive : Bool , mainMenuItems : List Routing.MenuItem , games : List Thing.Game , greeting : String , test : String , currentTime : Time.Time , currentTimeDelta : Time.Time , stimuli : List Thing.Stimulus , gameActions : List Thing.GameAction }"
+        "type": "{ authRecord : Entity.AuthRecord , spin : Bool , activeRoute : Routing.Route , changes : Int , api : String , jwtencoded : String , jwtdecoded : Result.Result Jwt.JwtError Auth.JwtPayload , error : String , presses : List Char , user : Entity.User , menuIsActive : Bool , mainMenuItems : List Routing.MenuItem , games : List Entity.Game , greeting : String , test : String , currentTime : Time.Time , currentTimeDelta : Time.Time , gimages : List Entity.Gimage , gameActions : List { time : Int, stimulus : Entity.Gameplay } }"
       }
     ],
     "types": [
@@ -41,13 +41,13 @@
           [
             "LoginResponse",
             [
-              "Result.Result Http.Error String"
+              "Result.Result Http.Error Entity.Auth"
             ]
           ],
           [
             "UserResponse",
             [
-              "Result.Result Http.Error Thing.User"
+              "Result.Result Http.Error Entity.User"
             ]
           ],
           [
@@ -110,7 +110,7 @@
         "type": "Model.Flags -> Navigation.Location -> ( Model.Model, Platform.Cmd.Cmd Model.Msg )"
       },
       {
-        "name": "initialModel",
+        "name": "initModel",
         "comment": " The data model as it is, was and will be\n\n",
         "type": "Model.Flags -> Navigation.Location -> Model.Model"
       }

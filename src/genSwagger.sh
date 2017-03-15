@@ -1,1 +1,0 @@
-curl http://localhost:8680/docs/swagger.json | swagger-to-elm | elm-format --stdin > Swagger.elm

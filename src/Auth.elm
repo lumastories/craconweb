@@ -4,9 +4,6 @@ import Json.Decode as Decode
 import Json.Decode.Pipeline as JP
 
 
--- import Json.Encode as Encode
-
-
 type alias JwtPayload =
     { aud : String
     , exp : Int

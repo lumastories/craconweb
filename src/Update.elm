@@ -9,11 +9,11 @@ import Json.Decode
 import Json.Decode.Pipeline as JP
 import Navigation
 import Routing exposing (..)
-import Thing
 import Auth
 import Jwt
 import Time
 import Task
+import Entity
 import Process
 
 
@@ -55,10 +55,18 @@ update msg model =
 
         -- Actions
         UpdateEmail newEmail ->
-            ( { model | email = newEmail }, Cmd.none )
+            let
+                authRecord_ =
+                    model.authRecord
+            in
+                ( { model | authRecord = { authRecord_ | email = newEmail } }, Cmd.none )
 
         UpdatePassword newPassword ->
-            ( { model | password = newPassword }, Cmd.none )
+            let
+                authRecord_ =
+                    model.authRecord
+            in
+                ( { model | authRecord = { authRecord_ | password = newPassword } }, Cmd.none )
 
         TryLogin ->
             let
@@ -68,17 +76,17 @@ update msg model =
                 ( { model | spin = True }, cmd )
 
         -- HTTP Responses
-        LoginResponse (Ok newJwtencoded) ->
+        LoginResponse (Ok auth) ->
             let
                 commands =
-                    [ Port.setItem ( "token", newJwtencoded )
+                    [ Port.setItem ( "token", auth.token )
                     , (Http.send UserResponse (getUser model))
                     ]
 
                 newJwtdecoded =
-                    Jwt.decodeToken Auth.decodeJwtPayload newJwtencoded
+                    Jwt.decodeToken Auth.decodeJwtPayload auth.token
             in
-                ( { model | jwtencoded = newJwtencoded, spin = False }, Cmd.batch commands )
+                ( { model | jwtencoded = auth.token, spin = False }, Cmd.batch commands )
 
         LoginResponse (Err err) ->
             let
@@ -128,7 +136,7 @@ update msg model =
                     , firstName = ""
                     }
             in
-                ( initialModel emptyFlags emptyLocation, Cmd.batch cmds )
+                ( initModel emptyFlags emptyLocation, Cmd.batch cmds )
 
         Tick t ->
             ( { model | currentTime = t }, Cmd.none )
@@ -182,35 +190,24 @@ defaultHeaders model =
         authHeaders
 
 
-postCreds : Model -> Http.Request String
+postCreds : Model -> Http.Request Entity.Auth
 postCreds model =
-    let
-        body =
-            encodeCreds model |> Http.jsonBody
-
-        url =
-            model.api ++ "/auth"
-
-        decoder : Json.Decode.Decoder String
-        decoder =
-            Json.Decode.field "token" (Json.Decode.string)
-    in
-        Http.request
-            { method = "POST"
-            , headers = []
-            , url = url
-            , body = body
-            , expect = Http.expectJson decoder
-            , timeout = Nothing
-            , withCredentials = False
-            }
+    Http.request
+        { method = "POST"
+        , headers = []
+        , url = (model.api ++ "/auth")
+        , body = (Entity.authRecordEncoder model.authRecord |> Http.jsonBody)
+        , expect = Http.expectJson Entity.authDecoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
 
 
-getUser : Model -> Http.Request Thing.User
+getUser : Model -> Http.Request Entity.User
 getUser model =
     let
         body =
-            encodeCreds model |> Http.jsonBody
+            (Entity.authRecordEncoder model.authRecord |> Http.jsonBody)
 
         users =
             model.api ++ "/user/"
@@ -231,7 +228,7 @@ getUser model =
 
         -- TODO send an error Http.send
         decoder =
-            decodeUser
+            Entity.userDecoder
     in
         Http.request
             { method = "GET"
@@ -242,25 +239,3 @@ getUser model =
             , timeout = Nothing
             , withCredentials = False
             }
-
-
-
--- Decoders and Encoders
-
-
-encodeCreds : Model -> Json.Encode.Value
-encodeCreds model =
-    Json.Encode.object
-        [ ( "email", Json.Encode.string model.email )
-        , ( "password", Json.Encode.string model.password )
-        ]
-
-
-decodeUser : Json.Decode.Decoder Thing.User
-decodeUser =
-    JP.decode Thing.User
-        |> JP.required "id" (Json.Decode.string)
-        |> JP.required "username" (Json.Decode.string)
-        |> JP.required "email" (Json.Decode.string)
-        |> JP.required "firstName" (Json.Decode.string)
-        |> JP.required "lastName" (Json.Decode.string)

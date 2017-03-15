@@ -5,6 +5,7 @@ import Model exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Routing as R
+import Entity
 
 
 view : Model -> Html Msg
@@ -242,7 +243,7 @@ homePageGameCards : Model -> List (Html Msg)
 homePageGameCards model =
     let
         toCard g =
-            div [ class "column" ] [ homePageGameCard g.slug g.icon g.name g.about ]
+            div [ class "column" ] [ homePageGameCard g.slug g.icon g.name g.description ]
     in
         List.map toCard model.games
 
@@ -427,7 +428,7 @@ dotProbeGame model =
                     ]
                 , h3 [ class "title is-3" ] [ text <| "currentTimeDelta: " ++ (toString model.currentTimeDelta) ]
                 , h3 [ class "title is-3" ] [ text <| "currentTime: " ++ (toString model.currentTime) ]
-                , ul [] (listOfStims model)
+                , ul [] (listOfStims model.gimages)
                 ]
             ]
         ]
@@ -438,11 +439,10 @@ liImg src_ =
     li [] [ img [ src src_ ] [] ]
 
 
-listOfStims : Model -> List (Html Msg)
-listOfStims model =
-    -- converts game data into a list of images
-    model.stimuli
-        |> List.map .src
+listOfStims : List Entity.Gimage -> List (Html Msg)
+listOfStims gimages =
+    gimages
+        |> List.map .path
         |> List.map liImg
 
 
