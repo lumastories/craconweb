@@ -202,40 +202,37 @@ postCreds model =
         , withCredentials = False
         }
 
-
+getGame : Model -> String -> Http.Request Entity.Game
+getGame model slug =
+        Http.request
+            { method = "GET"
+            , headers = defaultHeaders model
+            , url = model.api ++ "/game/" ++ slug
+            , body = (Entity.authRecordEncoder model.authRecord |> Http.jsonBody)
+            , expect = Http.expectJson Entity.gameDecoder
+            , timeout = Nothing
+            , withCredentials = False
+            }
+    
 getUser : Model -> Http.Request Entity.User
 getUser model =
     let
-        body =
-            (Entity.authRecordEncoder model.authRecord |> Http.jsonBody)
-
-        users =
-            model.api ++ "/user/"
-
         newJwtdecoded =
             (Jwt.decodeToken Auth.decodeJwtPayload model.jwtencoded)
 
-        sub =
-            Result.map .sub newJwtdecoded
-
         url =
-            case sub of
+            case (Result.map .sub newJwtdecoded) of
                 Ok userId ->
-                    users ++ userId
-
+                    model.api ++ "/user/" ++ userId
                 Err _ ->
                     ""
-
-        -- TODO send an error Http.send
-        decoder =
-            Entity.userDecoder
     in
         Http.request
             { method = "GET"
             , headers = defaultHeaders model
             , url = url
-            , body = body
-            , expect = Http.expectJson decoder
+            , body = (Entity.authRecordEncoder model.authRecord |> Http.jsonBody)
+            , expect = Http.expectJson Entity.userDecoder
             , timeout = Nothing
             , withCredentials = False
             }
