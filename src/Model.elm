@@ -46,13 +46,11 @@ type alias Model =
     , user : Entity.User
     , menuIsActive : Bool
     , mainMenuItems : List MenuItem
-    , games : List Entity.Game
     , greeting : String
     , test : String
     , currentTime : Time.Time
     , currentTimeDelta : Time.Time
-    , gimages : List Entity.Gimage
-    , gameActions : List { time : Int, stimulus : Entity.Gameplay }
+    , games : List Entity.Game
     }
 
 
@@ -73,13 +71,11 @@ initModel flags location =
     , user = Genesis.initUser
     , menuIsActive = False
     , mainMenuItems = initMenuItems
-    , games = []
     , greeting = ""
     , test = ""
     , currentTime = 0
     , currentTimeDelta = 0
-    , gimages = []
-    , gameActions = []
+    , games = []
     }
 
 
@@ -93,6 +89,7 @@ type Msg
     | TryLogin
     | LoginResponse (Result Http.Error Entity.Auth)
     | UserResponse (Result Http.Error Entity.User)
+    | GameResponse (Result Http.Error Entity.Game)
     | Presses Char
     | UpdateLocation String
     | OnUpdateLocation Navigation.Location

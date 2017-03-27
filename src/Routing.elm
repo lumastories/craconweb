@@ -123,10 +123,11 @@ matchers =
     UrlParser.oneOf
         [ UrlParser.map HomeRoute UrlParser.top
         , UrlParser.map LoginRoute (UrlParser.s "login")
-        , UrlParser.map GameRouteVs (UrlParser.s "vs")
-        , UrlParser.map GameRouteDp (UrlParser.s "dp")
-        , UrlParser.map GameRouteGn (UrlParser.s "gn")
-        , UrlParser.map GameRouteSs (UrlParser.s "ss")
+        , UrlParser.map GameRouteVs (UrlParser.s "visualsearch")
+        , UrlParser.map GameRouteDp (UrlParser.s "dotprobe")
+        , UrlParser.map GameRouteGn (UrlParser.s "gonogo")
+        , UrlParser.map GameRouteSs (UrlParser.s "stopsignal")
+        , UrlParser.map GameRouteRs (UrlParser.s "respondsignal")
         , UrlParser.map BadgesRoute (UrlParser.s "badges")
         , UrlParser.map SettingsRoute (UrlParser.s "settings")
         , UrlParser.map InstructionsRoute (UrlParser.s "instructions")

@@ -100,6 +100,11 @@ update msg model =
                 commands =
                     [ Port.setItem ( "firstName", newUser.firstName )
                     , Navigation.newUrl "/"
+                    , Http.send GameResponse (getGame model "gonogo")
+                    , Http.send GameResponse (getGame model "dotprobe")
+                    , Http.send GameResponse (getGame model "stopsignal")
+                    , Http.send GameResponse (getGame model "respondsignal")
+                    , Http.send GameResponse (getGame model "visualsearch")
                     ]
             in
                 ( { model | user = newUser, activeRoute = HomeRoute }, Cmd.batch commands )
@@ -110,6 +115,12 @@ update msg model =
                     Debug.log "login" (toString err)
             in
                 ( { model | error = "User related error" }, Cmd.none )
+        
+        GameResponse (Ok game) ->
+                ({model | games = game::model.games}, Cmd.none)
+
+        GameResponse (Err err) ->
+                model ! []
 
         Presses _ ->
             model ! []
@@ -202,18 +213,20 @@ postCreds model =
         , withCredentials = False
         }
 
+
 getGame : Model -> String -> Http.Request Entity.Game
 getGame model slug =
-        Http.request
-            { method = "GET"
-            , headers = defaultHeaders model
-            , url = model.api ++ "/game/" ++ slug
-            , body = (Entity.authRecordEncoder model.authRecord |> Http.jsonBody)
-            , expect = Http.expectJson Entity.gameDecoder
-            , timeout = Nothing
-            , withCredentials = False
-            }
-    
+    Http.request
+        { method = "GET"
+        , headers = defaultHeaders model
+        , url = model.api ++ "/game/" ++ slug
+        , body = (Entity.authRecordEncoder model.authRecord |> Http.jsonBody)
+        , expect = Http.expectJson Entity.gameDecoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
+
+
 getUser : Model -> Http.Request Entity.User
 getUser model =
     let
@@ -224,6 +237,7 @@ getUser model =
             case (Result.map .sub newJwtdecoded) of
                 Ok userId ->
                     model.api ++ "/user/" ++ userId
+
                 Err _ ->
                     ""
     in

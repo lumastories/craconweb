@@ -13,7 +13,7 @@
         "name": "Model",
         "comment": " The data model for the entire application.\n\n",
         "args": [],
-        "type": "{ authRecord : Entity.AuthRecord , spin : Bool , activeRoute : Routing.Route , changes : Int , api : String , jwtencoded : String , jwtdecoded : Result.Result Jwt.JwtError Auth.JwtPayload , error : String , presses : List Char , user : Entity.User , menuIsActive : Bool , mainMenuItems : List Routing.MenuItem , games : List Entity.Game , greeting : String , test : String , currentTime : Time.Time , currentTimeDelta : Time.Time , gimages : List Entity.Gimage , gameActions : List { time : Int, stimulus : Entity.Gameplay } }"
+        "type": "{ authRecord : Entity.AuthRecord , spin : Bool , activeRoute : Routing.Route , changes : Int , api : String , jwtencoded : String , jwtdecoded : Result.Result Jwt.JwtError Auth.JwtPayload , error : String , presses : List Char , user : Entity.User , menuIsActive : Bool , mainMenuItems : List Routing.MenuItem , greeting : String , test : String , currentTime : Time.Time , currentTimeDelta : Time.Time , games : List Entity.Game }"
       }
     ],
     "types": [
@@ -48,6 +48,12 @@
             "UserResponse",
             [
               "Result.Result Http.Error Entity.User"
+            ]
+          ],
+          [
+            "GameResponse",
+            [
+              "Result.Result Http.Error Entity.Game"
             ]
           ],
           [

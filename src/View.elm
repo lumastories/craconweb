@@ -239,19 +239,19 @@ homePageBody model =
         ]
 
 
-homePageGameCards : Model -> List (Html Msg)
-homePageGameCards model =
-    let
-        toCard g =
-            div [ class "column" ] [ homePageGameCard g.slug g.icon g.name g.description ]
-    in
-        List.map toCard model.games
-
-
 homePageGrid : Model -> Html Msg
 homePageGrid model =
     div [ class "columns" ]
         (homePageGameCards model)
+
+
+homePageGameCards : Model -> List (Html Msg)
+homePageGameCards model =
+    let
+        toCard g =
+            div [ class "column" ] [ homePageGameCard g.slug g.icon g.name g.dscript ]
+    in
+        List.map toCard model.games
 
 
 
@@ -275,7 +275,7 @@ homePageGameCard gameSlug src_ title about =
                 [ class "image is-4by3" ]
                 [ a [ href <| gameSlug, R.onLinkClick <| UpdateLocation <| gameSlug ]
                     [ img
-                        [ src src_, alt title ]
+                        [ src <| "http://localhost:8654/repo/" ++ src_, alt title ]
                         []
                     ]
                 ]
@@ -395,14 +395,25 @@ visualSearchGame model =
         ]
 
 
+
+
+gameName : Model -> String -> Maybe String
+gameName model slug_ =
+        List.filter (\g -> g.slug == slug_) model.games
+        |> List.map .name
+        |> List.head
+
 goNoGoGame model =
-    basicPage model
-        [ div
-            [ class "container" ]
-            [ h1 [ class "title is-1" ] [ text "Go/No-Go" ]
-            , div [] [ text "game goes here" ]
-            ]
-        ]
+    let
+        name = 
+                Maybe.withDefault "" (gameName model "gonogo")
+    in
+        basicPage model
+                [ div
+                [ class "container" ]
+                [ h1 [ class "title is-1" ] [ text name ]
+                ]
+                ]
 
 
 
@@ -421,15 +432,6 @@ dotProbeGame model =
             [ class "container" ]
             [ h1 [ class "title is-1" ] [ text "Dot Probe" ]
             , h3 [ class "subtitle is-3" ] [ text "work in progress" ]
-            , div []
-                [ ul []
-                    [ li [] [ button [ class "button is-dark" ] [ text "Start Game!" ] ]
-                    , li [] [ button [ class "button is-primary", onClick setTime ] [ text "calc time delta" ] ]
-                    ]
-                , h3 [ class "title is-3" ] [ text <| "currentTimeDelta: " ++ (toString model.currentTimeDelta) ]
-                , h3 [ class "title is-3" ] [ text <| "currentTime: " ++ (toString model.currentTime) ]
-                , ul [] (listOfStims model.gimages)
-                ]
             ]
         ]
 
