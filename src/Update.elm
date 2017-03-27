@@ -17,6 +17,21 @@ import Entity
 import Process
 
 
+fetchData : Model -> List (Cmd Msg)
+fetchData model =
+    case model.games of
+        [] ->
+            [ Http.send GameResponse (getGame model "gonogo")
+            , Http.send GameResponse (getGame model "dotprobe")
+            , Http.send GameResponse (getGame model "stopsignal")
+            , Http.send GameResponse (getGame model "respondsignal")
+            , Http.send GameResponse (getGame model "visualsearch")
+            ]
+
+        _ ->
+            []
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -115,12 +130,18 @@ update msg model =
                     Debug.log "login" (toString err)
             in
                 ( { model | error = "User related error" }, Cmd.none )
-        
+
         GameResponse (Ok game) ->
-                ({model | games = game::model.games}, Cmd.none)
+            ( { model | games = game :: model.games }, Cmd.none )
 
         GameResponse (Err err) ->
-                model ! []
+            model ! []
+
+        GimageResponse (Ok gimage) ->
+            ( { model | gimages = gimage :: model.gimages }, Cmd.none )
+
+        GimageResponse (Err err) ->
+            model ! []
 
         Presses _ ->
             model ! []

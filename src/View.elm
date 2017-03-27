@@ -8,51 +8,6 @@ import Routing as R
 import Entity
 
 
-view : Model -> Html Msg
-view model =
-    let
-        page =
-            case model.activeRoute of
-                R.LoginRoute ->
-                    loginPage model
-
-                R.HomeRoute ->
-                    homePage model
-
-                R.AccessDeniedRoute ->
-                    accessDeniedPage model
-
-                R.NotFoundRoute ->
-                    notFoundPage model
-
-                R.BadgesRoute ->
-                    badgesPage model
-
-                R.SettingsRoute ->
-                    settingsPage model
-
-                R.InstructionsRoute ->
-                    instructionsPage model
-
-                R.GameRouteVs ->
-                    visualSearchGame model
-
-                R.GameRouteDp ->
-                    dotProbeGame model
-
-                R.GameRouteGn ->
-                    goNoGoGame model
-
-                R.GameRouteSs ->
-                    gamePage model
-
-                R.GameRouteRs ->
-                    gamePage model
-    in
-        div [] [ page ]
-
-
-
 -- LOGIN PAGE
 
 
@@ -395,25 +350,26 @@ visualSearchGame model =
         ]
 
 
-
-
 gameName : Model -> String -> Maybe String
 gameName model slug_ =
-        List.filter (\g -> g.slug == slug_) model.games
+    List.filter (\g -> g.slug == slug_) model.games
         |> List.map .name
         |> List.head
 
+
 goNoGoGame model =
     let
-        name = 
-                Maybe.withDefault "" (gameName model "gonogo")
+        name =
+            Maybe.withDefault "" (gameName model "gonogo")
     in
         basicPage model
-                [ div
+            [ div
                 [ class "container" ]
                 [ h1 [ class "title is-1" ] [ text name ]
+                , code [] [ model.games |> toString |> text ]
+                , code [] [ model.gimages |> toString |> text ]
                 ]
-                ]
+            ]
 
 
 
@@ -475,7 +431,7 @@ style_ rawStyles =
 
 toStyle : String -> List ( String, String )
 toStyle styles =
-    -- "a:b;c:d;" |>|>|> [("a", "b"), ("c","d")]
+    -- "a:b;c:d;" >>> [("a", "b"), ("c","d")]
     let
         toTuple list =
             case list of
@@ -496,11 +452,50 @@ sizePx size =
     (toString size) ++ "px"
 
 
-centerStyled : Attribute msg
-centerStyled =
-    style [ ( "text-align", "center" ) ]
-
-
 logo : Int -> Html Msg
 logo size =
-    p [ centerStyled ] [ img [ class "logo is-vcentered", src "img/logo.svg", style [ ( "max-width", sizePx size ) ] ] [] ]
+    p [ style [ ( "text-align", "center" ) ] ] [ img [ class "logo is-vcentered", src "img/logo.svg", style [ ( "max-width", sizePx size ) ] ] [] ]
+
+
+view : Model -> Html Msg
+view model =
+    let
+        page =
+            case model.activeRoute of
+                R.LoginRoute ->
+                    loginPage model
+
+                R.HomeRoute ->
+                    homePage model
+
+                R.AccessDeniedRoute ->
+                    accessDeniedPage model
+
+                R.NotFoundRoute ->
+                    notFoundPage model
+
+                R.BadgesRoute ->
+                    badgesPage model
+
+                R.SettingsRoute ->
+                    settingsPage model
+
+                R.InstructionsRoute ->
+                    instructionsPage model
+
+                R.GameRouteVs ->
+                    visualSearchGame model
+
+                R.GameRouteDp ->
+                    dotProbeGame model
+
+                R.GameRouteGn ->
+                    goNoGoGame model
+
+                R.GameRouteSs ->
+                    gamePage model
+
+                R.GameRouteRs ->
+                    gamePage model
+    in
+        div [] [ page ]

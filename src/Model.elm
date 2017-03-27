@@ -51,6 +51,7 @@ type alias Model =
     , currentTime : Time.Time
     , currentTimeDelta : Time.Time
     , games : List Entity.Game
+    , gimages : List Entity.Gimage
     }
 
 
@@ -76,6 +77,7 @@ initModel flags location =
     , currentTime = 0
     , currentTimeDelta = 0
     , games = []
+    , gimages = []
     }
 
 
@@ -90,6 +92,7 @@ type Msg
     | LoginResponse (Result Http.Error Entity.Auth)
     | UserResponse (Result Http.Error Entity.User)
     | GameResponse (Result Http.Error Entity.Game)
+    | GimageResponse (Result Http.Error Entity.Gimage)
     | Presses Char
     | UpdateLocation String
     | OnUpdateLocation Navigation.Location
