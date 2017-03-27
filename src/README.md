@@ -6,6 +6,8 @@
 
 The http server will run on :8680. See `/swagger` for docs.
 
+`ecrac` to generate Entity.elm 
+
 
 ### Files
 
