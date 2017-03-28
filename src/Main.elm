@@ -10,6 +10,7 @@ import Routing
 import Time
 import Update
 import View
+import Http
 
 
 main : Program Flags Model.Model Model.Msg
@@ -33,53 +34,49 @@ subscriptions model =
 init : Flags -> Navigation.Location -> ( Model.Model, Cmd Model.Msg )
 init flags location =
     let
-        api_ =
-            "http://localhost:8680"
+        ( api_, jwtdecoded_, jwtencoded_ ) =
+            ( "http://localhost:8680", Api.jwtDecoded flags.token, flags.token )
 
-        jwtdecoded_ =
-            Api.jwtDecoded flags.token
-
-        activeRoute_ =
+        ( visitor_, route_, commands_ ) =
             case jwtdecoded_ of
-                Ok _ ->
-                    Routing.parseLocation location
+                Ok jwtdecoded ->
+                    ( Model.LoggedIn jwtdecoded, Routing.parseLocation location, initData api_ jwtencoded_ )
 
                 Err _ ->
-                    Routing.LoginRoute
-
-        initCommands =
-            case jwtdecoded_ of
-                Ok _ ->
-                    Api.initData api_ flags.token
-
-                Err _ ->
-                    []
+                    ( Model.Anonymous, Routing.LoginRoute, [] )
 
         initModel =
-            { authRecord = Empty.emptyAuthRecord
+            { api = api_
+            , jwtencoded = jwtencoded_
             , spin = False
-            , activeRoute = activeRoute_
-            , changes = 0
-            , api = api_
-            , jwtencoded = flags.token
-            , jwtdecoded = jwtdecoded_
+            , activeRoute = route_
             , error = ""
             , presses = []
-            , user = Empty.emptyUser
+            , visitor = visitor_
             , menuIsActive = False
             , mainMenuItems = Routing.initMenuItems
-            , greeting = ""
-            , test = ""
             , currentTime = 0
             , currentTimeDelta = 0
+            , user = Empty.emptyUser
+            , authRecord = Empty.emptyAuthRecord
             , games = []
             , gimages = []
             }
     in
-        ( initModel, Cmd.batch initCommands )
+        ( initModel, Cmd.batch commands_ )
 
 
 type alias Flags =
     { token : String
     , firstName : String
     }
+
+
+initData : String -> String -> List (Cmd Model.Msg)
+initData api token =
+    [ Http.send Model.GameResponse (Api.getGame api token "gonogo")
+    , Http.send Model.GameResponse (Api.getGame api token "dotprobe")
+    , Http.send Model.GameResponse (Api.getGame api token "stopsignal")
+    , Http.send Model.GameResponse (Api.getGame api token "respondsignal")
+    , Http.send Model.GameResponse (Api.getGame api token "visualsearch")
+    ]

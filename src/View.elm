@@ -20,8 +20,7 @@ loginPage model =
                     [ logo loginPageLogoWidth
                     , loginPageBoxForm model
                     , p [ class "has-text-centered" ]
-                        [ em [] [ text model.greeting ]
-                        , em [] [ text model.error ]
+                        [ em [] [ text model.error ]
                         ]
                     ]
                 ]

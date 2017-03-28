@@ -1,11 +1,20 @@
 module Api exposing (..)
 
-import Model exposing (..)
 import Entity
 import Http
 import Json.Decode as Decode
 import Json.Decode.Pipeline as JP
 import Jwt
+
+
+type alias JwtPayload =
+    { aud : String
+    , exp : Int
+    , iat : Int
+    , iss : String
+    , sub : String
+    , roles : List Entity.Role
+    }
 
 
 jwtDecoded token =
@@ -40,13 +49,13 @@ defaultHeaders jwtencoded =
         authHeaders
 
 
-postCreds : Model.Model -> Http.Request Entity.Auth
-postCreds model =
+postCreds : String -> Entity.AuthRecord -> Http.Request Entity.Auth
+postCreds api authRecord =
     Http.request
         { method = "POST"
         , headers = []
-        , url = (model.api ++ "/auth")
-        , body = (Entity.authRecordEncoder model.authRecord |> Http.jsonBody)
+        , url = api ++ "/auth"
+        , body = (Entity.authRecordEncoder authRecord |> Http.jsonBody)
         , expect = Http.expectJson Entity.authDecoder
         , timeout = Nothing
         , withCredentials = False
@@ -77,13 +86,3 @@ getUser api token sub =
         , timeout = Nothing
         , withCredentials = False
         }
-
-
-initData : String -> String -> List (Cmd Msg)
-initData api token =
-    [ Http.send GameResponse (getGame api token "gonogo")
-    , Http.send GameResponse (getGame api token "dotprobe")
-    , Http.send GameResponse (getGame api token "stopsignal")
-    , Http.send GameResponse (getGame api token "respondsignal")
-    , Http.send GameResponse (getGame api token "visualsearch")
-    ]

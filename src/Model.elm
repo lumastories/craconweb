@@ -1,4 +1,4 @@
-module Model exposing (Model, Msg(..), JwtPayload)
+module Model exposing (..)
 
 import Http
 import Jwt
@@ -6,38 +6,31 @@ import Navigation
 import Routing
 import Entity
 import Time
+import Api
 
 
 type alias Model =
-    { authRecord : Entity.AuthRecord
+    { api : String
+    , jwtencoded : String
     , spin : Bool
     , activeRoute : Routing.Route
-    , changes : Int
-    , api : String
-    , jwtencoded : String
-    , jwtdecoded : Result Jwt.JwtError JwtPayload
     , error : String
     , presses : List Char
-    , user : Entity.User
+    , visitor : Visitor
     , menuIsActive : Bool
     , mainMenuItems : List Routing.MenuItem
-    , greeting : String
-    , test : String
     , currentTime : Time.Time
     , currentTimeDelta : Time.Time
+    , user : Entity.User
+    , authRecord : Entity.AuthRecord
     , games : List Entity.Game
     , gimages : List Entity.Gimage
     }
 
 
-type alias JwtPayload =
-    { aud : String
-    , exp : Int
-    , iat : Int
-    , iss : String
-    , sub : String
-    , roles : List Entity.Role
-    }
+type Visitor
+    = Anonymous
+    | LoggedIn Api.JwtPayload
 
 
 type Msg

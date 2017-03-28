@@ -29,23 +29,25 @@ update msg model =
                     , Task.perform VerifyToken Time.now
                     ]
             in
-                ( { model | changes = model.changes + 1 }, Cmd.batch cmds )
+                ( model, Cmd.batch cmds )
 
         VerifyToken now ->
             let
-                jwtExpired =
-                    Jwt.isExpired now model.jwtencoded
+                expired =
+                    case model.visitor of
+                        LoggedIn jwt ->
+                            (toFloat jwt.exp) < now
 
-                commands =
-                    case jwtExpired of
-                        Ok _ ->
-                            []
+                        _ ->
+                            True
 
-                        -- TODO Logout!
-                        Err _ ->
-                            []
+                ( model_, cmds ) =
+                    if expired then
+                        ( Empty.emptyModel model, [ Port.clearLocalStorage True, Navigation.newUrl "/login" ] )
+                    else
+                        ( model, [] )
             in
-                ( model, Cmd.batch commands )
+                ( model_, Cmd.batch cmds )
 
         OnUpdateLocation location ->
             let
@@ -72,27 +74,24 @@ update msg model =
         TryLogin ->
             let
                 cmd =
-                    Http.send LoginResponse (Api.postCreds model)
+                    Http.send LoginResponse (Api.postCreds model.api model.authRecord)
             in
                 ( { model | spin = True }, cmd )
 
         -- HTTP Responses
         LoginResponse (Ok auth) ->
             let
-                jwtdecoded_ =
-                    Api.jwtDecoded auth.token
-
                 commands =
-                    case jwtdecoded_ of
-                        Ok jwt ->
+                    case model.visitor of
+                        LoggedIn jwt ->
                             [ Port.setItem ( "token", auth.token )
                             , Http.send UserResponse (Api.getUser model.api auth.token jwt.sub)
                             ]
 
-                        Err err ->
+                        Anonymous ->
                             []
             in
-                ( { model | jwtencoded = auth.token, spin = False }, Cmd.batch commands )
+                ( { model | spin = False }, Cmd.batch commands )
 
         LoginResponse (Err err) ->
             let
@@ -157,7 +156,7 @@ update msg model =
                     , Navigation.newUrl "/login"
                     ]
             in
-                ( Empty.emptyModel, Cmd.batch cmds )
+                ( Empty.emptyModel model, Cmd.batch cmds )
 
         Tick t ->
             ( { model | currentTime = t }, Cmd.none )
