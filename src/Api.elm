@@ -17,6 +17,7 @@ type alias JwtPayload =
     }
 
 
+jwtDecoded : String -> Result Jwt.JwtError JwtPayload
 jwtDecoded token =
     Jwt.decodeToken decodeJwtPayload token
 

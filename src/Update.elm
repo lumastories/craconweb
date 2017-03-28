@@ -81,17 +81,25 @@ update msg model =
         -- HTTP Responses
         LoginResponse (Ok auth) ->
             let
-                commands =
-                    case model.visitor of
-                        LoggedIn jwt ->
-                            [ Port.setItem ( "token", auth.token )
-                            , Http.send UserResponse (Api.getUser model.api auth.token jwt.sub)
-                            ]
+                -- extract sub from jwt
+                -- if Ok, proceed
+                -- otherwise display error
+                jwtdecoded_ =
+                    Api.jwtDecoded auth.token
 
-                        Anonymous ->
-                            []
+                ( model_, commands_ ) =
+                    case jwtdecoded_ of
+                        Ok jwt ->
+                            ( { model | spin = False, visitor = LoggedIn jwt, jwtencoded = auth.token }
+                            , [ Port.setItem ( "token", auth.token )
+                              , Http.send UserResponse (Api.getUser model.api auth.token jwt.sub)
+                              ]
+                            )
+
+                        Err err ->
+                            ( { model | spin = False, error = toString err }, [] )
             in
-                ( { model | spin = False }, Cmd.batch commands )
+                ( model_, Cmd.batch commands_ )
 
         LoginResponse (Err err) ->
             let
