@@ -9,28 +9,13 @@ import Json.Decode
 import Json.Decode.Pipeline as JP
 import Navigation
 import Routing exposing (..)
-import Auth
 import Jwt
 import Time
 import Task
 import Entity
 import Process
 import Empty
-
-
-fetchData : Model -> List (Cmd Msg)
-fetchData model =
-    case model.games of
-        [] ->
-            [ Http.send GameResponse (getGame model "gonogo")
-            , Http.send GameResponse (getGame model "dotprobe")
-            , Http.send GameResponse (getGame model "stopsignal")
-            , Http.send GameResponse (getGame model "respondsignal")
-            , Http.send GameResponse (getGame model "visualsearch")
-            ]
-
-        _ ->
-            []
+import Api
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -40,10 +25,9 @@ update msg model =
         UpdateLocation path ->
             let
                 cmds =
-                    List.append (fetchData model)
-                        [ Navigation.newUrl path
-                        , Task.perform VerifyToken Time.now
-                        ]
+                    [ Navigation.newUrl path
+                    , Task.perform VerifyToken Time.now
+                    ]
             in
                 ( { model | changes = model.changes + 1 }, Cmd.batch cmds )
 
@@ -52,16 +36,16 @@ update msg model =
                 jwtExpired =
                     Jwt.isExpired now model.jwtencoded
 
-                jwtExpiredCmd =
+                commands =
                     case jwtExpired of
                         Ok _ ->
-                            Cmd.none
+                            []
 
                         -- TODO Logout!
                         Err _ ->
-                            Cmd.none
+                            []
             in
-                ( model, jwtExpiredCmd )
+                ( model, Cmd.batch commands )
 
         OnUpdateLocation location ->
             let
@@ -88,20 +72,25 @@ update msg model =
         TryLogin ->
             let
                 cmd =
-                    Http.send LoginResponse (postCreds model)
+                    Http.send LoginResponse (Api.postCreds model)
             in
                 ( { model | spin = True }, cmd )
 
         -- HTTP Responses
         LoginResponse (Ok auth) ->
             let
-                commands =
-                    [ Port.setItem ( "token", auth.token )
-                    , (Http.send UserResponse (getUser model))
-                    ]
+                jwtdecoded_ =
+                    Api.jwtDecoded auth.token
 
-                newJwtdecoded =
-                    Jwt.decodeToken Auth.decodeJwtPayload auth.token
+                commands =
+                    case jwtdecoded_ of
+                        Ok jwt ->
+                            [ Port.setItem ( "token", auth.token )
+                            , Http.send UserResponse (Api.getUser model.api auth.token jwt.sub)
+                            ]
+
+                        Err err ->
+                            []
             in
                 ( { model | jwtencoded = auth.token, spin = False }, Cmd.batch commands )
 
@@ -114,14 +103,17 @@ update msg model =
 
         UserResponse (Ok newUser) ->
             let
+                getGame_ s =
+                    Api.getGame model.api model.jwtencoded s
+
                 commands =
                     [ Port.setItem ( "firstName", newUser.firstName )
                     , Navigation.newUrl "/"
-                    , Http.send GameResponse (getGame model "gonogo")
-                    , Http.send GameResponse (getGame model "dotprobe")
-                    , Http.send GameResponse (getGame model "stopsignal")
-                    , Http.send GameResponse (getGame model "respondsignal")
-                    , Http.send GameResponse (getGame model "visualsearch")
+                    , Http.send GameResponse (getGame_ "gonogo")
+                    , Http.send GameResponse (getGame_ "dotprobe")
+                    , Http.send GameResponse (getGame_ "stopsignal")
+                    , Http.send GameResponse (getGame_ "respondsignal")
+                    , Http.send GameResponse (getGame_ "visualsearch")
                     ]
             in
                 ( { model | user = newUser, activeRoute = HomeRoute }, Cmd.batch commands )
@@ -137,7 +129,7 @@ update msg model =
             ( { model | games = game :: model.games }, Cmd.none )
 
         GameResponse (Err err) ->
-            model ! []
+            ( { model | error = (toString err) }, Cmd.none )
 
         GimageResponse (Ok gimage) ->
             ( { model | gimages = gimage :: model.gimages }, Cmd.none )
@@ -184,71 +176,3 @@ delay t msg =
 
 
 -- delay (Time.Time.millisecond*500) cmdMsg
-
-
-defaultHeaders : Model -> List Http.Header
-defaultHeaders model =
-    let
-        headers =
-            [ Http.header "Accept" "application/json" ]
-
-        authHeaders =
-            case model.jwtencoded of
-                "" ->
-                    headers
-
-                _ ->
-                    (Http.header "Authorization" ("Bearer " ++ model.jwtencoded)) :: headers
-    in
-        authHeaders
-
-
-postCreds : Model -> Http.Request Entity.Auth
-postCreds model =
-    Http.request
-        { method = "POST"
-        , headers = []
-        , url = (model.api ++ "/auth")
-        , body = (Entity.authRecordEncoder model.authRecord |> Http.jsonBody)
-        , expect = Http.expectJson Entity.authDecoder
-        , timeout = Nothing
-        , withCredentials = False
-        }
-
-
-getGame : Model -> String -> Http.Request Entity.Game
-getGame model slug =
-    Http.request
-        { method = "GET"
-        , headers = defaultHeaders model
-        , url = model.api ++ "/game/" ++ slug
-        , body = (Entity.authRecordEncoder model.authRecord |> Http.jsonBody)
-        , expect = Http.expectJson Entity.gameDecoder
-        , timeout = Nothing
-        , withCredentials = False
-        }
-
-
-getUser : Model -> Http.Request Entity.User
-getUser model =
-    let
-        newJwtdecoded =
-            (Jwt.decodeToken Auth.decodeJwtPayload model.jwtencoded)
-
-        url =
-            case (Result.map .sub newJwtdecoded) of
-                Ok userId ->
-                    model.api ++ "/user/" ++ userId
-
-                Err _ ->
-                    ""
-    in
-        Http.request
-            { method = "GET"
-            , headers = defaultHeaders model
-            , url = url
-            , body = (Entity.authRecordEncoder model.authRecord |> Http.jsonBody)
-            , expect = Http.expectJson Entity.userDecoder
-            , timeout = Nothing
-            , withCredentials = False
-            }

@@ -3,8 +3,31 @@ module Empty exposing (..)
 import Entity
 import Model
 import Routing
-import Auth
+import Api
 import Navigation
+
+
+emptyModel : Model.Model
+emptyModel =
+    { authRecord = emptyAuthRecord
+    , spin = False
+    , activeRoute = Routing.LoginRoute
+    , changes = 0
+    , api = ""
+    , jwtencoded = ""
+    , jwtdecoded = Api.jwtDecoded ""
+    , error = ""
+    , presses = []
+    , user = emptyUser
+    , menuIsActive = False
+    , mainMenuItems = Routing.initMenuItems
+    , greeting = ""
+    , test = ""
+    , currentTime = 0
+    , currentTimeDelta = 0
+    , games = []
+    , gimages = []
+    }
 
 
 emptyUser : Entity.User
@@ -45,27 +68,4 @@ emptyLocation =
     , hash = ""
     , username = ""
     , password = ""
-    }
-
-
-emptyModel : Model.Model
-emptyModel =
-    { authRecord = emptyAuthRecord
-    , spin = False
-    , activeRoute = Routing.LoginRoute
-    , changes = 0
-    , api = "http://localhost:8680"
-    , jwtencoded = ""
-    , jwtdecoded = Auth.jwtDecoded ""
-    , error = ""
-    , presses = []
-    , user = emptyUser
-    , menuIsActive = False
-    , mainMenuItems = Routing.initMenuItems
-    , greeting = ""
-    , test = ""
-    , currentTime = 0
-    , currentTimeDelta = 0
-    , games = []
-    , gimages = []
     }

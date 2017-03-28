@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Auth
+import Api
 import Char
 import Empty
 import Keyboard exposing (..)
@@ -37,7 +37,7 @@ init flags location =
             "http://localhost:8680"
 
         jwtdecoded_ =
-            Auth.jwtDecoded flags.token
+            Api.jwtDecoded flags.token
 
         activeRoute_ =
             case jwtdecoded_ of
@@ -50,7 +50,7 @@ init flags location =
         initCommands =
             case jwtdecoded_ of
                 Ok _ ->
-                    []
+                    Api.initData api_ flags.token
 
                 Err _ ->
                     []

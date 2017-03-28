@@ -1,8 +1,7 @@
-module Model exposing (Model, Msg(..))
+module Model exposing (Model, Msg(..), JwtPayload)
 
 import Http
 import Jwt
-import Auth
 import Navigation
 import Routing
 import Entity
@@ -16,7 +15,7 @@ type alias Model =
     , changes : Int
     , api : String
     , jwtencoded : String
-    , jwtdecoded : Result Jwt.JwtError Auth.JwtPayload
+    , jwtdecoded : Result Jwt.JwtError JwtPayload
     , error : String
     , presses : List Char
     , user : Entity.User
@@ -28,6 +27,16 @@ type alias Model =
     , currentTimeDelta : Time.Time
     , games : List Entity.Game
     , gimages : List Entity.Gimage
+    }
+
+
+type alias JwtPayload =
+    { aud : String
+    , exp : Int
+    , iat : Int
+    , iss : String
+    , sub : String
+    , roles : List Entity.Role
     }
 
 
