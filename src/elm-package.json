@@ -6,9 +6,7 @@
     "source-directories": [
         "."
     ],
-    "exposed-modules": [
-        "Model"
-    ],
+    "exposed-modules": [],
     "dependencies": {
         "Fresheyeball/elm-font-awesome": "2.0.2 <= v < 3.0.0",
         "NoRedInk/elm-decode-pipeline": "3.0.0 <= v < 4.0.0",

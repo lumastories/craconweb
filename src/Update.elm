@@ -15,6 +15,7 @@ import Time
 import Task
 import Entity
 import Process
+import Empty
 
 
 fetchData : Model -> List (Cmd Msg)
@@ -39,9 +40,10 @@ update msg model =
         UpdateLocation path ->
             let
                 cmds =
-                    [ Navigation.newUrl path
-                    , Task.perform VerifyToken Time.now
-                    ]
+                    List.append (fetchData model)
+                        [ Navigation.newUrl path
+                        , Task.perform VerifyToken Time.now
+                        ]
             in
                 ( { model | changes = model.changes + 1 }, Cmd.batch cmds )
 
@@ -162,13 +164,8 @@ update msg model =
                     [ Port.clearLocalStorage True
                     , Navigation.newUrl "/login"
                     ]
-
-                emptyFlags =
-                    { token = ""
-                    , firstName = ""
-                    }
             in
-                ( initModel emptyFlags emptyLocation, Cmd.batch cmds )
+                ( Empty.emptyModel, Cmd.batch cmds )
 
         Tick t ->
             ( { model | currentTime = t }, Cmd.none )
@@ -187,22 +184,6 @@ delay t msg =
 
 
 -- delay (Time.Time.millisecond*500) cmdMsg
-
-
-emptyLocation : Navigation.Location
-emptyLocation =
-    { href = ""
-    , host = ""
-    , hostname = ""
-    , protocol = ""
-    , origin = ""
-    , port_ = ""
-    , pathname = ""
-    , search = ""
-    , hash = ""
-    , username = ""
-    , password = ""
-    }
 
 
 defaultHeaders : Model -> List Http.Header
