@@ -1,10 +1,10 @@
 module Empty exposing (..)
 
+import Api
 import Entity
 import Model
-import Routing
-import Api
 import Navigation
+import Routing
 
 
 emptyModel : Model.Model -> Model.Model
@@ -24,6 +24,14 @@ emptyModel model =
         , authRecord = emptyAuthRecord
         , games = []
         , gimages = []
+    }
+
+
+emptyAdminModel : Model.AdminModel
+emptyAdminModel =
+    { users =
+        []
+        -- TODO user registration data modelling
     }
 
 

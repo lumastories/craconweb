@@ -3,6 +3,7 @@ module Main exposing (..)
 import Api
 import Char
 import Empty
+import Http
 import Keyboard exposing (..)
 import Model
 import Navigation
@@ -10,7 +11,6 @@ import Routing
 import Time
 import Update
 import View
-import Http
 
 
 main : Program Flags Model.Model Model.Msg
@@ -61,6 +61,7 @@ init flags location =
             , authRecord = Empty.emptyAuthRecord
             , games = []
             , gimages = []
+            , adminModel = Empty.emptyAdminModel
             }
     in
         ( initModel, Cmd.batch commands_ )

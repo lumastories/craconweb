@@ -1,11 +1,12 @@
 module View exposing (view)
 
+import Admin.View as Admin
+import Entity
 import Html exposing (..)
-import Model exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Model exposing (..)
 import Routing as R
-import Entity
 
 
 -- LOGIN PAGE
@@ -76,7 +77,7 @@ loginPageBoxForm model =
             , hr []
                 []
             , p [ class "control" ]
-                [ button [ class <| loginPageButtonClass model.spin, onClick TryLogin ] [ text "Let's Go!" ]
+                [ button [ class <| loginPageButtonClass model.spin, type_ "submit" ] [ text "Let's Go!" ]
                 ]
             ]
         ]
@@ -108,14 +109,21 @@ navLink text_ activeRoute ( route, linkPath ) hidden =
             [ text text_ ]
 
 
-navToggle : Html Msg
-navToggle =
-    span
-        [ class "nav-toggle" ]
-        [ span [] []
-        , span [] []
-        , span [] []
-        ]
+navToggler : Model -> Html Msg
+navToggler model =
+    let
+        class_ =
+            if model.menuIsActive then
+                "nav-toggle is-active"
+            else
+                "nav-toggle"
+    in
+        span
+            [ class class_, onClick MainMenuToggle ]
+            [ span [] []
+            , span [] []
+            , span [] []
+            ]
 
 
 navBarMenuLeftItems : Model -> List (Html Msg)
@@ -148,9 +156,7 @@ navBar model =
             [ div
                 [ class "nav-left" ]
                 (navBarMenuLeftItems model)
-            , span
-                [ class "nav-toggle", onClick MainMenuToggle ]
-                [ span [] [], span [] [], span [] [] ]
+            , navToggler model
             , navRight model
             ]
         ]
@@ -461,6 +467,9 @@ view model =
     let
         page =
             case model.activeRoute of
+                R.AdminRoute ->
+                    Admin.adminPage model
+
                 R.LoginRoute ->
                     loginPage model
 

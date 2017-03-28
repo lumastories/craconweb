@@ -1,10 +1,10 @@
 module Routing exposing (..)
 
+import Html exposing (Attribute)
+import Html.Events exposing (onWithOptions)
+import Json.Decode as Decode
 import Navigation
 import UrlParser exposing (..)
-import Json.Decode as Decode
-import Html.Events exposing (onWithOptions)
-import Html exposing (Attribute)
 
 
 type alias MenuItem =
@@ -79,6 +79,7 @@ type Route
     | BadgesRoute
     | SettingsRoute
     | InstructionsRoute
+    | AdminRoute
 
 
 homePath : String
@@ -89,6 +90,11 @@ homePath =
 loginPath : String
 loginPath =
     "/login"
+
+
+adminPath : String
+adminPath =
+    "/admin"
 
 
 logoutPath : String
@@ -131,4 +137,5 @@ matchers =
         , UrlParser.map BadgesRoute (UrlParser.s "badges")
         , UrlParser.map SettingsRoute (UrlParser.s "settings")
         , UrlParser.map InstructionsRoute (UrlParser.s "instructions")
+        , UrlParser.map AdminRoute (UrlParser.s "admin")
         ]

@@ -1,26 +1,34 @@
 module Update exposing (update)
 
-import Model exposing (..)
+import Admin.Update as Admin
+import Api
+import Empty
+import Entity
 import Http
-import Navigation
-import Port
-import Json.Encode
 import Json.Decode
 import Json.Decode.Pipeline as JP
-import Navigation
-import Routing exposing (..)
+import Json.Encode
 import Jwt
-import Time
-import Task
-import Entity
+import Model exposing (..)
+import Navigation
+import Navigation
+import Port
 import Process
-import Empty
-import Api
+import Routing exposing (..)
+import Task
+import Time
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        MessageAdmin msg_ ->
+            let
+                ( model_, cmds_ ) =
+                    Admin.update msg_ model
+            in
+                ( model_, cmds_ )
+
         -- Routing
         UpdateLocation path ->
             let
@@ -36,7 +44,7 @@ update msg model =
                 expired =
                     case model.visitor of
                         LoggedIn jwt ->
-                            (toFloat jwt.exp) < now
+                            (toFloat jwt.exp) > now
 
                         _ ->
                             True
@@ -81,9 +89,6 @@ update msg model =
         -- HTTP Responses
         LoginResponse (Ok auth) ->
             let
-                -- extract sub from jwt
-                -- if Ok, proceed
-                -- otherwise display error
                 jwtdecoded_ =
                     Api.jwtDecoded auth.token
 
@@ -110,18 +115,31 @@ update msg model =
 
         UserResponse (Ok newUser) ->
             let
-                getGame_ s =
-                    Api.getGame model.api model.jwtencoded s
+                isAdmin =
+                    case model.visitor of
+                        LoggedIn jwt ->
+                            List.map .name jwt.roles
+                                |> List.member "admin"
+
+                        _ ->
+                            False
 
                 commands =
-                    [ Port.setItem ( "firstName", newUser.firstName )
-                    , Navigation.newUrl "/"
-                    , Http.send GameResponse (getGame_ "gonogo")
-                    , Http.send GameResponse (getGame_ "dotprobe")
-                    , Http.send GameResponse (getGame_ "stopsignal")
-                    , Http.send GameResponse (getGame_ "respondsignal")
-                    , Http.send GameResponse (getGame_ "visualsearch")
-                    ]
+                    case isAdmin of
+                        True ->
+                            [ Navigation.newUrl "/admin"
+                              --, Http.send UsersResponse Api.getUsers model.api model.jwtencoded
+                            ]
+
+                        False ->
+                            [ Port.setItem ( "firstName", newUser.firstName )
+                            , Navigation.newUrl "/"
+                            , Http.send GameResponse (Api.getGame model.api model.jwtencoded "gonogo")
+                            , Http.send GameResponse (Api.getGame model.api model.jwtencoded "dotprobe")
+                            , Http.send GameResponse (Api.getGame model.api model.jwtencoded "stopsignal")
+                            , Http.send GameResponse (Api.getGame model.api model.jwtencoded "respondsignal")
+                            , Http.send GameResponse (Api.getGame model.api model.jwtencoded "visualsearch")
+                            ]
             in
                 ( { model | user = newUser, activeRoute = HomeRoute }, Cmd.batch commands )
 

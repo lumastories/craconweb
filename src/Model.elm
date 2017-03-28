@@ -1,12 +1,12 @@
 module Model exposing (..)
 
+import Api
+import Entity
 import Http
 import Jwt
 import Navigation
 import Routing
-import Entity
 import Time
-import Api
 
 
 type alias Model =
@@ -25,6 +25,14 @@ type alias Model =
     , authRecord : Entity.AuthRecord
     , games : List Entity.Game
     , gimages : List Entity.Gimage
+    , adminModel : AdminModel
+    }
+
+
+type alias AdminModel =
+    { users :
+        List Entity.User
+        -- todo user registration modelling
     }
 
 
@@ -50,3 +58,8 @@ type Msg
     | CalcTimeDelta Time.Time
     | Tick Time.Time
     | VerifyToken Time.Time
+    | MessageAdmin AdminMsg
+
+
+type AdminMsg
+    = UsersResponse (Result Http.Error (List Entity.User))
