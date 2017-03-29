@@ -94,7 +94,7 @@ getUsers api token =
     Http.request
         { method = "GET"
         , headers = defaultHeaders token
-        , url = api ++ "/users?createdFirst=2017-01-29T00%3A34%3A56.664Z&createdFinal=2017-05-29T00%3A34%3A56.664Z&createdDesc=true"
+        , url = api ++ "/users?createdEach=true"
         , body = Http.emptyBody
         , expect = Http.expectJson usersListDecoder
         , timeout = Nothing
