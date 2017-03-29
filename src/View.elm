@@ -468,7 +468,8 @@ view model =
         page =
             case model.activeRoute of
                 R.AdminRoute ->
-                    Admin.adminPage model
+                    -- TODO map AdminMsg to Msg (prefix with MessageAdmin?) use Html.map
+                    Admin.adminPage model |> Html.map MessageAdmin
 
                 R.LoginRoute ->
                     loginPage model

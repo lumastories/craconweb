@@ -87,3 +87,25 @@ getUser api token sub =
         , timeout = Nothing
         , withCredentials = False
         }
+
+
+getUsers : String -> String -> Http.Request UsersList
+getUsers api token =
+    Http.request
+        { method = "GET"
+        , headers = defaultHeaders token
+        , url = api ++ "/users?createdFirst=2017-01-29T00%3A34%3A56.664Z&createdFinal=2017-05-29T00%3A34%3A56.664Z&createdDesc=true"
+        , body = Http.emptyBody
+        , expect = Http.expectJson usersListDecoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
+
+
+usersListDecoder =
+    JP.decode UsersList |> JP.required "users" (Decode.list Entity.userDecoder)
+
+
+type alias UsersList =
+    { users : List Entity.User
+    }

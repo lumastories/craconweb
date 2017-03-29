@@ -62,4 +62,5 @@ type Msg
 
 
 type AdminMsg
-    = UsersResponse (Result Http.Error (List Entity.User))
+    = FetchUsers
+    | UsersResponse (Result Http.Error Api.UsersList)

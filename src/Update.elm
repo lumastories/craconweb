@@ -27,7 +27,7 @@ update msg model =
                 ( model_, cmds_ ) =
                     Admin.update msg_ model
             in
-                ( model_, cmds_ )
+                ( model_, cmds_ |> Cmd.map MessageAdmin )
 
         -- Routing
         UpdateLocation path ->
@@ -128,7 +128,6 @@ update msg model =
                     case isAdmin of
                         True ->
                             [ Navigation.newUrl "/admin"
-                              --, Http.send UsersResponse Api.getUsers model.api model.jwtencoded
                             ]
 
                         False ->
