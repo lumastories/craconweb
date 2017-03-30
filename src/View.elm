@@ -77,6 +77,14 @@ loginPageBoxForm model =
 
 
 
+-- ROUTING HELPERS
+
+
+linkAttrs path =
+    [ href <| path, R.onLinkClick <| UpdateLocation path ]
+
+
+
 -- NAV BAR
 
 
@@ -89,7 +97,7 @@ navBar model =
                 [ logo "/"
                 ]
             , navToggler model.menuIsActive
-            , navRight model.menuIsActive
+            , navRight model.menuIsActive model.activeRoute
             ]
         ]
 
@@ -104,16 +112,24 @@ navToggler activeMenu =
         ]
 
 
-navRight activeMenu =
+navRight activeMenu activeRoute =
     div
         [ id "nav-menu", class <| "nav-right nav-menu" ++ (isActive activeMenu) ]
-        [ a
-            [ class "nav-item is-tab", href "http://bulma.io/" ]
-            [ text "Active" ]
-        , a
-            [ class "nav-item is-active is-tab", href "/documentation/overview/start/" ]
-            [ text "NonActive " ]
+        [ navLink "Badges" R.badgesPath (R.BadgesRoute == activeRoute)
+        , navLink "Instructions" R.instructionsPath (R.InstructionsRoute == activeRoute)
         ]
+
+
+navLink text_ path active =
+    let
+        class_ =
+            if active then
+                "nav-item is-tab is-active"
+            else
+                "nav-item is-tab"
+    in
+        a ([ class class_ ] ++ (linkAttrs path))
+            [ text text_ ]
 
 
 logo linkPath =
@@ -545,10 +561,6 @@ registerUserForm model =
             []
         , regButtons
         ]
-
-
-linkAttrs path =
-    [ href <| path, R.onLinkClick <| UpdateLocation path ]
 
 
 regButtons =
