@@ -38,14 +38,6 @@ loginPageButtonClass spin =
             "button is-dark is-loading"
 
 
-
--- onWithOptions
--- onWithOptions
---"click"
---{ preventDefault = True, stopPropagation = True }
---(Json.succeed msg)
-
-
 loginPageBoxForm : Model -> Html Msg
 loginPageBoxForm model =
     div [ class "box", marginS ]
@@ -54,19 +46,33 @@ loginPageBoxForm model =
             [ label [ class "label" ]
                 [ text "Email" ]
             , p [ class "control" ]
-                [ input [ class "input", placeholder "Email", type_ "email", onInput UpdateEmail ]
+                [ input
+                    [ class "input"
+                    , placeholder "Email"
+                    , type_ "email"
+                    , onInput UpdateEmail
+                    ]
                     []
                 ]
             , label [ class "label" ]
                 [ text "Password" ]
             , p [ class "control" ]
-                [ input [ class "input", placeholder "Password", type_ "password", onInput UpdatePassword ]
+                [ input
+                    [ class "input"
+                    , placeholder "Password"
+                    , type_ "password"
+                    , onInput UpdatePassword
+                    ]
                     []
                 ]
             , hr []
                 []
             , p [ class "control" ]
-                [ button [ class <| loginPageButtonClass model.spin, type_ "submit" ] [ text "Let's Go!" ]
+                [ button
+                    [ class <| loginPageButtonClass model.spin
+                    , type_ "submit"
+                    ]
+                    [ text "Let's Go!" ]
                 ]
             ]
         ]
@@ -116,14 +122,22 @@ navToggler model =
 
 
 logo linkPath =
-    a [ class "nav-item", href <| linkPath, R.onLinkClick <| UpdateLocation linkPath ] [ img [ src "img/logo.png" ] [] ]
+    a
+        [ class "nav-item"
+        , href <| linkPath
+        , R.onLinkClick <| UpdateLocation linkPath
+        ]
+        [ img [ src "img/logo.png" ] [] ]
 
 
 navBarMenuLeftItems : Model -> List (Html Msg)
 navBarMenuLeftItems model =
     let
         toItem i =
-            navLink i.name model.activeRoute ( i.route, i.path ) "is-hidden-mobile"
+            navLink i.name
+                model.activeRoute
+                ( i.route, i.path )
+                "is-hidden-mobile"
     in
         (logo R.homePath) :: List.map toItem model.mainMenuItems
 
@@ -132,7 +146,10 @@ navBarMenuMobileItems : Model -> List (Html Msg)
 navBarMenuMobileItems model =
     let
         toItem i =
-            navLink i.name model.activeRoute ( i.route, i.path ) "is-hidden-tablet"
+            navLink i.name
+                model.activeRoute
+                ( i.route, i.path )
+                "is-hidden-tablet"
     in
         List.map toItem model.mainMenuItems
 
@@ -199,7 +216,8 @@ homePageGameCards : Model -> List (Html Msg)
 homePageGameCards model =
     let
         toCard g =
-            div [ class "column" ] [ homePageGameCard g.slug g.icon g.name g.dscript ]
+            div [ class "column" ]
+                [ homePageGameCard g.slug g.icon g.name g.dscript ]
     in
         List.map toCard model.games
 
@@ -212,9 +230,11 @@ homePageGameCard gameSlug src_ title about =
             [ class "card-image" ]
             [ figure
                 [ class "image is-4by3" ]
-                [ a [ href <| gameSlug, R.onLinkClick <| UpdateLocation <| gameSlug ]
+                [ a (linkAttrs gameSlug)
                     [ img
-                        [ src <| "http://localhost:8654/repo/" ++ src_, alt title ]
+                        [ src <| "http://localhost:8654/repo/" ++ src_
+                        , alt title
+                        ]
                         []
                     ]
                 ]
@@ -361,8 +381,10 @@ dotProbeGame model =
     basicPage model
         [ div
             [ class "container" ]
-            [ h1 [ class "title is-1" ] [ text "Dot Probe" ]
-            , h3 [ class "subtitle is-3" ] [ text "work in progress" ]
+            [ h1 [ class "title is-1" ]
+                [ text "Dot Probe" ]
+            , h3 [ class "subtitle is-3" ]
+                [ text "work in progress" ]
             ]
         ]
 
@@ -419,7 +441,14 @@ toStyle styles =
 
 bigLogo : Html Msg
 bigLogo =
-    p [ style [ ( "text-align", "center" ) ] ] [ img [ class "logo is-vcentered", src "img/logo.svg", style [ ( "max-width", "300px" ) ] ] [] ]
+    p [ style [ ( "text-align", "center" ) ] ]
+        [ img
+            [ class "logo is-vcentered"
+            , src "img/logo.svg"
+            , style [ ( "max-width", "300px" ) ]
+            ]
+            []
+        ]
 
 
 
@@ -432,14 +461,24 @@ bigLogo =
 
 textInput field_ placeholder_ =
     p [ class "control" ]
-        [ input [ class "input", placeholder placeholder_, type_ "text", onInput <| SetRegistration field_ ]
+        [ input
+            [ class "input"
+            , placeholder placeholder_
+            , type_ "text"
+            , onInput <| SetRegistration field_
+            ]
             []
         ]
 
 
 emailInput field_ placeholder_ =
     p [ class "control" ]
-        [ input [ class "input", placeholder placeholder_, type_ "email", onInput <| SetRegistration field_ ]
+        [ input
+            [ class "input"
+            , placeholder placeholder_
+            , type_ "email"
+            , onInput <| SetRegistration field_
+            ]
             []
         ]
 
@@ -484,8 +523,10 @@ groupDropDown expGroupId conGroupId =
     p [ class "control" ]
         [ span [ class "select" ]
             [ select []
-                [ option [ value <| toString expGroupId ] [ text "Experimental" ]
-                , option [ value <| toString conGroupId ] [ text "Control" ]
+                [ option [ value <| toString expGroupId ]
+                    [ text "Experimental" ]
+                , option [ value <| toString conGroupId ]
+                    [ text "Control" ]
                 ]
             ]
         ]
@@ -499,17 +540,30 @@ registerUserForm model =
         , groupDropDown model.adminModel.expGroupId model.adminModel.conGroupId
         , hr []
             []
-        , p [ class "control" ]
-            [ button [ class <| loginPageButtonClass model.spin, type_ "submit" ] [ text "Register" ]
-            ]
+        , regButtons
+        ]
+
+
+linkAttrs path =
+    [ href <| path, R.onLinkClick <| UpdateLocation path ]
+
+
+regButtons =
+    div
+        [ class "field is-grouped" ]
+        [ button
+            [ class "button is-primary" ]
+            [ text "Submit" ]
+        , button
+            ([ class "button is-link" ] ++ (linkAttrs R.adminPath))
+            [ text "Cancel" ]
         ]
 
 
 registerPage : Model -> Html Msg
 registerPage model =
     basicAdminPage model
-        [ primaryButton "Back to users" R.adminPath
-        , h1 [ class "title" ] [ text <| "Register User" ]
+        [ h1 [ class "title" ] [ text <| "Register a new user" ]
         , registerUserForm model
         ]
 
@@ -526,7 +580,12 @@ adminPage model =
 
 primaryButton : String -> String -> Html Msg
 primaryButton title path =
-    button [ class "button is-primary", href <| path, R.onLinkClick <| UpdateLocation path ] [ text title ]
+    button
+        [ class "button is-primary"
+        , href <| path
+        , R.onLinkClick <| UpdateLocation path
+        ]
+        [ text title ]
 
 
 userRows users =
@@ -536,7 +595,10 @@ userRows users =
                 [ td [] [ text user.firstName ]
                 , td [] [ text user.lastName ]
                 , td [] [ text user.email ]
-                , td [] [ button [ class "button is-secondary" ] [ text "edit" ] ]
+                , td []
+                    [ button [ class "button is-secondary" ]
+                        [ text "edit" ]
+                    ]
                 ]
     in
         users
