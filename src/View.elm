@@ -80,45 +80,6 @@ loginPageBoxForm model =
 -- NAV BAR
 
 
-aattrs : String -> List (Attribute Msg)
-aattrs linkPath =
-    [ href linkPath, R.onLinkClick <| UpdateLocation linkPath ]
-
-
-navLink : String -> R.Route -> ( R.Route, String ) -> String -> Html Msg
-navLink text_ activeRoute ( route, linkPath ) hidden =
-    let
-        class_ =
-            if route == activeRoute then
-                "nav-item is-tab is-active " ++ hidden
-            else
-                "nav-item is-tab " ++ hidden
-
-        onClick_ =
-            R.onLinkClick <| UpdateLocation linkPath
-    in
-        a
-            [ class class_, href linkPath, onClick_ ]
-            [ text text_ ]
-
-
-navToggler : Model -> Html Msg
-navToggler model =
-    let
-        class_ =
-            if model.menuIsActive then
-                "nav-toggle is-active"
-            else
-                "nav-toggle"
-    in
-        span
-            [ class class_, onClick MainMenuToggle ]
-            [ span [] []
-            , span [] []
-            , span [] []
-            ]
-
-
 logo linkPath =
     a
         [ class "nav-item"
@@ -128,52 +89,46 @@ logo linkPath =
         [ img [ src "img/logo.png" ] [] ]
 
 
-navRight : Model -> Html Msg
-navRight model =
-    let
-        logout =
-            a [ class "nav-item is-tab", onClick Logout ] [ text "Log out" ]
-    in
-        div
-            [ class "nav-right nav-menu" ]
-            (logout :: (navBarMenuMobileItems model))
+navToggler : Bool -> Html Msg
+navToggler activeMenu =
+    span
+        [ class <| "nav-toggle" ++ (isActive activeMenu), onClick MainMenuToggle ]
+        [ span [] []
+        , span [] []
+        , span [] []
+        ]
 
 
-navBarMenuLeftItems : Model -> List (Html Msg)
-navBarMenuLeftItems model =
-    let
-        toItem i =
-            navLink i.name
-                model.activeRoute
-                ( i.route, i.path )
-                "is-hidden-mobile"
-    in
-        (logo R.homePath) :: List.map toItem model.mainMenuItems
+isActive active =
+    if active then
+        " is-active"
+    else
+        ""
 
 
-navBarMenuMobileItems : Model -> List (Html Msg)
-navBarMenuMobileItems model =
-    let
-        toItem i =
-            navLink i.name
-                model.activeRoute
-                ( i.route, i.path )
-                "is-hidden-tablet"
-    in
-        List.map toItem model.mainMenuItems
+navRight activeMenu =
+    div
+        [ id "nav-menu", class <| "nav-right nav-menu" ++ (isActive activeMenu) ]
+        [ a
+            [ class "nav-item ", href "http://bulma.io/" ]
+            [ text "Active" ]
+        , a
+            [ class "nav-item is-active", href "/documentation/overview/start/" ]
+            [ text "NonActive " ]
+        ]
 
 
 navBar : Model -> Html Msg
 navBar model =
-    nav
-        [ class "nav has-shadow" ]
-        [ div
-            [ class "container" ]
-            [ div
-                [ class "nav-left" ]
-                (navBarMenuLeftItems model)
-            , navToggler model
-            , navRight model
+    div
+        [ class "container" ]
+        [ nav
+            [ class "nav" ]
+            [ div [ class "nav-left" ]
+                [ logo "/"
+                ]
+            , navToggler model.menuIsActive
+            , navRight model.menuIsActive
             ]
         ]
 
