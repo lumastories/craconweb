@@ -508,7 +508,8 @@ registerUserForm model =
 registerPage : Model -> Html Msg
 registerPage model =
     basicAdminPage model
-        [ h1 [ class "title" ] [ text <| "Register User" ]
+        [ primaryButton "Back to users" R.adminPath
+        , h1 [ class "title" ] [ text <| "Register User" ]
         , registerUserForm model
         ]
 
@@ -567,8 +568,7 @@ usersTable model =
 basicAdminPage : Model -> List (Html Msg) -> Html Msg
 basicAdminPage model children =
     section []
-        [ h1 [] [ text "Admin" ]
-        , section
+        [ section
             [ class "section" ]
             children
         ]
