@@ -80,13 +80,18 @@ loginPageBoxForm model =
 -- NAV BAR
 
 
-logo linkPath =
-    a
-        [ class "nav-item"
-        , href <| linkPath
-        , R.onLinkClick <| UpdateLocation linkPath
+navBar : Model -> Html Msg
+navBar model =
+    nav
+        [ class "nav has-shadow" ]
+        [ div [ class "container" ]
+            [ div [ class "nav-left" ]
+                [ logo "/"
+                ]
+            , navToggler model.menuIsActive
+            , navRight model.menuIsActive
+            ]
         ]
-        [ img [ src "img/logo.png" ] [] ]
 
 
 navToggler : Bool -> Html Msg
@@ -99,38 +104,32 @@ navToggler activeMenu =
         ]
 
 
+navRight activeMenu =
+    div
+        [ id "nav-menu", class <| "nav-right nav-menu" ++ (isActive activeMenu) ]
+        [ a
+            [ class "nav-item is-tab", href "http://bulma.io/" ]
+            [ text "Active" ]
+        , a
+            [ class "nav-item is-active is-tab", href "/documentation/overview/start/" ]
+            [ text "NonActive " ]
+        ]
+
+
+logo linkPath =
+    a
+        [ class "nav-item"
+        , href <| linkPath
+        , R.onLinkClick <| UpdateLocation linkPath
+        ]
+        [ img [ src "img/logo.png" ] [] ]
+
+
 isActive active =
     if active then
         " is-active"
     else
         ""
-
-
-navRight activeMenu =
-    div
-        [ id "nav-menu", class <| "nav-right nav-menu" ++ (isActive activeMenu) ]
-        [ a
-            [ class "nav-item ", href "http://bulma.io/" ]
-            [ text "Active" ]
-        , a
-            [ class "nav-item is-active", href "/documentation/overview/start/" ]
-            [ text "NonActive " ]
-        ]
-
-
-navBar : Model -> Html Msg
-navBar model =
-    div
-        [ class "container" ]
-        [ nav
-            [ class "nav" ]
-            [ div [ class "nav-left" ]
-                [ logo "/"
-                ]
-            , navToggler model.menuIsActive
-            , navRight model.menuIsActive
-            ]
-        ]
 
 
 
