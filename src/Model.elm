@@ -26,6 +26,7 @@ type alias Model =
     , games : List Entity.Game
     , gimages : List Entity.Gimage
     , adminModel : AdminModel
+    , errNotif : Bool
     }
 
 
@@ -51,6 +52,7 @@ type
     | UpdatePassword String
     | TryLogin
     | Logout
+    | HideErrorNotification
       -- GAMES
     | Presses Char
     | MainMenuToggle

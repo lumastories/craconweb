@@ -62,6 +62,7 @@ init flags location =
             , games = []
             , gimages = []
             , adminModel = Empty.emptyAdminModel
+            , errNotif = False
             }
     in
         ( initModel, Cmd.batch commands_ )

@@ -25,6 +25,7 @@ emptyModel model =
         , authRecord = emptyAuthRecord
         , games = []
         , gimages = []
+        , errNotif = False
     }
 
 

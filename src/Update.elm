@@ -81,6 +81,9 @@ update msg model =
             model ! []
 
         -- SHARED
+        HideErrorNotification ->
+            ( { model | errNotif = False, error = "" }, Cmd.none )
+
         UpdateLocation path ->
             let
                 cmds =
@@ -167,10 +170,24 @@ update msg model =
 
         LoginResp (Err err) ->
             let
-                l =
-                    Debug.log "login" (toString err)
+                error_ =
+                    case err of
+                        Http.Timeout ->
+                            "Something took too long"
+
+                        Http.NetworkError ->
+                            "The server is not responding or you might be offline"
+
+                        Http.BadStatus _ ->
+                            "bad status"
+
+                        Http.BadPayload str _ ->
+                            str
+
+                        _ ->
+                            "Unknown error"
             in
-                ( { model | spin = False, error = "Login related error" }, Cmd.none )
+                ( { model | spin = False, error = error_, errNotif = True }, Cmd.none )
 
         UserResp (Ok newUser) ->
             let
