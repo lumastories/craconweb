@@ -394,6 +394,7 @@ instructionsPage model =
             [ class "container" ]
             [ h1 [ class "title is-1" ]
                 [ text "Instructions" ]
+            , hr [] []
             , div
                 [ class "columns" ]
                 [ instBlock "Stop Signal" """You will see pictures presented
@@ -608,7 +609,7 @@ adminPage model =
         [ adminTop
         , hr [] []
         , usersTable model
-        , successButton "Go to games" R.homePath
+        , bButton "Go to games" R.homePath "is-small"
         ]
 
 
@@ -622,10 +623,10 @@ primaryButton title path =
         [ text title ]
 
 
-successButton : String -> String -> Html Msg
-successButton title path =
+bButton : String -> String -> String -> Html Msg
+bButton title path mods =
     button
-        [ class "button is-success"
+        [ class ("button " ++ mods)
         , href <| path
         , R.onLinkClick <| UpdateLocation path
         ]
