@@ -30,9 +30,10 @@ type alias Model =
 
 
 type alias AdminModel =
-    { users :
-        List Entity.User
-        -- todo user registration modelling
+    { users : List Entity.User
+    , userToRegister : Entity.UserRecord
+    , conGroupId : Int
+    , expGroupId : Int
     }
 
 
@@ -41,26 +42,31 @@ type Visitor
     | LoggedIn Api.JwtPayload
 
 
-type Msg
-    = UpdateEmail String
+type
+    Msg
+    -- SHARED
+    = UpdateLocation String
+    | OnUpdateLocation Navigation.Location
+    | UpdateEmail String
     | UpdatePassword String
     | TryLogin
-    | LoginResponse (Result Http.Error Entity.Auth)
-    | UserResponse (Result Http.Error Entity.User)
-    | GameResponse (Result Http.Error Entity.Game)
-    | GimageResponse (Result Http.Error Entity.Gimage)
-    | Presses Char
-    | UpdateLocation String
-    | OnUpdateLocation Navigation.Location
-    | MainMenuToggle
     | Logout
+      -- GAMES
+    | Presses Char
+    | MainMenuToggle
     | GetTimeAndThen (Time.Time -> Msg)
     | CalcTimeDelta Time.Time
     | Tick Time.Time
     | VerifyToken Time.Time
-    | MessageAdmin AdminMsg
-
-
-type AdminMsg
-    = FetchUsers
-    | UsersResponse (Result Http.Error Api.UsersList)
+      -- HTTP
+    | LoginResp (Result Http.Error Entity.Auth)
+    | UserResp (Result Http.Error Entity.User)
+    | GameResp (Result Http.Error Entity.Game)
+    | GimageResp (Result Http.Error Entity.Gimage)
+    | UsersResp (Result Http.Error Api.UsersList)
+    | RegisterUserResp (Result Http.Error Entity.User)
+    | ConGroupResp (Result Http.Error Entity.Group)
+    | ExpGroupResp (Result Http.Error Entity.Group)
+      -- ADMIN
+    | TryRegisterUser
+    | SetRegistration String String

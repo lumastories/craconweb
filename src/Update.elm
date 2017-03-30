@@ -1,6 +1,5 @@
 module Update exposing (update)
 
-import Admin.Update as Admin
 import Api
 import Empty
 import Entity
@@ -22,14 +21,66 @@ import Time
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        MessageAdmin msg_ ->
-            let
-                ( model_, cmds_ ) =
-                    Admin.update msg_ model
-            in
-                ( model_, cmds_ |> Cmd.map MessageAdmin )
+        -- ADMIN
+        ConGroupResp (Ok group) ->
+            ( { model | adminModel = (setConGroupId model group.id) }, Cmd.none )
 
-        -- Routing
+        ConGroupResp (Err err) ->
+            model ! []
+
+        ExpGroupResp (Ok group) ->
+            ( { model | adminModel = (setExpGroupId model group.id) }, Cmd.none )
+
+        ExpGroupResp (Err err) ->
+            model ! []
+
+        UsersResp (Ok usersList) ->
+            ( { model | error = "no admin yet", adminModel = (setUsers model usersList.users) }, Cmd.none )
+
+        UsersResp (Err err) ->
+            ( { model | error = toString err }, Cmd.none )
+
+        SetRegistration key value ->
+            let
+                ( userToRegister_, adminModel_ ) =
+                    ( model.adminModel.userToRegister, model.adminModel )
+
+                newUserToRegister =
+                    case key of
+                        "email" ->
+                            { userToRegister_ | email = value }
+
+                        "password" ->
+                            -- TODO handle password
+                            userToRegister_
+
+                        "username" ->
+                            { userToRegister_ | username = value }
+
+                        "firstName" ->
+                            { userToRegister_ | firstName = value }
+
+                        "lastName" ->
+                            { userToRegister_ | lastName = value }
+
+                        _ ->
+                            userToRegister_
+
+                newAdminModel =
+                    { adminModel_ | userToRegister = newUserToRegister }
+            in
+                ( { model | adminModel = newAdminModel }, Cmd.none )
+
+        TryRegisterUser ->
+            model ! []
+
+        RegisterUserResp (Ok newUser) ->
+            model ! []
+
+        RegisterUserResp (Err err) ->
+            model ! []
+
+        -- SHARED
         UpdateLocation path ->
             let
                 cmds =
@@ -64,7 +115,7 @@ update msg model =
             in
                 ( { model | activeRoute = newRoute, menuIsActive = False }, Cmd.none )
 
-        -- Actions
+        -- LOGIN
         UpdateEmail newEmail ->
             let
                 authRecord_ =
@@ -82,12 +133,20 @@ update msg model =
         TryLogin ->
             let
                 cmd =
-                    Http.send LoginResponse (Api.postCreds model.api model.authRecord)
+                    Http.send LoginResp (Api.postCreds model.api model.authRecord)
             in
                 ( { model | spin = True }, cmd )
 
-        -- HTTP Responses
-        LoginResponse (Ok auth) ->
+        Logout ->
+            let
+                cmds =
+                    [ Port.clearLocalStorage True
+                    , Navigation.newUrl "/login"
+                    ]
+            in
+                ( Empty.emptyModel model, Cmd.batch cmds )
+
+        LoginResp (Ok auth) ->
             let
                 jwtdecoded_ =
                     Api.jwtDecoded auth.token
@@ -97,7 +156,7 @@ update msg model =
                         Ok jwt ->
                             ( { model | spin = False, visitor = LoggedIn jwt, jwtencoded = auth.token }
                             , [ Port.setItem ( "token", auth.token )
-                              , Http.send UserResponse (Api.getUser model.api auth.token jwt.sub)
+                              , Http.send UserResp (Api.getUser model.api auth.token jwt.sub)
                               ]
                             )
 
@@ -106,14 +165,14 @@ update msg model =
             in
                 ( model_, Cmd.batch commands_ )
 
-        LoginResponse (Err err) ->
+        LoginResp (Err err) ->
             let
                 l =
                     Debug.log "login" (toString err)
             in
                 ( { model | spin = False, error = "Login related error" }, Cmd.none )
 
-        UserResponse (Ok newUser) ->
+        UserResp (Ok newUser) ->
             let
                 isAdmin =
                     case model.visitor of
@@ -133,32 +192,28 @@ update msg model =
                         False ->
                             [ Port.setItem ( "firstName", newUser.firstName )
                             , Navigation.newUrl "/"
-                            , Http.send GameResponse (Api.getGame model.api model.jwtencoded "gonogo")
-                            , Http.send GameResponse (Api.getGame model.api model.jwtencoded "dotprobe")
-                            , Http.send GameResponse (Api.getGame model.api model.jwtencoded "stopsignal")
-                            , Http.send GameResponse (Api.getGame model.api model.jwtencoded "respondsignal")
-                            , Http.send GameResponse (Api.getGame model.api model.jwtencoded "visualsearch")
                             ]
             in
                 ( { model | user = newUser, activeRoute = HomeRoute }, Cmd.batch commands )
 
-        UserResponse (Err err) ->
+        UserResp (Err err) ->
             let
                 l =
                     Debug.log "login" (toString err)
             in
                 ( { model | error = "User related error" }, Cmd.none )
 
-        GameResponse (Ok game) ->
+        -- GAMES
+        GameResp (Ok game) ->
             ( { model | games = game :: model.games }, Cmd.none )
 
-        GameResponse (Err err) ->
+        GameResp (Err err) ->
             ( { model | error = (toString err) }, Cmd.none )
 
-        GimageResponse (Ok gimage) ->
+        GimageResp (Ok gimage) ->
             ( { model | gimages = gimage :: model.gimages }, Cmd.none )
 
-        GimageResponse (Err err) ->
+        GimageResp (Err err) ->
             model ! []
 
         Presses _ ->
@@ -174,15 +229,6 @@ update msg model =
             in
                 ( { model | menuIsActive = active }, Cmd.none )
 
-        Logout ->
-            let
-                cmds =
-                    [ Port.clearLocalStorage True
-                    , Navigation.newUrl "/login"
-                    ]
-            in
-                ( Empty.emptyModel model, Cmd.batch cmds )
-
         Tick t ->
             ( { model | currentTime = t }, Cmd.none )
 
@@ -196,6 +242,33 @@ update msg model =
 delay : Time.Time -> Msg -> Cmd Msg
 delay t msg =
     Process.sleep t |> Task.perform (\_ -> msg)
+
+
+setUsers : Model -> List Entity.User -> AdminModel
+setUsers model users_ =
+    let
+        adminModel =
+            model.adminModel
+    in
+        { adminModel | users = users_ }
+
+
+setConGroupId : Model -> Int -> AdminModel
+setConGroupId model conGroupId_ =
+    let
+        adminModel =
+            model.adminModel
+    in
+        { adminModel | conGroupId = conGroupId_ }
+
+
+setExpGroupId : Model -> Int -> AdminModel
+setExpGroupId model expGroupId_ =
+    let
+        adminModel =
+            model.adminModel
+    in
+        { adminModel | conGroupId = expGroupId_ }
 
 
 

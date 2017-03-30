@@ -1,6 +1,5 @@
 module View exposing (view)
 
-import Admin.View as Admin
 import Entity
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -18,7 +17,7 @@ loginPage model =
         [ div [ class "container" ]
             [ div [ class "columns is-desktop" ]
                 [ div [ class "column is-half is-offset-one-quarter" ]
-                    [ logo loginPageLogoWidth
+                    [ bigLogo
                     , loginPageBoxForm model
                     , p [ class "has-text-centered" ]
                         [ em [] [ text model.error ]
@@ -27,16 +26,6 @@ loginPage model =
                 ]
             ]
         ]
-
-
-
--- TODO add reset password functionality
--- TODO remove css.map, don't need it.
-
-
-loginPageLogoWidth : Int
-loginPageLogoWidth =
-    200
 
 
 loginPageButtonClass : Bool -> String
@@ -126,16 +115,17 @@ navToggler model =
             ]
 
 
+logo linkPath =
+    a [ class "nav-item", href <| linkPath, R.onLinkClick <| UpdateLocation linkPath ] [ img [ src "img/logo.png" ] [] ]
+
+
 navBarMenuLeftItems : Model -> List (Html Msg)
 navBarMenuLeftItems model =
     let
-        logo =
-            a [ class "nav-item", href <| R.homePath, R.onLinkClick <| UpdateLocation R.homePath ] [ img [ src "img/logo.png" ] [] ]
-
         toItem i =
             navLink i.name model.activeRoute ( i.route, i.path ) "is-hidden-mobile"
     in
-        logo :: List.map toItem model.mainMenuItems
+        (logo R.homePath) :: List.map toItem model.mainMenuItems
 
 
 navBarMenuMobileItems : Model -> List (Html Msg)
@@ -212,17 +202,6 @@ homePageGameCards model =
             div [ class "column" ] [ homePageGameCard g.slug g.icon g.name g.dscript ]
     in
         List.map toCard model.games
-
-
-
--- TODO Change all links to function calls, store loginPath in variable in routing. R.loginPath.
--- TODO No more hacky strings! THis allows us to change the naming conventions whenever we want
--- TODO utilize bulma more!
--- Tags: http://bulma.io/documentation/elements/tag/
--- Progress: http://bulma.io/documentation/elements/progress/
--- Notification:
--- links!
--- a [ href loginPath, onLinkClick <| UpdateLocation loginPath ] [ text "Go to login" ]
 
 
 homePageGameCard : String -> String -> String -> String -> Html Msg
@@ -319,11 +298,6 @@ badgesPage model =
         ]
 
 
-
--- TODO on badgesPage, use a Modal Card
--- http://bulma.io/documentation/components/modal/
-
-
 settingsPage : Model -> Html Msg
 settingsPage model =
     basicPage model
@@ -377,10 +351,6 @@ goNoGoGame model =
             ]
 
 
-
--- TODO try this pattern out some where else
-
-
 setTime : Msg
 setTime =
     GetTimeAndThen (\time -> CalcTimeDelta time)
@@ -419,11 +389,6 @@ instructionsPage model =
         ]
 
 
-
--- TODO make things more gamey with animations!
--- https://github.com/mdgriffith/elm-style-animation/blob/master/examples/Showcase.elm
-
-
 marginS : Attribute msg
 marginS =
     style [ ( "margin", ".7em" ) ]
@@ -452,14 +417,161 @@ toStyle styles =
             |> List.map toTuple
 
 
-sizePx : Int -> String
-sizePx size =
-    (toString size) ++ "px"
+bigLogo : Html Msg
+bigLogo =
+    p [ style [ ( "text-align", "center" ) ] ] [ img [ class "logo is-vcentered", src "img/logo.svg", style [ ( "max-width", "300px" ) ] ] [] ]
 
 
-logo : Int -> Html Msg
-logo size =
-    p [ style [ ( "text-align", "center" ) ] ] [ img [ class "logo is-vcentered", src "img/logo.svg", style [ ( "max-width", sizePx size ) ] ] [] ]
+
+{-
+
+   ADMIN VIEWS
+
+-}
+
+
+textInput field_ placeholder_ =
+    p [ class "control" ]
+        [ input [ class "input", placeholder placeholder_, type_ "text", onInput <| SetRegistration field_ ]
+            []
+        ]
+
+
+emailInput field_ placeholder_ =
+    p [ class "control" ]
+        [ input [ class "input", placeholder placeholder_, type_ "email", onInput <| SetRegistration field_ ]
+            []
+        ]
+
+
+regLabel title =
+    label [ class "label" ]
+        [ text title ]
+
+
+firstLastReg =
+    div [ class "columns" ]
+        [ div [ class "column" ]
+            [ regLabel "First Name"
+            , textInput "firstName" ""
+            ]
+        , div [ class "column" ]
+            [ regLabel "Last Name"
+            , textInput "lastName" ""
+            ]
+        ]
+
+
+userEmailPassReg =
+    div [ class "columns" ]
+        [ div [ class "column" ]
+            [ regLabel "Username"
+            , textInput "username" "pick a fun username"
+            ]
+        , div [ class "column" ]
+            [ regLabel "Email"
+            , emailInput "email" "person@example.com"
+            ]
+        , div [ class "column" ]
+            [ regLabel "Password"
+            , textInput "password" "long and fancy password"
+            ]
+        ]
+
+
+groupDropDown : Int -> Int -> Html Msg
+groupDropDown expGroupId conGroupId =
+    p [ class "control" ]
+        [ span [ class "select" ]
+            [ select []
+                [ option [ value <| toString expGroupId ] [ text "Experimental" ]
+                , option [ value <| toString conGroupId ] [ text "Control" ]
+                ]
+            ]
+        ]
+
+
+registerUserForm model =
+    Html.form
+        [ onSubmit TryRegisterUser ]
+        [ firstLastReg
+        , userEmailPassReg
+        , groupDropDown model.adminModel.expGroupId model.adminModel.conGroupId
+        , hr []
+            []
+        , p [ class "control" ]
+            [ button [ class <| loginPageButtonClass model.spin, type_ "submit" ] [ text "Register" ]
+            ]
+        ]
+
+
+registerPage : Model -> Html Msg
+registerPage model =
+    basicAdminPage model
+        [ h1 [ class "title" ] [ text <| "Register User" ]
+        , registerUserForm model
+        ]
+
+
+adminPage : Model -> Html Msg
+adminPage model =
+    basicAdminPage model
+        [ h1 [] [ text <| "Welcome" ]
+        , br [] []
+        , primaryButton "Register User" R.registerPath
+        , usersTable model
+        ]
+
+
+primaryButton : String -> String -> Html Msg
+primaryButton title path =
+    button [ class "button is-primary", href <| path, R.onLinkClick <| UpdateLocation path ] [ text title ]
+
+
+userRows users =
+    let
+        row user =
+            tr []
+                [ td [] [ text user.firstName ]
+                , td [] [ text user.lastName ]
+                , td [] [ text user.email ]
+                , td [] [ button [ class "button is-secondary" ] [ text "edit" ] ]
+                ]
+    in
+        users
+            |> List.map row
+
+
+
+-- lastLogin
+-- created
+-- groupID
+-- roles
+-- link to edit
+
+
+usersTable model =
+    table [ class "table" ]
+        [ thead []
+            [ tr []
+                [ th [] [ text "First Name" ]
+                , th [] [ text "Last Name" ]
+                , th [] [ text "Email" ]
+                , th [] [ text "Actions" ]
+                ]
+            ]
+        , tbody [] (userRows model.adminModel.users)
+        ]
+
+
+basicAdminPage : Model -> List (Html Msg) -> Html Msg
+basicAdminPage model children =
+    section []
+        [ h1 [] [ text "Admin" ]
+        , section
+            [ class "section" ]
+            children
+        ]
 
 
 view : Model -> Html Msg
@@ -468,8 +580,10 @@ view model =
         page =
             case model.activeRoute of
                 R.AdminRoute ->
-                    -- TODO map AdminMsg to Msg (prefix with MessageAdmin?) use Html.map
-                    Admin.adminPage model |> Html.map MessageAdmin
+                    adminPage model
+
+                R.RegisterRoute ->
+                    registerPage model
 
                 R.LoginRoute ->
                     loginPage model

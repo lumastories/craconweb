@@ -102,6 +102,32 @@ getUsers api token =
         }
 
 
+postUser : String -> String -> Entity.User -> Http.Request Entity.User
+postUser api token user =
+    Http.request
+        { method = "POST"
+        , headers = defaultHeaders token
+        , url = api ++ "/user/"
+        , body = Http.jsonBody <| Entity.userEncoder user
+        , expect = Http.expectJson Entity.userDecoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
+
+
+getGroup : String -> String -> String -> Http.Request Entity.Group
+getGroup api token slug =
+    Http.request
+        { method = "GET"
+        , headers = defaultHeaders token
+        , url = api ++ "/group/" ++ slug
+        , body = Http.emptyBody
+        , expect = Http.expectJson Entity.groupDecoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
+
+
 usersListDecoder =
     JP.decode UsersList |> JP.required "users" (Decode.list Entity.userDecoder)
 

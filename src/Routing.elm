@@ -80,6 +80,7 @@ type Route
     | SettingsRoute
     | InstructionsRoute
     | AdminRoute
+    | RegisterRoute
 
 
 homePath : String
@@ -95,6 +96,11 @@ loginPath =
 adminPath : String
 adminPath =
     "/admin"
+
+
+registerPath : String
+registerPath =
+    "/register"
 
 
 logoutPath : String
@@ -138,4 +144,5 @@ matchers =
         , UrlParser.map SettingsRoute (UrlParser.s "settings")
         , UrlParser.map InstructionsRoute (UrlParser.s "instructions")
         , UrlParser.map AdminRoute (UrlParser.s "admin")
+        , UrlParser.map RegisterRoute (UrlParser.s "register")
         ]

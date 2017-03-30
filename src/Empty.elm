@@ -5,6 +5,7 @@ import Entity
 import Model
 import Navigation
 import Routing
+import Dict
 
 
 emptyModel : Model.Model -> Model.Model
@@ -29,9 +30,10 @@ emptyModel model =
 
 emptyAdminModel : Model.AdminModel
 emptyAdminModel =
-    { users =
-        []
-        -- TODO user registration data modelling
+    { users = []
+    , userToRegister = emptyUserRecord
+    , conGroupId = 0
+    , expGroupId = 0
     }
 
 
@@ -50,6 +52,18 @@ emptyUser =
     , created = Nothing
     , updated = Nothing
     , deleted = Nothing
+    }
+
+
+emptyUserRecord =
+    { username = ""
+    , email = ""
+    , firstName = ""
+    , lastName = ""
+    , avatar = ""
+    , groupID = 0
+    , roles = []
+    , password = ""
     }
 
 

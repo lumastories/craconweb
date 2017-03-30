@@ -75,9 +75,12 @@ type alias Flags =
 
 initData : String -> String -> List (Cmd Model.Msg)
 initData api token =
-    [ Http.send Model.GameResponse (Api.getGame api token "gonogo")
-    , Http.send Model.GameResponse (Api.getGame api token "dotprobe")
-    , Http.send Model.GameResponse (Api.getGame api token "stopsignal")
-    , Http.send Model.GameResponse (Api.getGame api token "respondsignal")
-    , Http.send Model.GameResponse (Api.getGame api token "visualsearch")
+    [ Http.send Model.GameResp (Api.getGame api token "gonogo")
+    , Http.send Model.GameResp (Api.getGame api token "dotprobe")
+    , Http.send Model.GameResp (Api.getGame api token "stopsignal")
+    , Http.send Model.GameResp (Api.getGame api token "respondsignal")
+    , Http.send Model.GameResp (Api.getGame api token "visualsearch")
+    , Http.send Model.UsersResp (Api.getUsers api token)
+    , Http.send Model.ConGroupResp (Api.getGroup api token "control_a")
+    , Http.send Model.ExpGroupResp (Api.getGroup api token "experimental_a")
     ]
