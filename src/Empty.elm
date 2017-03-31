@@ -30,13 +30,13 @@ emptyModel model =
 
 emptyUser : Entity.User
 emptyUser =
-    { id = 0
+    { id = ""
     , username = ""
     , email = ""
     , firstName = ""
     , lastName = ""
     , avatar = ""
-    , groupID = 0
+    , groupID = ""
     , roles = []
     , lastLogin = Nothing
     , blocked = Nothing
@@ -52,7 +52,7 @@ emptyUserRecord =
     , firstName = ""
     , lastName = ""
     , avatar = ""
-    , groupID = 0
+    , groupID = ""
     , roles = []
     , password = ""
     }

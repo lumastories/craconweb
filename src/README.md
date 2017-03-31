@@ -4,9 +4,14 @@
 
 ### Develop
 
-The http server will run on :8680. See `/swagger` for docs.
+The http server will run on :8680. See `/docs` for docs.
 
-`ecrac` to generate Entity.elm 
+### Update entities
+
+1. pb2elm ~/work/src/gitlab.com/lumastudio/craconidl/cracon.proto
+
+2. cat Entity.elm | gsed 's/"id" JD.int 0/"id" JD.string ""/' | gsed 's/"id" JE.int 0 v.id/"id" JE.string "" v.id/'
+
 
 
 ### Files

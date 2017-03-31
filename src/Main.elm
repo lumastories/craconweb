@@ -80,7 +80,6 @@ init flags location =
 
 type alias Flags =
     { token : String
-    , firstName : String
     }
 
 

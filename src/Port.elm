@@ -14,3 +14,6 @@ port setItem : KeyValue -> Cmd msg
 
 
 port clearLocalStorage : Bool -> Cmd msg
+
+
+port pinger : Bool -> Cmd msg

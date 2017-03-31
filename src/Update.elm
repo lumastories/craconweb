@@ -102,6 +102,7 @@ update msg model =
                 cmds =
                     [ Navigation.newUrl path
                     , Task.perform VerifyToken Time.now
+                    , Port.pinger True
                     ]
             in
                 ( model, Cmd.batch cmds )

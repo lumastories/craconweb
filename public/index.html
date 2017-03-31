@@ -16,22 +16,15 @@
 </head>
 <body>
 </body>
+    <audio id="ping"> <source src="https://www.freesound.org/data/previews/91/91926_7037-lq.mp3" type="audio/mpeg"> </audio>
 
     <script type="text/javascript">
-
-        /* Initialize app with:
-         - jwt
-         - firstName
-         - ?
-         */
-
         function fetch(key) {
             var value = localStorage.getItem(key);
             return value ? value : "";
         }
 
         var flags = {"token": fetch("token")
-                    ,"firstName": fetch("firstName")
                     }
 
         console.log(flags);
@@ -49,6 +42,10 @@
 
         app.ports.clearLocalStorage.subscribe(function(clear) {
             localStorage.clear();
+        });
+
+        app.ports.pinger.subscribe(function(model) {
+            document.getElementById("ping").play()
         });
 
 
