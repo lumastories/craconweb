@@ -12,12 +12,10 @@ import Time
 type alias Model =
     { api : String
     , jwtencoded : String
-    , spin : Bool
     , activeRoute : Routing.Route
-    , error : String
     , presses : List Char
     , visitor : Visitor
-    , menuIsActive : Bool
+    , isMenuActive : Bool
     , mainMenuItems : List Routing.MenuItem
     , currentTime : Time.Time
     , currentTimeDelta : Time.Time
@@ -25,16 +23,14 @@ type alias Model =
     , authRecord : Entity.AuthRecord
     , games : List Entity.Game
     , gimages : List Entity.Gimage
-    , adminModel : AdminModel
-    , errNotif : Bool
-    }
-
-
-type alias AdminModel =
-    { users : List Entity.User
+    , loading : ( Bool, String )
+    , glitching : ( Bool, String )
+    , informing : ( Bool, String )
+    , users : List Entity.User
     , userToRegister : Entity.UserRecord
-    , conGroupId : Int
-    , expGroupId : Int
+    , roleIdUser : Maybe String
+    , groupIdExp : Maybe String
+    , groupIdCon : Maybe String
     }
 
 
@@ -52,7 +48,7 @@ type
     | UpdatePassword String
     | TryLogin
     | Logout
-    | HideErrorNotification
+    | ResetNotifications
       -- GAMES
     | Presses Char
     | MainMenuToggle
@@ -65,10 +61,10 @@ type
     | UserResp (Result Http.Error Entity.User)
     | GameResp (Result Http.Error Entity.Game)
     | GimageResp (Result Http.Error Entity.Gimage)
-    | UsersResp (Result Http.Error Api.UsersList)
-    | RegisterUserResp (Result Http.Error Entity.User)
-    | ConGroupResp (Result Http.Error Entity.Group)
-    | ExpGroupResp (Result Http.Error Entity.Group)
+    | UsersResp (Result Http.Error (List Entity.User))
+    | RegisterUserResp (Result Http.Error Entity.UserRecord)
+    | GroupResp (Result Http.Error Entity.Group)
+    | RoleResp (Result Http.Error Entity.Role)
       -- ADMIN
     | TryRegisterUser
     | SetRegistration String String

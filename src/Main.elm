@@ -35,12 +35,18 @@ init : Flags -> Navigation.Location -> ( Model.Model, Cmd Model.Msg )
 init flags location =
     let
         ( api_, jwtdecoded_, jwtencoded_ ) =
-            ( "http://localhost:8680", Api.jwtDecoded flags.token, flags.token )
+            ( "http://localhost:8680"
+            , Api.jwtDecoded flags.token
+            , flags.token
+            )
 
         ( visitor_, route_, commands_ ) =
             case jwtdecoded_ of
                 Ok jwtdecoded ->
-                    ( Model.LoggedIn jwtdecoded, Routing.parseLocation location, initData api_ jwtencoded_ )
+                    ( Model.LoggedIn jwtdecoded
+                    , Routing.parseLocation location
+                    , initData api_ jwtencoded_
+                    )
 
                 Err _ ->
                     ( Model.Anonymous, Routing.LoginRoute, [] )
@@ -48,12 +54,10 @@ init flags location =
         initModel =
             { api = api_
             , jwtencoded = jwtencoded_
-            , spin = False
             , activeRoute = route_
-            , error = ""
             , presses = []
             , visitor = visitor_
-            , menuIsActive = False
+            , isMenuActive = False
             , mainMenuItems = Routing.initMenuItems
             , currentTime = 0
             , currentTimeDelta = 0
@@ -61,8 +65,14 @@ init flags location =
             , authRecord = Empty.emptyAuthRecord
             , games = []
             , gimages = []
-            , adminModel = Empty.emptyAdminModel
-            , errNotif = False
+            , loading = ( False, "" )
+            , glitching = ( False, "" )
+            , informing = ( False, "" )
+            , users = []
+            , userToRegister = Empty.emptyUserRecord
+            , roleIdUser = Nothing
+            , groupIdExp = Nothing
+            , groupIdCon = Nothing
             }
     in
         ( initModel, Cmd.batch commands_ )
@@ -74,14 +84,21 @@ type alias Flags =
     }
 
 
+
+-- TODO Fix this - When should we fetch data? Account for refresh and user.
+
+
 initData : String -> String -> List (Cmd Model.Msg)
 initData api token =
+    -- Game stuff
     [ Http.send Model.GameResp (Api.getGame api token "gonogo")
     , Http.send Model.GameResp (Api.getGame api token "dotprobe")
     , Http.send Model.GameResp (Api.getGame api token "stopsignal")
     , Http.send Model.GameResp (Api.getGame api token "respondsignal")
     , Http.send Model.GameResp (Api.getGame api token "visualsearch")
-    , Http.send Model.UsersResp (Api.getUsers api token)
-    , Http.send Model.ConGroupResp (Api.getGroup api token "control_a")
-    , Http.send Model.ExpGroupResp (Api.getGroup api token "experimental_a")
+      -- Admin stuff
+    , Http.send Model.UsersResp (Api.fetchUsers api token)
+    , Http.send Model.GroupResp (Api.getGroup api token "control_a")
+    , Http.send Model.GroupResp (Api.getGroup api token "experimental_a")
+    , Http.send Model.RoleResp (Api.getRole api token "user")
     ]

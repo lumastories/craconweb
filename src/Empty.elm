@@ -12,12 +12,11 @@ emptyModel : Model.Model -> Model.Model
 emptyModel model =
     -- do not reset api or jwt
     { model
-        | spin = False
+        | loading = ( False, "" )
         , activeRoute = Routing.LoginRoute
-        , error = ""
         , presses = []
         , visitor = Model.Anonymous
-        , menuIsActive = False
+        , isMenuActive = False
         , mainMenuItems = Routing.initMenuItems
         , currentTime = 0
         , currentTimeDelta = 0
@@ -25,16 +24,7 @@ emptyModel model =
         , authRecord = emptyAuthRecord
         , games = []
         , gimages = []
-        , errNotif = False
-    }
-
-
-emptyAdminModel : Model.AdminModel
-emptyAdminModel =
-    { users = []
-    , userToRegister = emptyUserRecord
-    , conGroupId = 0
-    , expGroupId = 0
+        , glitching = ( False, "" )
     }
 
 

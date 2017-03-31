@@ -13,7 +13,7 @@ import Json.Encode as JE
 
 type alias Group =
     { id :
-        Int
+        String
         -- 1
     , name :
         String
@@ -35,7 +35,7 @@ groupDecoder =
     JD.lazy <|
         \_ ->
             decode Group
-                |> required "id" JD.int 0
+                |> required "id" JD.string ""
                 |> required "name" JD.string ""
                 |> required "slug" JD.string ""
                 |> optional "created" timestampDecoder
@@ -46,7 +46,7 @@ groupEncoder : Group -> JE.Value
 groupEncoder v =
     JE.object <|
         List.filterMap identity <|
-            [ (requiredFieldEncoder "id" JE.int 0 v.id)
+            [ (requiredFieldEncoder "id" JE.string "" v.id)
             , (requiredFieldEncoder "name" JE.string "" v.name)
             , (requiredFieldEncoder "slug" JE.string "" v.slug)
             , (optionalEncoder "created" timestampEncoder v.created)
@@ -107,7 +107,7 @@ groupRequestEncoder v =
 
 type alias Role =
     { id :
-        Int
+        String
         -- 1
     , name :
         String
@@ -123,7 +123,7 @@ roleDecoder =
     JD.lazy <|
         \_ ->
             decode Role
-                |> required "id" JD.int 0
+                |> required "id" JD.string ""
                 |> required "name" JD.string ""
                 |> required "weight" JD.int 0
 
@@ -132,7 +132,7 @@ roleEncoder : Role -> JE.Value
 roleEncoder v =
     JE.object <|
         List.filterMap identity <|
-            [ (requiredFieldEncoder "id" JE.int 0 v.id)
+            [ (requiredFieldEncoder "id" JE.string "" v.id)
             , (requiredFieldEncoder "name" JE.string "" v.name)
             , (requiredFieldEncoder "weight" JE.int 0 v.weight)
             ]

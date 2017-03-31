@@ -76,8 +76,8 @@ getGame api token slug =
         }
 
 
-getUser : String -> String -> String -> Http.Request Entity.User
-getUser api token sub =
+fetchUser : String -> String -> String -> Http.Request Entity.User
+fetchUser api token sub =
     Http.request
         { method = "GET"
         , headers = defaultHeaders token
@@ -89,27 +89,33 @@ getUser api token sub =
         }
 
 
-getUsers : String -> String -> Http.Request UsersList
-getUsers api token =
+fetchUsers : String -> String -> Http.Request (List Entity.User)
+fetchUsers api token =
     Http.request
         { method = "GET"
         , headers = defaultHeaders token
         , url = api ++ "/users?createdEach=true"
         , body = Http.emptyBody
-        , expect = Http.expectJson usersListDecoder
+        , expect =
+            Http.expectJson <|
+                Decode.field "users" (Decode.list Entity.userDecoder)
         , timeout = Nothing
         , withCredentials = False
         }
 
 
-postUser : String -> String -> Entity.User -> Http.Request Entity.User
-postUser api token user =
+createUser :
+    String
+    -> String
+    -> Entity.UserRecord
+    -> Http.Request Entity.UserRecord
+createUser api token user =
     Http.request
         { method = "POST"
         , headers = defaultHeaders token
         , url = api ++ "/user/"
-        , body = Http.jsonBody <| Entity.userEncoder user
-        , expect = Http.expectJson Entity.userDecoder
+        , body = Http.jsonBody <| Entity.userRecordEncoder user
+        , expect = Http.expectJson Entity.userRecordDecoder
         , timeout = Nothing
         , withCredentials = False
         }
@@ -128,10 +134,14 @@ getGroup api token slug =
         }
 
 
-usersListDecoder =
-    JP.decode UsersList |> JP.required "users" (Decode.list Entity.userDecoder)
-
-
-type alias UsersList =
-    { users : List Entity.User
-    }
+getRole : String -> String -> String -> Http.Request Entity.Role
+getRole api token slug =
+    Http.request
+        { method = "GET"
+        , headers = defaultHeaders token
+        , url = api ++ "/role/" ++ slug
+        , body = Http.emptyBody
+        , expect = Http.expectJson Entity.roleDecoder
+        , timeout = Nothing
+        , withCredentials = False
+        }

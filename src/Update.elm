@@ -22,67 +22,80 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         -- ADMIN
-        ConGroupResp (Ok group) ->
-            ( { model | adminModel = (setConGroupId model group.id) }, Cmd.none )
+        GroupResp (Ok group) ->
+            let
+                -- TODO fix this. Why is it not updating the model???
+                l =
+                    Debug.log "group" <| toString group.slug
+            in
+                case group.slug of
+                    "control_a" ->
+                        ( { model | groupIdCon = Just group.id }, Cmd.none )
 
-        ConGroupResp (Err err) ->
-            model ! []
+                    "experimental_a" ->
+                        ( { model | groupIdExp = Just group.id }, Cmd.none )
 
-        ExpGroupResp (Ok group) ->
-            ( { model | adminModel = (setExpGroupId model group.id) }, Cmd.none )
+                    _ ->
+                        model ! []
 
-        ExpGroupResp (Err err) ->
-            model ! []
-
-        UsersResp (Ok usersList) ->
-            ( { model | error = "no admin yet", adminModel = (setUsers model usersList.users) }, Cmd.none )
-
-        UsersResp (Err err) ->
-            ( { model | error = toString err }, Cmd.none )
+        UsersResp (Ok users_) ->
+            ( { model
+                | users = users_
+              }
+            , Cmd.none
+            )
 
         SetRegistration key value ->
             let
-                ( userToRegister_, adminModel_ ) =
-                    ( model.adminModel.userToRegister, model.adminModel )
+                userToRegister_old =
+                    model.userToRegister
 
-                newUserToRegister =
+                userToRegister_ =
                     case key of
                         "email" ->
-                            { userToRegister_ | email = value }
+                            { userToRegister_old | email = value }
 
                         "password" ->
-                            -- TODO handle password
-                            userToRegister_
+                            { userToRegister_old | password = value }
 
                         "username" ->
-                            { userToRegister_ | username = value }
+                            { userToRegister_old | username = value }
 
                         "firstName" ->
-                            { userToRegister_ | firstName = value }
+                            { userToRegister_old | firstName = value }
 
                         "lastName" ->
-                            { userToRegister_ | lastName = value }
+                            { userToRegister_old | lastName = value }
 
                         _ ->
-                            userToRegister_
-
-                newAdminModel =
-                    { adminModel_ | userToRegister = newUserToRegister }
+                            userToRegister_old
             in
-                ( { model | adminModel = newAdminModel }, Cmd.none )
+                ( { model | userToRegister = userToRegister_ }, Cmd.none )
 
         TryRegisterUser ->
-            model ! []
+            ( { model | loading = ( True, "loading..." ) }
+            , Cmd.batch
+                [ Http.send RegisterUserResp
+                    (Api.createUser
+                        model.api
+                        model.jwtencoded
+                        model.userToRegister
+                    )
+                ]
+            )
 
         RegisterUserResp (Ok newUser) ->
             model ! []
 
-        RegisterUserResp (Err err) ->
-            model ! []
-
         -- SHARED
-        HideErrorNotification ->
-            ( { model | errNotif = False, error = "" }, Cmd.none )
+        ResetNotifications ->
+            ( { model
+                | glitching = ( False, "" )
+                , informing = ( False, "" )
+                , loading = ( False, "" )
+              }
+            , Cmd.none
+            )
 
         UpdateLocation path ->
             let
@@ -105,7 +118,11 @@ update msg model =
 
                 ( model_, cmds ) =
                     if expired then
-                        ( Empty.emptyModel model, [ Port.clearLocalStorage True, Navigation.newUrl "/login" ] )
+                        ( Empty.emptyModel model
+                        , [ Port.clearLocalStorage True
+                          , Navigation.newUrl "/login"
+                          ]
+                        )
                     else
                         ( model, [] )
             in
@@ -116,7 +133,12 @@ update msg model =
                 newRoute =
                     parseLocation location
             in
-                ( { model | activeRoute = newRoute, menuIsActive = False }, Cmd.none )
+                ( { model
+                    | activeRoute = newRoute
+                    , isMenuActive = False
+                  }
+                , Cmd.none
+                )
 
         -- LOGIN
         UpdateEmail newEmail ->
@@ -124,21 +146,31 @@ update msg model =
                 authRecord_ =
                     model.authRecord
             in
-                ( { model | authRecord = { authRecord_ | email = newEmail } }, Cmd.none )
+                ( { model | authRecord = { authRecord_ | email = newEmail } }
+                , Cmd.none
+                )
 
         UpdatePassword newPassword ->
             let
                 authRecord_ =
                     model.authRecord
             in
-                ( { model | authRecord = { authRecord_ | password = newPassword } }, Cmd.none )
+                ( { model
+                    | authRecord = { authRecord_ | password = newPassword }
+                  }
+                , Cmd.none
+                )
 
         TryLogin ->
             let
                 cmd =
-                    Http.send LoginResp (Api.postCreds model.api model.authRecord)
+                    Http.send LoginResp
+                        (Api.postCreds
+                            model.api
+                            model.authRecord
+                        )
             in
-                ( { model | spin = True }, cmd )
+                ( { model | loading = ( True, "loading..." ) }, cmd )
 
         Logout ->
             let
@@ -157,37 +189,30 @@ update msg model =
                 ( model_, commands_ ) =
                     case jwtdecoded_ of
                         Ok jwt ->
-                            ( { model | spin = False, visitor = LoggedIn jwt, jwtencoded = auth.token }
+                            ( { model
+                                | loading = ( False, "" )
+                                , visitor = LoggedIn jwt
+                                , jwtencoded = auth.token
+                              }
                             , [ Port.setItem ( "token", auth.token )
-                              , Http.send UserResp (Api.getUser model.api auth.token jwt.sub)
+                              , Http.send UserResp
+                                    (Api.fetchUser
+                                        model.api
+                                        auth.token
+                                        jwt.sub
+                                    )
                               ]
                             )
 
                         Err err ->
-                            ( { model | spin = False, error = toString err }, [] )
+                            ( { model
+                                | loading = ( False, "" )
+                                , glitching = ( True, toString err )
+                              }
+                            , []
+                            )
             in
                 ( model_, Cmd.batch commands_ )
-
-        LoginResp (Err err) ->
-            let
-                error_ =
-                    case err of
-                        Http.Timeout ->
-                            "Something took too long"
-
-                        Http.NetworkError ->
-                            "The server is not responding or you might be offline"
-
-                        Http.BadStatus _ ->
-                            "bad status"
-
-                        Http.BadPayload str _ ->
-                            str
-
-                        _ ->
-                            "Unknown error"
-            in
-                ( { model | spin = False, error = error_, errNotif = True }, Cmd.none )
 
         UserResp (Ok newUser) ->
             let
@@ -211,27 +236,19 @@ update msg model =
                             , Navigation.newUrl "/"
                             ]
             in
-                ( { model | user = newUser, activeRoute = HomeRoute }, Cmd.batch commands )
-
-        UserResp (Err err) ->
-            let
-                l =
-                    Debug.log "login" (toString err)
-            in
-                ( { model | error = "User related error" }, Cmd.none )
+                ( { model
+                    | user = newUser
+                    , activeRoute = HomeRoute
+                  }
+                , Cmd.batch commands
+                )
 
         -- GAMES
         GameResp (Ok game) ->
             ( { model | games = game :: model.games }, Cmd.none )
 
-        GameResp (Err err) ->
-            ( { model | error = (toString err) }, Cmd.none )
-
         GimageResp (Ok gimage) ->
             ( { model | gimages = gimage :: model.gimages }, Cmd.none )
-
-        GimageResp (Err err) ->
-            model ! []
 
         Presses _ ->
             model ! []
@@ -239,54 +256,81 @@ update msg model =
         MainMenuToggle ->
             let
                 active =
-                    if model.menuIsActive then
+                    if model.isMenuActive then
                         False
                     else
                         True
             in
-                ( { model | menuIsActive = active }, Cmd.none )
+                ( { model | isMenuActive = active }, Cmd.none )
 
         Tick t ->
             ( { model | currentTime = t }, Cmd.none )
 
         CalcTimeDelta time ->
-            ( { model | currentTimeDelta = time - model.currentTime }, Cmd.none )
+            ( { model
+                | currentTimeDelta = time - model.currentTime
+              }
+            , Cmd.none
+            )
 
         GetTimeAndThen successHandler ->
             ( model, (Task.perform successHandler Time.now) )
+
+        RoleResp (Ok role) ->
+            let
+                l =
+                    Debug.log "role" role
+            in
+                ( { model | roleIdUser = Just role.id }, Cmd.none )
+
+        LoginResp (Err err) ->
+            (httpErrorState model err)
+
+        UserResp (Err err) ->
+            (httpErrorState model err)
+
+        GameResp (Err err) ->
+            (httpErrorState model err)
+
+        GimageResp (Err err) ->
+            (httpErrorState model err)
+
+        UsersResp (Err err) ->
+            (httpErrorState model err)
+
+        RegisterUserResp (Err err) ->
+            (httpErrorState model err)
+
+        GroupResp (Err err) ->
+            (httpErrorState model err)
+
+        RoleResp (Err err) ->
+            (httpErrorState model err)
+
+
+httpErrorState model err =
+    ( { model | loading = ( False, "" ), glitching = ( True, httpHumanError err ) }, Cmd.none )
+
+
+httpHumanError : Http.Error -> String
+httpHumanError err =
+    case err of
+        Http.Timeout ->
+            "Something is taking too long"
+
+        Http.NetworkError ->
+            "Oops. There's been a network error."
+
+        Http.BadStatus _ ->
+            "Server error"
+
+        Http.BadPayload str _ ->
+            "Bad payload"
+
+        _ ->
+            "Unknown error"
 
 
 delay : Time.Time -> Msg -> Cmd Msg
 delay t msg =
     Process.sleep t |> Task.perform (\_ -> msg)
-
-
-setUsers : Model -> List Entity.User -> AdminModel
-setUsers model users_ =
-    let
-        adminModel =
-            model.adminModel
-    in
-        { adminModel | users = users_ }
-
-
-setConGroupId : Model -> Int -> AdminModel
-setConGroupId model conGroupId_ =
-    let
-        adminModel =
-            model.adminModel
-    in
-        { adminModel | conGroupId = conGroupId_ }
-
-
-setExpGroupId : Model -> Int -> AdminModel
-setExpGroupId model expGroupId_ =
-    let
-        adminModel =
-            model.adminModel
-    in
-        { adminModel | conGroupId = expGroupId_ }
-
-
-
--- delay (Time.Time.millisecond*500) cmdMsg

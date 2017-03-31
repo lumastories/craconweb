@@ -19,20 +19,20 @@ loginPage model =
                 [ div [ class "column is-half is-offset-one-quarter" ]
                     [ bigLogo
                     , loginPageBoxForm model
-                    , errNotif model.error model.errNotif
+                    , notification model.glitching "is-warning"
                     ]
                 ]
             ]
         ]
 
 
-loginPageButtonClass : Bool -> String
-loginPageButtonClass spin =
-    case spin of
-        False ->
+loginPageButtonClass : ( Bool, String ) -> String
+loginPageButtonClass loading =
+    case loading of
+        ( False, _ ) ->
             "button is-dark"
 
-        True ->
+        ( True, _ ) ->
             "button is-dark is-loading"
 
 
@@ -67,7 +67,7 @@ loginPageBoxForm model =
                 []
             , p [ class "control" ]
                 [ button
-                    [ class <| loginPageButtonClass model.spin
+                    [ class <| loginPageButtonClass model.loading
                     , type_ "submit"
                     ]
                     [ text "Let's Go!" ]
@@ -96,8 +96,8 @@ navBar model =
             [ div [ class "nav-left" ]
                 [ logo "/"
                 ]
-            , navToggler model.menuIsActive
-            , navRight model.menuIsActive model.activeRoute
+            , navToggler model.isMenuActive
+            , navRight model.isMenuActive model.activeRoute
             ]
         ]
 
@@ -117,6 +117,7 @@ navRight activeMenu activeRoute =
         [ id "nav-menu", class <| "nav-right nav-menu" ++ (isActive activeMenu) ]
         [ navLink "Badges" R.badgesPath (R.BadgesRoute == activeRoute)
         , navLink "Instructions" R.instructionsPath (R.InstructionsRoute == activeRoute)
+        , a ([ class "nav-item is-tab", onClick Logout ] ++ linkAttrs "/login") [ text "Logout" ]
         ]
 
 
@@ -157,6 +158,7 @@ homePage model =
     div []
         [ navBar model
         , homePageBody model
+        , notification model.glitching "is-danger"
         ]
 
 
@@ -235,12 +237,12 @@ homePageGameCard gameSlug src_ title about =
 -- The parent of basic pages.
 
 
-errNotif errText errNotif =
-    if errNotif then
+notification ( isEnabled, content ) mods =
+    if isEnabled then
         div
-            [ class "notification is-danger" ]
-            [ button [ class "delete", onClick HideErrorNotification ] []
-            , text errText
+            [ class <| "notification " ++ mods ]
+            [ button [ class "delete", onClick ResetNotifications ] []
+            , text content
             ]
     else
         div [] []
@@ -253,6 +255,7 @@ basicPage model children =
         , section
             [ class "section" ]
             children
+        , notification model.glitching "is-danger"
         ]
 
 
@@ -420,6 +423,7 @@ instructionsPage model =
                     on the left side of the screen or “m” when the dot is on the
                     right side of the screen. Go as fast as you can, but don’t
                     sacrifice accuracy for speed."""
+                  -- TODO case switch on whther user is in the control group
                 , instBlock "Visual search" """Food response training:
                         You will see a grid of 16 images of food. It is your job
                         to swipe on the image of the healthy food as quickly as
@@ -538,18 +542,23 @@ userEmailPassReg =
         ]
 
 
-groupDropDown : Int -> Int -> Html Msg
-groupDropDown expGroupId conGroupId =
-    p [ class "control" ]
-        [ span [ class "select" ]
-            [ select []
-                [ option [ value <| toString expGroupId ]
-                    [ text "Experimental" ]
-                , option [ value <| toString conGroupId ]
-                    [ text "Control" ]
+groupDropDown : Maybe String -> Maybe String -> Html Msg
+groupDropDown groupIdExp groupIdCon =
+    case ( groupIdExp, groupIdCon ) of
+        ( Just groupIdExp_, Just groupIdCon_ ) ->
+            p [ class "control" ]
+                [ span [ class "select" ]
+                    [ select []
+                        [ option [ value groupIdExp_ ]
+                            [ text "Experimental" ]
+                        , option [ value groupIdCon_ ]
+                            [ text "Control" ]
+                        ]
+                    ]
                 ]
-            ]
-        ]
+
+        _ ->
+            p [] []
 
 
 registerUserForm model =
@@ -557,18 +566,25 @@ registerUserForm model =
         [ onSubmit TryRegisterUser ]
         [ firstLastReg
         , userEmailPassReg
-        , groupDropDown model.adminModel.expGroupId model.adminModel.conGroupId
+        , groupDropDown model.groupIdExp model.groupIdCon
         , hr []
             []
-        , regButtons
+        , regButtons model.loading
         ]
 
 
-regButtons =
+regButtons ( loading, _ ) =
     div
         [ class "field is-grouped" ]
         [ button
-            [ class "button is-primary" ]
+            [ class <|
+                "button is-primary "
+                    ++ (if loading then
+                            "is-loading"
+                        else
+                            ""
+                       )
+            ]
             [ text "Submit" ]
         , button
             ([ class "button is-link" ] ++ (linkAttrs R.adminPath))
@@ -668,7 +684,7 @@ usersTable model =
                 , th [] [ text "Actions" ]
                 ]
             ]
-        , tbody [] (userRows model.adminModel.users)
+        , tbody [] (userRows model.users)
         ]
 
 
