@@ -5,6 +5,7 @@ import Http
 import Json.Decode as Decode
 import Json.Decode.Pipeline as JP
 import Jwt
+import Time
 
 
 type alias JwtPayload =
@@ -16,6 +17,16 @@ type alias JwtPayload =
     , roles : List Entity.Role
     }
 
+
+
+
+isOld : Time.Time -> String -> Bool
+isOld now token =
+    case jwtDecoded token of    
+            Ok decoded ->
+                (toFloat decoded.exp) > (now / 1000)  
+            Err _ ->
+                False
 
 jwtDecoded : String -> Result Jwt.JwtError JwtPayload
 jwtDecoded token =

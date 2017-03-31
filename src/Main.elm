@@ -34,26 +34,49 @@ subscriptions model =
 init : Flags -> Navigation.Location -> ( Model.Model, Cmd Model.Msg )
 init flags location =
     let
-        ( api_, jwtdecoded_, jwtencoded_ ) =
-            ( "http://localhost:8680"
-            , Api.jwtDecoded flags.token
-            , flags.token
-            )
 
-        ( visitor_, route_, commands_ ) =
-            case jwtdecoded_ of
-                Ok jwtdecoded ->
-                    ( Model.LoggedIn jwtdecoded
-                    , Routing.parseLocation location
-                    , initData api_ jwtencoded_
-                    )
 
-                Err _ ->
-                    ( Model.Anonymous, Routing.LoginRoute, [] )
+        -- if token exists check if token is expired then Routing.LoginRoute
+        -- else check if is not admin block /admin and /register routes
+        -- else Routing.parseLocation location
+        -- else (not exist - login route, anon user)
+        api_ =
+                "http://localhost:8680"
+        blockAdminRoutes : Navigation.Location -> Routing.Route
+        blockAdminRoutes location =
+            case location.pathname of
+                    "/admin" ->
+                            Routing.HomeRoute
+                    "/register" ->
+                            Routing.HomeRoute
+                    _ ->
+                            (Routing.parseLocation location)
+
+        (route_, visitor_) =
+            case flags.token of
+                "" ->
+                    (Routing.LoginRoute, Model.Anonymous)
+                _ ->
+                    case Api.isOld flags.time flags.token of
+                            True ->
+                                (Routing.LoginRoute, Model.Anonymous)
+                            False ->
+                                case Api.jwtDecoded flags.token of
+                                        Ok jwt ->
+                                                case (List.map .name jwt.roles |> List.member "admin") of
+                                                        True ->
+                                                                (Routing.parseLocation location, Model.LoggedIn jwt)
+                                                        False ->
+                                                                (blockAdminRoutes location, Model.LoggedIn jwt)
+                                        _ ->
+                                                (Routing.LoginRoute, Model.Anonymous)
+        commands_ =
+            initData api_ flags.token
+
 
         initModel =
             { api = api_
-            , jwtencoded = jwtencoded_
+            , jwtencoded = flags.token
             , activeRoute = route_
             , presses = []
             , visitor = visitor_
@@ -73,6 +96,7 @@ init flags location =
             , roleIdUser = Nothing
             , groupIdExp = Nothing
             , groupIdCon = Nothing
+            , httpErr = ""
             }
     in
         ( initModel, Cmd.batch commands_ )
@@ -80,7 +104,9 @@ init flags location =
 
 type alias Flags =
     { token : String
+    , time : Float
     }
+
 
 
 

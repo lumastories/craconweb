@@ -95,8 +95,7 @@ update msg model =
                 , loading = ( False, "" )
               }
             , Cmd.none
-            )
-
+            ) 
         UpdateLocation path ->
             let
                 cmds =
@@ -310,7 +309,7 @@ update msg model =
 
 
 httpErrorState model err =
-    ( { model | loading = ( False, "" ), glitching = ( True, httpHumanError err ) }, Cmd.none )
+    ( { model | loading = ( False, "" ), glitching = ( True, httpHumanError err ), httpErr = toString err }, Cmd.none )
 
 
 httpHumanError : Http.Error -> String

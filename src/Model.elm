@@ -31,6 +31,7 @@ type alias Model =
     , roleIdUser : Maybe String
     , groupIdExp : Maybe String
     , groupIdCon : Maybe String
+    , httpErr : String
     }
 
 
