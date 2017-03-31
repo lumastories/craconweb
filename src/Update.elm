@@ -85,7 +85,7 @@ update msg model =
             )
 
         RegisterUserResp (Ok newUser) ->
-            model ! []
+            ( { model | loading = ( False, "" ) }, Navigation.newUrl "/admin" )
 
         -- SHARED
         ResetNotifications ->

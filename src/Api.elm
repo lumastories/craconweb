@@ -113,7 +113,7 @@ createUser api token user =
     Http.request
         { method = "POST"
         , headers = defaultHeaders token
-        , url = api ++ "/user/"
+        , url = api ++ "/user"
         , body = Http.jsonBody <| Entity.userRecordEncoder user
         , expect = Http.expectJson Entity.userRecordDecoder
         , timeout = Nothing
