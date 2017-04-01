@@ -22,7 +22,7 @@ isOld : Time.Time -> String -> Bool
 isOld now token =
     case jwtDecoded token of
         Ok decoded ->
-            (toFloat decoded.exp) > (now / 1000)
+            (toFloat decoded.exp) < (now / 1000)
 
         Err _ ->
             False

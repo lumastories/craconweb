@@ -193,6 +193,7 @@ update msg model =
                                 | loading = ( False, "" )
                                 , visitor = LoggedIn jwt
                                 , jwtencoded = auth.token
+                                , glitching = ( False, "" )
                               }
                             , [ Port.setItem ( "token", auth.token )
                               , Http.send UserResp
