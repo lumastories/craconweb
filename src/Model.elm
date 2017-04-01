@@ -39,6 +39,8 @@ type alias Model =
     , stopsignalGame : Entity.Game
     , respondsignalGame : Entity.Game
     , visualsearchGame : Entity.Game
+    , responseTimes : List Time.Time
+    , startTime : Time.Time
     }
 
 

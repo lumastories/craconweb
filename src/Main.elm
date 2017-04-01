@@ -109,6 +109,8 @@ init flags location =
             , stopsignalGame = Empty.emptyGame
             , respondsignalGame = Empty.emptyGame
             , visualsearchGame = Empty.emptyGame
+            , responseTimes = []
+            , startTime = 0
             }
     in
         ( initModel, Cmd.batch commands_ )

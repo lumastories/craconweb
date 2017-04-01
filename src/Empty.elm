@@ -22,6 +22,8 @@ emptyModel model =
         , user = emptyUser
         , authRecord = emptyAuthRecord
         , glitching = ( False, "" )
+        , responseTimes = []
+        , startTime = 0
     }
 
 
