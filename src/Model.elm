@@ -27,7 +27,7 @@ type alias Model =
     , glitching : ( Bool, String )
     , informing : ( Bool, String )
     , users : List Entity.User
-    , userToRegister : Entity.UserRecord
+    , tmpUserRecord : Entity.UserRecord
     , roleIdUser : Maybe String
     , groupIdExp : Maybe String
     , groupIdCon : Maybe String
@@ -63,7 +63,7 @@ type
     | GameResp (Result Http.Error Entity.Game)
     | GimageResp (Result Http.Error Entity.Gimage)
     | UsersResp (Result Http.Error (List Entity.User))
-    | RegisterUserResp (Result Http.Error Entity.UserRecord)
+    | RegisterUserResp (Result Http.Error Entity.User)
     | GroupResp (Result Http.Error Entity.Group)
     | RoleResp (Result Http.Error Entity.Role)
       -- ADMIN

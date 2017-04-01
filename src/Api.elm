@@ -2,7 +2,7 @@ module Api exposing (..)
 
 import Entity
 import Http
-import Json.Decode as Decode
+import Json.Decode as JD
 import Json.Decode.Pipeline as JP
 import Jwt
 import Time
@@ -18,30 +18,30 @@ type alias JwtPayload =
     }
 
 
-
-
 isOld : Time.Time -> String -> Bool
 isOld now token =
-    case jwtDecoded token of    
-            Ok decoded ->
-                (toFloat decoded.exp) > (now / 1000)  
-            Err _ ->
-                False
+    case jwtDecoded token of
+        Ok decoded ->
+            (toFloat decoded.exp) > (now / 1000)
+
+        Err _ ->
+            False
+
 
 jwtDecoded : String -> Result Jwt.JwtError JwtPayload
 jwtDecoded token =
-    Jwt.decodeToken decodeJwtPayload token
+    Jwt.decodeToken jwtPayloadDecoder token
 
 
-decodeJwtPayload : Decode.Decoder JwtPayload
-decodeJwtPayload =
+jwtPayloadDecoder : JD.Decoder JwtPayload
+jwtPayloadDecoder =
     JP.decode JwtPayload
-        |> JP.required "aud" (Decode.string)
-        |> JP.required "exp" (Decode.int)
-        |> JP.required "iat" (Decode.int)
-        |> JP.required "iss" (Decode.string)
-        |> JP.required "sub" (Decode.string)
-        |> JP.required "roles" (Decode.list Entity.roleDecoder)
+        |> JP.required "aud" (JD.string)
+        |> JP.required "exp" (JD.int)
+        |> JP.required "iat" (JD.int)
+        |> JP.required "iss" (JD.string)
+        |> JP.required "sub" (JD.string)
+        |> JP.required "roles" (JD.list Entity.roleDecoder)
 
 
 defaultHeaders : String -> List Http.Header
@@ -109,7 +109,7 @@ fetchUsers api token =
         , body = Http.emptyBody
         , expect =
             Http.expectJson <|
-                Decode.field "users" (Decode.list Entity.userDecoder)
+                JD.field "users" (JD.list Entity.userDecoder)
         , timeout = Nothing
         , withCredentials = False
         }
@@ -119,14 +119,14 @@ createUser :
     String
     -> String
     -> Entity.UserRecord
-    -> Http.Request Entity.UserRecord
+    -> Http.Request Entity.User
 createUser api token user =
     Http.request
         { method = "POST"
         , headers = defaultHeaders token
         , url = api ++ "/user"
         , body = Http.jsonBody <| Entity.userRecordEncoder user
-        , expect = Http.expectJson Entity.userRecordDecoder
+        , expect = Http.expectJson Entity.userDecoder
         , timeout = Nothing
         , withCredentials = False
         }
@@ -156,3 +156,50 @@ getRole api token slug =
         , timeout = Nothing
         , withCredentials = False
         }
+
+
+
+-- server message decoders
+
+
+type alias ErrorCode =
+    { error : String
+    , code : Int
+    }
+
+
+decodeErrorCode errorCode =
+    case JD.decodeString errorCodeDecoder errorCode of
+        Ok ed ->
+            ed
+
+        Err _ ->
+            { error = "error"
+            , code = 0
+            }
+
+
+errorCodeDecoder : JD.Decoder ErrorCode
+errorCodeDecoder =
+    JD.lazy <|
+        \_ ->
+            JD.succeed ErrorCode
+                |> required "error" JD.string ""
+                |> required "code" JD.int 0
+
+
+
+-- Copied from Protobuf.elm
+
+
+withDefault : a -> JD.Decoder a -> JD.Decoder a
+withDefault default decoder =
+    JD.oneOf
+        [ decoder
+        , JD.succeed default
+        ]
+
+
+required : String -> JD.Decoder a -> a -> JD.Decoder (a -> b) -> JD.Decoder b
+required name decoder default d =
+    JD.map2 (|>) (withDefault default <| JD.field name decoder) d

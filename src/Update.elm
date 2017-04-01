@@ -23,20 +23,15 @@ update msg model =
     case msg of
         -- ADMIN
         GroupResp (Ok group) ->
-            let
-                -- TODO fix this. Why is it not updating the model???
-                l =
-                    Debug.log "group" <| toString group.slug
-            in
-                case group.slug of
-                    "control_a" ->
-                        ( { model | groupIdCon = Just group.id }, Cmd.none )
+            case group.slug of
+                "control_a" ->
+                    ( { model | groupIdCon = Just group.id }, Cmd.none )
 
-                    "experimental_a" ->
-                        ( { model | groupIdExp = Just group.id }, Cmd.none )
+                "experimental_a" ->
+                    ( { model | groupIdExp = Just group.id }, Cmd.none )
 
-                    _ ->
-                        model ! []
+                _ ->
+                    model ! []
 
         UsersResp (Ok users_) ->
             ( { model
@@ -47,30 +42,30 @@ update msg model =
 
         SetRegistration key value ->
             let
-                userToRegister_old =
-                    model.userToRegister
+                tmpUserRecord_old =
+                    model.tmpUserRecord
 
-                userToRegister_ =
+                tmpUserRecord_ =
                     case key of
                         "email" ->
-                            { userToRegister_old | email = value }
+                            { tmpUserRecord_old | email = value }
 
                         "password" ->
-                            { userToRegister_old | password = value }
+                            { tmpUserRecord_old | password = value }
 
                         "username" ->
-                            { userToRegister_old | username = value }
+                            { tmpUserRecord_old | username = value }
 
                         "firstName" ->
-                            { userToRegister_old | firstName = value }
+                            { tmpUserRecord_old | firstName = value }
 
                         "lastName" ->
-                            { userToRegister_old | lastName = value }
+                            { tmpUserRecord_old | lastName = value }
 
                         _ ->
-                            userToRegister_old
+                            tmpUserRecord_old
             in
-                ( { model | userToRegister = userToRegister_ }, Cmd.none )
+                ( { model | tmpUserRecord = tmpUserRecord_ }, Cmd.none )
 
         TryRegisterUser ->
             ( { model | loading = ( True, "loading..." ) }
@@ -79,13 +74,17 @@ update msg model =
                     (Api.createUser
                         model.api
                         model.jwtencoded
-                        model.userToRegister
+                        model.tmpUserRecord
                     )
                 ]
             )
 
         RegisterUserResp (Ok newUser) ->
-            ( { model | loading = ( False, "" ) }, Navigation.newUrl "/admin" )
+            let
+                users_ =
+                    [ newUser ] ++ model.users
+            in
+                ( { model | loading = ( False, "" ), users = users_, tmpUserRecord = Empty.emptyUserRecord }, Navigation.newUrl "/admin" )
 
         -- SHARED
         ResetNotifications ->
@@ -95,7 +94,8 @@ update msg model =
                 , loading = ( False, "" )
               }
             , Cmd.none
-            ) 
+            )
+
         UpdateLocation path ->
             let
                 cmds =
@@ -277,11 +277,7 @@ update msg model =
             ( model, (Task.perform successHandler Time.now) )
 
         RoleResp (Ok role) ->
-            let
-                l =
-                    Debug.log "role" role
-            in
-                ( { model | roleIdUser = Just role.id }, Cmd.none )
+            ( { model | roleIdUser = Just role.id }, Cmd.none )
 
         LoginResp (Err err) ->
             (httpErrorState model err)
@@ -309,7 +305,13 @@ update msg model =
 
 
 httpErrorState model err =
-    ( { model | loading = ( False, "" ), glitching = ( True, httpHumanError err ), httpErr = toString err }, Cmd.none )
+    ( { model
+        | loading = ( False, "" )
+        , glitching = ( True, httpHumanError err )
+        , httpErr = toString err
+      }
+    , Cmd.none
+    )
 
 
 httpHumanError : Http.Error -> String
@@ -321,8 +323,8 @@ httpHumanError err =
         Http.NetworkError ->
             "Oops. There's been a network error."
 
-        Http.BadStatus _ ->
-            "Server error"
+        Http.BadStatus s ->
+            "Server error: " ++ (.error (Api.decodeErrorCode s.body))
 
         Http.BadPayload str _ ->
             "Bad payload"

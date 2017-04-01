@@ -657,8 +657,8 @@ userRows users =
                 , td [] [ text user.lastName ]
                 , td [] [ text user.email ]
                 , td []
-                    [ button [ class "button is-secondary" ]
-                        [ text "edit" ]
+                    [ a [ class "button is-secondary" ]
+                        [ text "download data (TODO)" ]
                     ]
                 ]
     in
@@ -694,6 +694,7 @@ basicAdminPage model children =
         [ section
             [ class "section" ]
             children
+        , notification model.glitching "is-warning"
         ]
 
 
