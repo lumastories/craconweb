@@ -21,7 +21,6 @@ emptyModel model =
         , currentTimeDelta = 0
         , user = emptyUser
         , authRecord = emptyAuthRecord
-        , gimages = []
         , glitching = ( False, "" )
     }
 

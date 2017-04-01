@@ -281,9 +281,6 @@ update msg model =
                 _ ->
                     model ! []
 
-        GimageResp (Ok gimage) ->
-            ( { model | gimages = gimage :: model.gimages }, Cmd.none )
-
         Presses _ ->
             model ! []
 
@@ -320,9 +317,6 @@ update msg model =
             (httpErrorState model err)
 
         GameResp (Err err) ->
-            (httpErrorState model err)
-
-        GimageResp (Err err) ->
             (httpErrorState model err)
 
         UsersResp (Err err) ->

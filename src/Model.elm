@@ -21,7 +21,10 @@ type alias Model =
     , currentTimeDelta : Time.Time
     , user : Entity.User
     , authRecord : Entity.AuthRecord
-    , gimages : List Entity.Gimage
+    , validImages : List Entity.Ugimage
+    , invalidImages : List Entity.Ugimage
+    , fillerImages : List Entity.Ugimage
+    , userGroupId : Maybe String
     , loading : ( Bool, String )
     , glitching : ( Bool, String )
     , informing : ( Bool, String )
@@ -65,7 +68,6 @@ type
     | LoginResp (Result Http.Error Entity.Auth)
     | UserResp (Result Http.Error Entity.User)
     | GameResp (Result Http.Error Entity.Game)
-    | GimageResp (Result Http.Error Entity.Gimage)
     | UsersResp (Result Http.Error (List Entity.User))
     | RegisterUserResp (Result Http.Error Entity.User)
     | GroupResp (Result Http.Error Entity.Group)

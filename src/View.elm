@@ -343,7 +343,6 @@ goNoGoGame model =
             [ class "container" ]
             [ h1 [ class "title is-1" ] [ text model.gonogoGame.name ]
             , code [] [ model.gonogoGame |> toString |> text ]
-            , code [] [ model.gimages |> toString |> text ]
             ]
         ]
 
@@ -366,16 +365,12 @@ dotProbeGame model =
         ]
 
 
-liImg : String -> Html Msg
-liImg src_ =
-    li [] [ img [ src src_ ] [] ]
 
-
-listOfStims : List Entity.Gimage -> List (Html Msg)
-listOfStims gimages =
-    gimages
-        |> List.map .path
-        |> List.map liImg
+--listOfStims : List Entity.Gimage -> List (Html Msg)
+--listOfStims gimages =
+--    gimages
+--        |> List.map .path
+--        |> List.map (li [] [ img [ src src_ ] [] ])
 
 
 instBlock title content =
