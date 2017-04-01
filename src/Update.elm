@@ -265,6 +265,12 @@ update msg model =
                 )
 
         -- GAMES
+        PlayGame slug ->
+            ( { model | playingGame = True }, Cmd.none )
+
+        StopPlaying slug ->
+            ( { model | playingGame = False }, Cmd.none )
+
         GameResp (Ok game) ->
             case game.slug of
                 "gonogo" ->

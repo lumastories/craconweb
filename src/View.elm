@@ -115,7 +115,8 @@ navToggler activeMenu =
 navRight activeMenu activeRoute =
     div
         [ id "nav-menu", class <| "nav-right nav-menu" ++ (isActive activeMenu) ]
-        [ navLink "Badges" R.badgesPath (R.BadgesRoute == activeRoute)
+        [ navLink "Games" R.homePath (R.HomeRoute == activeRoute)
+        , navLink "Badges" R.badgesPath (R.BadgesRoute == activeRoute)
         , navLink "Instructions" R.instructionsPath (R.InstructionsRoute == activeRoute)
         , a ([ class "nav-item is-tab", onClick Logout ] ++ linkAttrs "/login") [ text "Logout" ]
         ]
@@ -342,9 +343,20 @@ goNoGoGame model =
         [ div
             [ class "container" ]
             [ h1 [ class "title is-1" ] [ text model.gonogoGame.name ]
-            , code [] [ model.gonogoGame |> toString |> text ]
+            , goNoGoGamePlay model
             ]
         ]
+
+
+goNoGoGamePlay model =
+    case model.playingGame of
+        False ->
+            div []
+                [ a [ class "button is-info is-large", onClick (PlayGame "gonogo") ] [ text "Start Game" ]
+                ]
+
+        True ->
+            div [] [ text "playing game! this is so much fun!" ]
 
 
 setTime : Msg
@@ -608,6 +620,7 @@ adminTop =
             [ div [ class "block is-pulled-right" ]
                 [ bButton "Register User" R.registerPath "is-success"
                 , bButton "Go to games" R.homePath "is-link"
+                , a ([ class "button is-link", onClick Logout ] ++ linkAttrs "/login") [ text "Logout" ]
                 ]
             ]
         ]

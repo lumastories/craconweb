@@ -25,6 +25,7 @@ emptyModel model =
         , glitching = ( False, "" )
         , responseTimes = []
         , startTime = 0
+        , playingGame = False
     }
 
 

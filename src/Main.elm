@@ -123,6 +123,7 @@ init flags location =
             , visualsearchGame = Empty.emptyGame
             , responseTimes = []
             , startTime = 0
+            , playingGame = False
             }
     in
         ( initModel, Cmd.batch commands_ )

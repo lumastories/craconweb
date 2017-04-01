@@ -41,12 +41,17 @@ type alias Model =
     , visualsearchGame : Entity.Game
     , responseTimes : List Time.Time
     , startTime : Time.Time
+    , playingGame : Bool
     }
 
 
 type Visitor
     = Anonymous
     | LoggedIn Api.JwtPayload
+
+
+type alias Slug =
+    String
 
 
 type
@@ -66,6 +71,8 @@ type
     | CalcTimeDelta Time.Time
     | Tick Time.Time
     | VerifyToken Time.Time
+    | PlayGame Slug
+    | StopPlaying Slug
       -- HTTP
     | LoginResp (Result Http.Error Entity.Auth)
     | UserResp (Result Http.Error Entity.User)
