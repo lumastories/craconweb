@@ -10,7 +10,6 @@ import Dict
 
 emptyModel : Model.Model -> Model.Model
 emptyModel model =
-    -- do not reset api or jwt
     { model
         | loading = ( False, "" )
         , activeRoute = Routing.LoginRoute
@@ -22,7 +21,6 @@ emptyModel model =
         , currentTimeDelta = 0
         , user = emptyUser
         , authRecord = emptyAuthRecord
-        , games = []
         , gimages = []
         , glitching = ( False, "" )
     }
@@ -78,4 +76,34 @@ emptyLocation =
     , hash = ""
     , username = ""
     , password = ""
+    }
+
+
+emptyUserRole =
+    { id = ""
+    , name = "user"
+    , weight = 0
+    }
+
+
+emptyGame =
+    { id = ""
+    , name = ""
+    , slug = ""
+    , dscript = ""
+    , icon = ""
+    , reactDur = 0
+    , sessDur = 0
+    , trialDur = 0
+    , offsetDur = 0
+    , fixDur = 0
+    , fixImg = ""
+    , durInc = 0
+    , durDec = 0
+    , incTrigger = 0
+    , decTrigger = 0
+    , blocked = Nothing
+    , created = Nothing
+    , updated = Nothing
+    , deleted = Nothing
     }

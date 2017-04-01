@@ -91,17 +91,21 @@ init flags location =
             , currentTimeDelta = 0
             , user = Empty.emptyUser
             , authRecord = Empty.emptyAuthRecord
-            , games = []
             , gimages = []
             , loading = ( False, "" )
             , glitching = ( False, "" )
             , informing = ( False, "" )
             , users = []
             , tmpUserRecord = Empty.emptyUserRecord
-            , roleIdUser = Nothing
+            , userRole = Empty.emptyUserRole
             , groupIdExp = Nothing
             , groupIdCon = Nothing
             , httpErr = ""
+            , gonogoGame = Empty.emptyGame
+            , dotprobeGame = Empty.emptyGame
+            , stopsignalGame = Empty.emptyGame
+            , respondsignalGame = Empty.emptyGame
+            , visualsearchGame = Empty.emptyGame
             }
     in
         ( initModel, Cmd.batch commands_ )
@@ -120,14 +124,14 @@ type alias Flags =
 initData : String -> String -> List (Cmd Model.Msg)
 initData api token =
     -- Game stuff
-    [ Http.send Model.GameResp (Api.getGame api token "gonogo")
-    , Http.send Model.GameResp (Api.getGame api token "dotprobe")
-    , Http.send Model.GameResp (Api.getGame api token "stopsignal")
-    , Http.send Model.GameResp (Api.getGame api token "respondsignal")
-    , Http.send Model.GameResp (Api.getGame api token "visualsearch")
+    [ Http.send Model.GameResp (Api.fetchGame api token "gonogo")
+    , Http.send Model.GameResp (Api.fetchGame api token "dotprobe")
+    , Http.send Model.GameResp (Api.fetchGame api token "stopsignal")
+    , Http.send Model.GameResp (Api.fetchGame api token "respondsignal")
+    , Http.send Model.GameResp (Api.fetchGame api token "visualsearch")
       -- Admin stuff
     , Http.send Model.UsersResp (Api.fetchUsers api token)
-    , Http.send Model.GroupResp (Api.getGroup api token "control_a")
-    , Http.send Model.GroupResp (Api.getGroup api token "experimental_a")
-    , Http.send Model.RoleResp (Api.getRole api token "user")
+    , Http.send Model.GroupResp (Api.fetchGroup api token "control_a")
+    , Http.send Model.GroupResp (Api.fetchGroup api token "experimental_a")
+    , Http.send Model.RoleResp (Api.fetchRole api token "user")
     ]

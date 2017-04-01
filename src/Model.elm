@@ -21,17 +21,21 @@ type alias Model =
     , currentTimeDelta : Time.Time
     , user : Entity.User
     , authRecord : Entity.AuthRecord
-    , games : List Entity.Game
     , gimages : List Entity.Gimage
     , loading : ( Bool, String )
     , glitching : ( Bool, String )
     , informing : ( Bool, String )
     , users : List Entity.User
     , tmpUserRecord : Entity.UserRecord
-    , roleIdUser : Maybe String
+    , userRole : Entity.Role
     , groupIdExp : Maybe String
     , groupIdCon : Maybe String
     , httpErr : String
+    , gonogoGame : Entity.Game
+    , dotprobeGame : Entity.Game
+    , stopsignalGame : Entity.Game
+    , respondsignalGame : Entity.Game
+    , visualsearchGame : Entity.Game
     }
 
 

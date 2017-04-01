@@ -7,6 +7,10 @@ import Navigation
 import UrlParser exposing (..)
 
 
+adminPaths =
+    [ "/admin", "/register" ]
+
+
 type alias MenuItem =
     { name : String
     , route : Route

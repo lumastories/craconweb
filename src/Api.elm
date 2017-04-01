@@ -61,8 +61,8 @@ defaultHeaders jwtencoded =
         authHeaders
 
 
-postCreds : String -> Entity.AuthRecord -> Http.Request Entity.Auth
-postCreds api authRecord =
+createAuthRecord : String -> Entity.AuthRecord -> Http.Request Entity.Auth
+createAuthRecord api authRecord =
     Http.request
         { method = "POST"
         , headers = []
@@ -74,8 +74,8 @@ postCreds api authRecord =
         }
 
 
-getGame : String -> String -> String -> Http.Request Entity.Game
-getGame api token slug =
+fetchGame : String -> String -> String -> Http.Request Entity.Game
+fetchGame api token slug =
     Http.request
         { method = "GET"
         , headers = defaultHeaders token
@@ -115,12 +115,12 @@ fetchUsers api token =
         }
 
 
-createUser :
+createUserRecord :
     String
     -> String
     -> Entity.UserRecord
     -> Http.Request Entity.User
-createUser api token user =
+createUserRecord api token user =
     Http.request
         { method = "POST"
         , headers = defaultHeaders token
@@ -132,8 +132,8 @@ createUser api token user =
         }
 
 
-getGroup : String -> String -> String -> Http.Request Entity.Group
-getGroup api token slug =
+fetchGroup : String -> String -> String -> Http.Request Entity.Group
+fetchGroup api token slug =
     Http.request
         { method = "GET"
         , headers = defaultHeaders token
@@ -145,8 +145,8 @@ getGroup api token slug =
         }
 
 
-getRole : String -> String -> String -> Http.Request Entity.Role
-getRole api token slug =
+fetchRole : String -> String -> String -> Http.Request Entity.Role
+fetchRole api token slug =
     Http.request
         { method = "GET"
         , headers = defaultHeaders token

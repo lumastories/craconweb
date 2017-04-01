@@ -42,8 +42,11 @@ update msg model =
 
         SetRegistration key value ->
             let
-                tmpUserRecord_old =
+                tmpUserRecord_old_ =
                     model.tmpUserRecord
+
+                tmpUserRecord_old =
+                    { tmpUserRecord_old_ | roles = [ model.userRole.id ] }
 
                 tmpUserRecord_ =
                     case key of
@@ -71,7 +74,7 @@ update msg model =
             ( { model | loading = ( True, "loading..." ) }
             , Cmd.batch
                 [ Http.send RegisterUserResp
-                    (Api.createUser
+                    (Api.createUserRecord
                         model.api
                         model.jwtencoded
                         model.tmpUserRecord
@@ -132,12 +135,25 @@ update msg model =
             let
                 newRoute =
                     parseLocation location
+
+                commands_ =
+                    case List.member location.pathname adminPaths of
+                        True ->
+                            Cmd.batch
+                                [ Http.send Model.UsersResp (Api.fetchUsers model.api model.jwtencoded)
+                                , Http.send Model.GroupResp (Api.fetchGroup model.api model.jwtencoded "control_a")
+                                , Http.send Model.GroupResp (Api.fetchGroup model.api model.jwtencoded "experimental_a")
+                                , Http.send Model.RoleResp (Api.fetchRole model.api model.jwtencoded "user")
+                                ]
+
+                        False ->
+                            Cmd.none
             in
                 ( { model
                     | activeRoute = newRoute
                     , isMenuActive = False
                   }
-                , Cmd.none
+                , commands_
                 )
 
         -- LOGIN
@@ -165,7 +181,7 @@ update msg model =
             let
                 cmd =
                     Http.send LoginResp
-                        (Api.postCreds
+                        (Api.createAuthRecord
                             model.api
                             model.authRecord
                         )
@@ -246,7 +262,24 @@ update msg model =
 
         -- GAMES
         GameResp (Ok game) ->
-            ( { model | games = game :: model.games }, Cmd.none )
+            case game.slug of
+                "gonogo" ->
+                    ( { model | gonogoGame = game }, Cmd.none )
+
+                "dotprobe" ->
+                    ( { model | dotprobeGame = game }, Cmd.none )
+
+                "stopsignal" ->
+                    ( { model | stopsignalGame = game }, Cmd.none )
+
+                "respondsignal" ->
+                    ( { model | respondsignalGame = game }, Cmd.none )
+
+                "visualsearch" ->
+                    ( { model | visualsearchGame = game }, Cmd.none )
+
+                _ ->
+                    model ! []
 
         GimageResp (Ok gimage) ->
             ( { model | gimages = gimage :: model.gimages }, Cmd.none )
@@ -278,7 +311,7 @@ update msg model =
             ( model, (Task.perform successHandler Time.now) )
 
         RoleResp (Ok role) ->
-            ( { model | roleIdUser = Just role.id }, Cmd.none )
+            ( { model | userRole = role }, Cmd.none )
 
         LoginResp (Err err) ->
             (httpErrorState model err)

@@ -189,7 +189,13 @@ homePageGameCards model =
             div [ class "column" ]
                 [ homePageGameCard g.slug g.icon g.name g.dscript ]
     in
-        List.map toCard model.games
+        List.map toCard
+            [ model.gonogoGame
+            , model.dotprobeGame
+            , model.stopsignalGame
+            , model.respondsignalGame
+            , model.visualsearchGame
+            ]
 
 
 homePageGameCard : String -> String -> String -> String -> Html Msg
@@ -331,26 +337,15 @@ visualSearchGame model =
         ]
 
 
-gameName : Model -> String -> Maybe String
-gameName model slug_ =
-    List.filter (\g -> g.slug == slug_) model.games
-        |> List.map .name
-        |> List.head
-
-
 goNoGoGame model =
-    let
-        name =
-            Maybe.withDefault "" (gameName model "gonogo")
-    in
-        basicPage model
-            [ div
-                [ class "container" ]
-                [ h1 [ class "title is-1" ] [ text name ]
-                , code [] [ model.games |> toString |> text ]
-                , code [] [ model.gimages |> toString |> text ]
-                ]
+    basicPage model
+        [ div
+            [ class "container" ]
+            [ h1 [ class "title is-1" ] [ text model.gonogoGame.name ]
+            , code [] [ model.gonogoGame |> toString |> text ]
+            , code [] [ model.gimages |> toString |> text ]
             ]
+        ]
 
 
 setTime : Msg
@@ -611,11 +606,15 @@ registerPage model =
 
 
 adminTop =
-    div [ class "columns " ]
-        [ div [ class "column is-10" ]
+    div [ class "columns" ]
+        [ div [ class "column" ]
             [ h1 [ class "title" ] [ text <| "Users" ] ]
         , div [ class "column" ]
-            [ primaryButton "Register User" R.registerPath ]
+            [ div [ class "block is-pulled-right" ]
+                [ bButton "Register User" R.registerPath "is-success"
+                , bButton "Go to games" R.homePath "is-link"
+                ]
+            ]
         ]
 
 
@@ -625,13 +624,12 @@ adminPage model =
         [ adminTop
         , hr [] []
         , usersTable model
-        , bButton "Go to games" R.homePath "is-small"
         ]
 
 
 primaryButton : String -> String -> Html Msg
 primaryButton title path =
-    button
+    a
         [ class "button is-primary"
         , href <| path
         , R.onLinkClick <| UpdateLocation path
@@ -641,7 +639,7 @@ primaryButton title path =
 
 bButton : String -> String -> String -> Html Msg
 bButton title path mods =
-    button
+    a
         [ class ("button " ++ mods)
         , href <| path
         , R.onLinkClick <| UpdateLocation path
@@ -649,21 +647,20 @@ bButton title path mods =
         [ text title ]
 
 
-userRows users =
-    let
-        row user =
-            tr []
-                [ td [] [ text user.firstName ]
-                , td [] [ text user.lastName ]
-                , td [] [ text user.email ]
-                , td []
-                    [ a [ class "button is-secondary" ]
-                        [ text "download data (TODO)" ]
-                    ]
-                ]
-    in
-        users
-            |> List.map row
+downloadButton =
+    a
+        [ class "button is-small" ]
+        [ span
+            [ class "icon is-small" ]
+            [ i
+                [ class "fa fa-file-text-o" ]
+                []
+            ]
+        , span
+            []
+            [ text "Download CSV"
+            ]
+        ]
 
 
 
@@ -680,6 +677,7 @@ usersTable model =
             [ tr []
                 [ th [] [ text "First Name" ]
                 , th [] [ text "Last Name" ]
+                , th [] [ text "Username" ]
                 , th [] [ text "Email" ]
                 , th [] [ text "Actions" ]
                 ]
@@ -688,11 +686,28 @@ usersTable model =
         ]
 
 
+userRows users =
+    let
+        row user =
+            tr []
+                [ td [] [ text user.firstName ]
+                , td [] [ text user.lastName ]
+                , td [] [ text user.username ]
+                , td [] [ text user.email ]
+                , td []
+                    [ downloadButton
+                    ]
+                ]
+    in
+        users
+            |> List.map row
+
+
 basicAdminPage : Model -> List (Html Msg) -> Html Msg
 basicAdminPage model children =
-    section []
-        [ section
-            [ class "section" ]
+    section [ class "section" ]
+        [ div
+            [ class "container" ]
             children
         , notification model.glitching "is-warning"
         ]
