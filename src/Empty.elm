@@ -14,6 +14,7 @@ emptyModel model =
         | loading = ( False, "" )
         , activeRoute = Routing.LoginRoute
         , presses = []
+        , jwtencoded = ""
         , visitor = Model.Anonymous
         , isMenuActive = False
         , mainMenuItems = Routing.initMenuItems

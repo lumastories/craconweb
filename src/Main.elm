@@ -11,6 +11,7 @@ import Routing
 import Time
 import Update
 import View
+import Todos
 
 
 main : Program Flags Model.Model Model.Msg
@@ -77,7 +78,18 @@ init flags location =
                                     ( Routing.LoginRoute, Model.Anonymous )
 
         commands_ =
-            initData api_ flags.token
+            case visitor_ of
+                Model.Anonymous ->
+                    []
+
+                Model.LoggedIn jwt ->
+                    case (List.map .name jwt.roles |> List.member "admin") of
+                        True ->
+                            (Todos.initAdminStuff api_ flags.token)
+                                ++ (Todos.initUserStuff api_ flags.token)
+
+                        False ->
+                            Todos.initUserStuff api_ flags.token
 
         initModel =
             { api = api_
@@ -120,23 +132,3 @@ type alias Flags =
     { token : String
     , time : Float
     }
-
-
-
--- TODO Fix this - When should we fetch data? Account for refresh and user.
-
-
-initData : String -> String -> List (Cmd Model.Msg)
-initData api token =
-    -- Game stuff
-    [ Http.send Model.GameResp (Api.fetchGame api token "gonogo")
-    , Http.send Model.GameResp (Api.fetchGame api token "dotprobe")
-    , Http.send Model.GameResp (Api.fetchGame api token "stopsignal")
-    , Http.send Model.GameResp (Api.fetchGame api token "respondsignal")
-    , Http.send Model.GameResp (Api.fetchGame api token "visualsearch")
-      -- Admin stuff
-    , Http.send Model.UsersResp (Api.fetchUsers api token)
-    , Http.send Model.GroupResp (Api.fetchGroup api token "control_a")
-    , Http.send Model.GroupResp (Api.fetchGroup api token "experimental_a")
-    , Http.send Model.RoleResp (Api.fetchRole api token "user")
-    ]

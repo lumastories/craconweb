@@ -16,6 +16,7 @@ import Process
 import Routing exposing (..)
 import Task
 import Time
+import Todos
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -247,11 +248,14 @@ update msg model =
                         True ->
                             [ Navigation.newUrl "/admin"
                             ]
+                                ++ (Todos.initAdminStuff model.api model.jwtencoded)
+                                ++ (Todos.initUserStuff model.api model.jwtencoded)
 
                         False ->
                             [ Port.setItem ( "firstName", newUser.firstName )
                             , Navigation.newUrl "/"
                             ]
+                                ++ (Todos.initUserStuff model.api model.jwtencoded)
             in
                 ( { model
                     | user = newUser
