@@ -20,17 +20,33 @@ import Todos
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        TryCsvUpload ->
+            ( model
+              --, Http.send CsvUploadResp (Api.uploadCsv api token model.mCsvFile)
+            , Cmd.none
+            )
+
+        CsvUploadResp csvData ->
+            -- TODO make a request to set local ugimages!
+            -- And to fetch them from filesrv
+            ( model, Cmd.none )
+
         CsvSelected ->
             ( model, Port.fileSelected model.csvId )
 
         CsvRead data ->
             let
+                l =
+                    toString data
+                        |> Debug.log "CsvRead data ->"
+
                 newCsvFile =
-                    { contents = data.contents
-                    , filename = data.filename
-                    }
+                    Just
+                        { upload = data.upload
+                        , userid = data.userid
+                        }
             in
-                ( { model | mCsvFile = Just newCsvFile }, Cmd.none )
+                ( { model | mCsvFile = newCsvFile }, Cmd.none )
 
         NewCurrentTime now ->
             {- if playing game, calculate time since game started
@@ -296,9 +312,6 @@ update msg model =
               }
             , Cmd.none
             )
-
-        GetTimeAndThen successHandler ->
-            ( model, (Task.perform successHandler Time.now) )
 
         RoleResp (Ok role) ->
             ( { model | userRole = role }, Cmd.none )

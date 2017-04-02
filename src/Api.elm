@@ -8,6 +8,12 @@ import Jwt
 import Time
 
 
+type alias CsvData =
+    { upload : String
+    , userid : String
+    }
+
+
 type alias JwtPayload =
     { aud : String
     , exp : Float
@@ -135,6 +141,24 @@ createUserRecord api token user =
         , timeout = Nothing
         , withCredentials = False
         }
+
+
+
+--uploadCsv :
+--    String
+--    -> String
+--    -> CsvData
+--    -> Http.Request CsvData
+--uploadCsv filesrv token csvData =
+--    Http.request
+--        { method = "POST"
+--        , headers = defaultHeaders token
+--        , url = (filesrv ++ "/upload/ugimgset/" ++ csvData.userid)
+--        , body = Http.jsonBody <| csvDataEncoder csvData
+--        , expect = Http.expectJson Entity.userDecoder
+--        , timeout = Nothing
+--        , withCredentials = False
+--        }
 
 
 fetchGroup : String -> String -> String -> Http.Request Entity.Group

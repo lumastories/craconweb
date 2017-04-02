@@ -45,13 +45,8 @@ type alias Model =
     , playingGame : Bool
     , myGroupSlug : Maybe String
     , csvId : String
-    , mCsvFile : Maybe CsvData
-    }
-
-
-type alias CsvData =
-    { contents : String
-    , filename : String
+    , mCsvFile : Maybe Api.CsvData
+    , theUserId : Maybe String
     }
 
 
@@ -79,7 +74,6 @@ type
       -- GAMES
     | NewCurrentTime Time.Time
     | Presses Char
-    | GetTimeAndThen (Time.Time -> Msg)
     | StartGameWith Time.Time
     | Tick Time.Time
     | PlayGame Slug
@@ -92,8 +86,10 @@ type
     | RegisterUserResp (Result Http.Error Entity.User)
     | GroupResp (Result Http.Error Entity.Group)
     | RoleResp (Result Http.Error Entity.Role)
+    | CsvUploadResp (Result Http.Error Api.CsvData)
       -- ADMIN
     | TryRegisterUser
     | SetRegistration String String
     | CsvSelected
-    | CsvRead CsvData
+    | CsvRead Api.CsvData
+    | TryCsvUpload

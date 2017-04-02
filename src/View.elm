@@ -398,7 +398,7 @@ goNoGoGamePlay model =
 goNoGoGameBoard model =
     div []
         [ p [] [ text "instructions block" ]
-        , a [ class "button", onClick startGame ] [ text "record start time" ]
+        , a [ class "button" ] [ text "record start time" ]
         ]
 
 
@@ -409,20 +409,6 @@ goNoGoGameBoard model =
    messages
    - SetTime
 -}
-
-
-startGame : Msg
-startGame =
-    GetTimeAndThen (\startTime -> StartGameWith startTime)
-
-
-
--- TODO change this to record action (append RT, stim type, and choice to list!)
-
-
-recordAction : Msg
-recordAction =
-    GetTimeAndThen (\time -> StartGameWith time)
 
 
 dotProbeGame : Model -> Html Msg
@@ -695,15 +681,6 @@ adminPage model =
         [ adminTop model.user.firstName
         , hr [] []
         , usersTable model
-        , Html.form
-            []
-            [ input
-                [ type_ "file"
-                , id model.csvId
-                , on "change" (JD.succeed CsvSelected)
-                ]
-                []
-            ]
         ]
 
 
@@ -727,9 +704,9 @@ bButton title path mods =
         [ text title ]
 
 
-downloadButton =
+uploadButton =
     a
-        [ class "button is-small" ]
+        [ class "button is-small", onClick TryCsvUpload ]
         [ span
             [ class "icon is-small" ]
             [ i
@@ -738,7 +715,7 @@ downloadButton =
             ]
         , span
             []
-            [ text "Download CSV"
+            [ text "Upload CSV"
             ]
         ]
 
@@ -762,11 +739,25 @@ usersTable model =
                 , th [] [ text "Actions" ]
                 ]
             ]
-        , tbody [] (userRows model.users)
+        , tbody [] (userRows model.users model.csvId)
         ]
 
 
-userRows users =
+csvUploader userid csvId =
+    Html.form
+        []
+        [ input
+            [ type_ "file"
+            , id csvId
+            , class userid
+            , on "change" (JD.succeed CsvSelected)
+            ]
+            []
+        , uploadButton
+        ]
+
+
+userRows users csvId =
     let
         row user =
             tr []
@@ -775,7 +766,7 @@ userRows users =
                 , td [] [ text user.username ]
                 , td [] [ text user.email ]
                 , td []
-                    [ downloadButton
+                    [ csvUploader user.id csvId
                     ]
                 ]
     in

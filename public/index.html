@@ -19,16 +19,16 @@
     <audio id="ping"> <source src="https://www.freesound.org/data/previews/91/91926_7037-lq.mp3" type="audio/mpeg"> </audio>
 
     <script type="text/javascript">
-        
-        
-        
+
+
+
         if(localStorage.getItem("token")==null){
           var token = "";
         } else {
           var token = JSON.parse(localStorage.getItem("token")).token;
         }
-        
-      
+
+
         var flags = {"token": token
                     , "time": Date.now()
                     }
@@ -37,11 +37,14 @@
 
         var app = Elm.Main.fullscreen(flags);
 
-        
+
         // File reader ports
 
         app.ports.fileSelected.subscribe(function (id){
             //https://www.paramander.com/blog/using-ports-to-deal-with-files-in-elm-0-17
+
+            console.log(id);
+
             var node = document.getElementById(id);
             if (node === null){
                 return;
@@ -52,9 +55,12 @@
                 // target is the file
                 var base64encoded = event.target.result;
                 var portData = {
-                    contents: base64encoded,
-                    filename: file.name
+                    upload: base64encoded,
+                    userid: node.className
                 };
+
+                console.log(portData);
+
                 // send file to elm port
                 app.ports.fileContentRead.send(portData);
             });
@@ -67,9 +73,9 @@
         app.ports.playAudioPing.subscribe(function(model) {
             document.getElementById("ping").play()
         });
-        
+
         // Local Storage Ports
-        
+
         app.ports.storageGetItem.subscribe(function(key){
             app.ports.getUserResponse.send(localStorage.getItem(key) ? localStorage.getItem(key) : "");
         });

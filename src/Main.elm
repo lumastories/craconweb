@@ -131,6 +131,7 @@ init flags location =
             , myGroupSlug = Nothing
             , csvId = "CsvInputId"
             , mCsvFile = Nothing
+            , theUserId = Nothing
             }
     in
         ( initModel, Cmd.batch commands_ )
