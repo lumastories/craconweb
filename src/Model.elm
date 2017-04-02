@@ -71,12 +71,12 @@ type
     | TryLogin
     | Logout
     | ResetNotifications
-    | NewCurrentTime Time.Time
-      -- GAMES
-    | Presses Char
     | MainMenuToggle
+      -- GAMES
+    | NewCurrentTime Time.Time
+    | Presses Char
     | GetTimeAndThen (Time.Time -> Msg)
-    | CalcTimeDelta Time.Time
+    | StartGameWith Time.Time
     | Tick Time.Time
     | PlayGame Slug
     | StopPlaying Slug

@@ -29,7 +29,7 @@ subscriptions : Model.Model -> Sub Model.Msg
 subscriptions model =
     Sub.batch
         [ Keyboard.presses (\code -> Model.Presses (Char.fromCode code))
-          -- , Time.every Time.minute Model.VerifyToken
+        , Time.every Time.second Model.NewCurrentTime
           --, Port.storageGetItemResponse Model.ReceiveFromLocalStorage
         , Port.getUserResponse Model.GetStoredUser
         ]
@@ -68,7 +68,7 @@ init flags location =
                     ( Routing.LoginRoute, Model.Anonymous )
 
                 _ ->
-                    case Api.isOld flags.time flags.token of
+                    case Api.pastExpiration flags.time flags.token of
                         True ->
                             ( Routing.LoginRoute, Model.Anonymous )
 

@@ -388,15 +388,40 @@ goNoGoGamePlay model =
 
         True ->
             div []
-                [ text "playing game! this is so much fun!"
+                [ goNoGoGameBoard model
                 , br [] []
                 , a [ class "button is-danger  is-block", onClick (PlayGame "gonogo") ] [ text "Stop Game" ]
                 ]
 
 
-setTime : Msg
-setTime =
-    GetTimeAndThen (\time -> CalcTimeDelta time)
+goNoGoGameBoard model =
+    div []
+        [ p [] [ text "instructions block" ]
+        , a [ class "button", onClick startGame ] [ text "record start time" ]
+        ]
+
+
+
+{-
+   display instructions
+   display ugimages
+   messages
+   - SetTime
+-}
+
+
+startGame : Msg
+startGame =
+    GetTimeAndThen (\startTime -> StartGameWith startTime)
+
+
+
+-- TODO change this to record action (append RT, stim type, and choice to list!)
+
+
+recordAction : Msg
+recordAction =
+    GetTimeAndThen (\time -> StartGameWith time)
 
 
 dotProbeGame : Model -> Html Msg
@@ -669,6 +694,9 @@ adminPage model =
         [ adminTop model.user.firstName
         , hr [] []
         , usersTable model
+        , Html.form
+            []
+            [ input [ name "uploadFile" ] [] ]
         ]
 
 

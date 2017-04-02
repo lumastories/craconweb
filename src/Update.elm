@@ -21,6 +21,13 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NewCurrentTime now ->
+            {- if playing game, calculate time since game started
+               display stims according to Entity.Game rules
+               (if now - lastOnset >= 1250, goto next trial)
+                   validImages
+                   invalidImages
+                   fillerImages
+            -}
             ( { model | currentTime = now }, Cmd.none )
 
         -- ADMIN
@@ -230,7 +237,7 @@ update msg model =
 
         -- GAMES
         PlayGame slug ->
-            ( { model | playingGame = not model.playingGame }, Cmd.none )
+            ( { model | playingGame = True }, Cmd.none )
 
         StopPlaying slug ->
             ( { model | playingGame = False }, Cmd.none )
@@ -271,9 +278,9 @@ update msg model =
         Tick t ->
             ( { model | currentTime = t }, Cmd.none )
 
-        CalcTimeDelta time ->
+        StartGameWith time ->
             ( { model
-                | currentTimeDelta = time - model.currentTime
+                | startTime = time
               }
             , Cmd.none
             )

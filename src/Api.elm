@@ -18,12 +18,13 @@ type alias JwtPayload =
     }
 
 
-isOld : Time.Time -> String -> Bool
-isOld now token =
+pastExpiration : Time.Time -> String -> Bool
+pastExpiration now token =
     case jwtDecoded token of
         Ok decoded ->
             decoded.exp < (Time.inSeconds now)
 
+        -- are we past expiration?
         Err _ ->
             False
 
@@ -98,6 +99,10 @@ fetchUser api token sub =
         , timeout = Nothing
         , withCredentials = False
         }
+
+
+
+-- TODO chain http requests?
 
 
 fetchUsers : String -> String -> Http.Request (List Entity.User)
@@ -186,6 +191,11 @@ errorCodeDecoder =
             JD.succeed ErrorCode
                 |> required "error" JD.string ""
                 |> required "code" JD.int 0
+
+
+isAdmin : JwtPayload -> Bool
+isAdmin jwt =
+    List.map .name jwt.roles |> List.member "admin"
 
 
 

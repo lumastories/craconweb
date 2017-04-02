@@ -13,7 +13,7 @@ initCommands : String -> String -> List (Cmd Model.Msg)
 initCommands api token =
     case Api.jwtDecoded token of
         Ok jwt ->
-            case isAdmin jwt of
+            case Api.isAdmin jwt of
                 True ->
                     [ Http.send Model.UsersResp (Api.fetchUsers api token)
                     , Http.send Model.RoleResp (Api.fetchRole api token "user")
@@ -38,7 +38,3 @@ initCommands api token =
 
         Err _ ->
             []
-
-
-isAdmin jwt =
-    List.map .name jwt.roles |> List.member "admin"
