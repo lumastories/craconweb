@@ -8,7 +8,6 @@ import Navigation
 import Routing
 import Time
 import Json.Decode as JD
-import Port
 
 
 type alias Model =
