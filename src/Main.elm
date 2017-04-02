@@ -29,9 +29,9 @@ subscriptions : Model.Model -> Sub Model.Msg
 subscriptions model =
     Sub.batch
         [ Keyboard.presses (\code -> Model.Presses (Char.fromCode code))
-        , Time.every Time.second Model.NewCurrentTime
-          --, Port.storageGetItemResponse Model.ReceiveFromLocalStorage
+          --, Time.every Time.second Model.NewCurrentTime
         , Port.getUserResponse Model.GetStoredUser
+        , Port.fileContentRead Model.CsvRead
         ]
 
 
@@ -62,6 +62,7 @@ init flags location =
                 _ ->
                     (Routing.parseLocation location)
 
+        -- TODO simplify this pyrimad!
         ( route_, visitor_ ) =
             case flags.token of
                 "" ->
@@ -91,7 +92,8 @@ init flags location =
                     [ Task.perform Model.NewCurrentTime Time.now ]
 
                 Model.LoggedIn _ ->
-                    (Todos.initCommands api_ flags.token) ++ [ Task.perform Model.NewCurrentTime Time.now ]
+                    (Todos.initCommands api_ flags.token)
+                        ++ [ Task.perform Model.NewCurrentTime Time.now ]
 
         initModel =
             { api = api_
@@ -127,6 +129,8 @@ init flags location =
             , startTime = 0
             , playingGame = False
             , myGroupSlug = Nothing
+            , csvId = "CsvInputId"
+            , mCsvFile = Nothing
             }
     in
         ( initModel, Cmd.batch commands_ )

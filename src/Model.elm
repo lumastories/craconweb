@@ -8,7 +8,6 @@ import Navigation
 import Routing
 import Time
 import Json.Decode as JD
-import Port
 
 
 type alias Model =
@@ -45,6 +44,14 @@ type alias Model =
     , startTime : Time.Time
     , playingGame : Bool
     , myGroupSlug : Maybe String
+    , csvId : String
+    , mCsvFile : Maybe CsvData
+    }
+
+
+type alias CsvData =
+    { contents : String
+    , filename : String
     }
 
 
@@ -93,7 +100,7 @@ type
     | TryRegisterUser
     | SetRegistration String String
     | CsvSelected
-    | CsvRead Port.CsvData
+    | CsvRead CsvData
       -- Local Storage Access
       --| ReceiveFromLocalStorage ( String, JD.Value )
     | GetStoredUser String

@@ -21,10 +21,16 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         CsvSelected ->
-            model ! []
+            ( model, Port.fileSelected model.csvId )
 
-        CsvRead _ ->
-            model ! []
+        CsvRead data ->
+            let
+                newCsvFile =
+                    { contents = data.contents
+                    , filename = data.filename
+                    }
+            in
+                ( { model | mCsvFile = Just newCsvFile }, Cmd.none )
 
         NewCurrentTime now ->
             {- if playing game, calculate time since game started

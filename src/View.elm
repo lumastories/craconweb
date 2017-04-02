@@ -6,6 +6,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Model exposing (..)
 import Routing as R
+import Json.Decode as JD
 
 
 -- LOGIN PAGE
@@ -696,7 +697,13 @@ adminPage model =
         , usersTable model
         , Html.form
             []
-            [ input [ name "uploadFile" ] [] ]
+            [ input
+                [ type_ "file"
+                , id model.csvId
+                , on "change" (JD.succeed CsvSelected)
+                ]
+                []
+            ]
         ]
 
 

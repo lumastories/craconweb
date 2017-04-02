@@ -4,6 +4,7 @@ port module Port exposing (..)
 
 import Entity
 import Json.Encode
+import Model exposing (CsvData)
 
 
 type alias Key =
@@ -12,12 +13,6 @@ type alias Key =
 
 type alias Value =
     Json.Encode.Value
-
-
-type alias CsvData =
-    { contents : String
-    , filename : String
-    }
 
 
 {-| Subscriptions (Receive from JS) & Commands (Send to JS)
