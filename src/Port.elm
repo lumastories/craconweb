@@ -2,18 +2,45 @@ port module Port exposing (..)
 
 -- Ports to localStorage
 
-
-port removeItem : String -> Cmd msg
-
-
-type alias KeyValue =
-    ( String, String )
+import Entity
+import Json.Encode
 
 
-port setItem : KeyValue -> Cmd msg
+type alias Key =
+    String
 
 
-port clearLocalStorage : Bool -> Cmd msg
+type alias Value =
+    Json.Encode.Value
 
 
-port pinger : Bool -> Cmd msg
+{-| Subscriptions (Receive from JS)
+-}
+
+
+
+--port storageGetItemResponse : (( Key, Value ) -> msg) -> Sub msg
+
+
+port getUserResponse : (String -> msg) -> Sub msg
+
+
+{-| Commands (Send to JS)
+-}
+port storageGetItem : Key -> Cmd msg
+
+
+port storageSetItem : ( Key, Value ) -> Cmd msg
+
+
+port storageRemoveItem : Key -> Cmd msg
+
+
+port storageClear : () -> Cmd msg
+
+
+
+-- Play audio from page
+
+
+port playAudioPing : () -> Cmd msg

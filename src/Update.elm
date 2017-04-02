@@ -4,10 +4,8 @@ import Api
 import Empty
 import Entity
 import Http
-import Json.Decode
-import Json.Decode.Pipeline as JP
-import Json.Encode
-import Jwt
+import Json.Decode as JD
+import Json.Encode as JE
 import Model exposing (..)
 import Navigation
 import Navigation
@@ -22,6 +20,9 @@ import Todos
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        NewCurrentTime now ->
+            ( { model | currentTime = now }, Cmd.none )
+
         -- ADMIN
         GroupResp (Ok group) ->
             case group.slug of
@@ -88,7 +89,7 @@ update msg model =
                 users_ =
                     [ newUser ] ++ model.users
             in
-                ( { model | loading = ( False, "" ), users = users_, tmpUserRecord = Empty.emptyUserRecord }, Navigation.newUrl "/admin" )
+                ( { model | loading = ( False, "" ), users = users_, tmpUserRecord = Empty.emptyUserRecord }, Navigation.newUrl Routing.adminPath )
 
         -- SHARED
         ResetNotifications ->
@@ -104,58 +105,18 @@ update msg model =
             let
                 cmds =
                     [ Navigation.newUrl path
-                    , Task.perform VerifyToken Time.now
-                    , Port.pinger True
+                      --, Port.pinger True
                     ]
             in
                 ( model, Cmd.batch cmds )
 
-        VerifyToken now ->
-            let
-                expired =
-                    case model.visitor of
-                        LoggedIn jwt ->
-                            (toFloat jwt.exp) > now
-
-                        _ ->
-                            True
-
-                ( model_, cmds ) =
-                    if expired then
-                        ( Empty.emptyModel model
-                        , [ Port.clearLocalStorage True
-                          , Navigation.newUrl "/login"
-                          ]
-                        )
-                    else
-                        ( model, [] )
-            in
-                ( model_, Cmd.batch cmds )
-
         OnUpdateLocation location ->
-            let
-                newRoute =
-                    parseLocation location
-
-                commands_ =
-                    case List.member location.pathname adminPaths of
-                        True ->
-                            Cmd.batch
-                                [ Http.send Model.UsersResp (Api.fetchUsers model.api model.jwtencoded)
-                                , Http.send Model.GroupResp (Api.fetchGroup model.api model.jwtencoded "control_a")
-                                , Http.send Model.GroupResp (Api.fetchGroup model.api model.jwtencoded "experimental_a")
-                                , Http.send Model.RoleResp (Api.fetchRole model.api model.jwtencoded "user")
-                                ]
-
-                        False ->
-                            Cmd.none
-            in
-                ( { model
-                    | activeRoute = newRoute
-                    , isMenuActive = False
-                  }
-                , commands_
-                )
+            ( { model
+                | activeRoute = parseLocation location
+                , isMenuActive = False
+              }
+            , Cmd.none
+            )
 
         -- LOGIN
         UpdateEmail newEmail ->
@@ -192,7 +153,7 @@ update msg model =
         Logout ->
             let
                 cmds =
-                    [ Port.clearLocalStorage True
+                    [ Port.storageClear ()
                     , Navigation.newUrl "/login"
                     ]
             in
@@ -212,7 +173,7 @@ update msg model =
                                 , jwtencoded = auth.token
                                 , glitching = ( False, "" )
                               }
-                            , [ Port.setItem ( "token", auth.token )
+                            , [ Port.storageSetItem ( "token", JE.object [ ( "token", JE.string auth.token ) ] )
                               , Http.send UserResp
                                     (Api.fetchUser
                                         model.api
@@ -234,6 +195,9 @@ update msg model =
 
         UserResp (Ok newUser) ->
             let
+                l =
+                    Debug.log "user roles" (toString newUser.roles)
+
                 isAdmin =
                     case model.visitor of
                         LoggedIn jwt ->
@@ -246,16 +210,16 @@ update msg model =
                 commands =
                     case isAdmin of
                         True ->
-                            [ Navigation.newUrl "/admin"
+                            [ Port.storageSetItem ( "user", Entity.userEncoder newUser )
+                            , Navigation.newUrl Routing.adminPath
                             ]
-                                ++ (Todos.initAdminStuff model.api model.jwtencoded)
-                                ++ (Todos.initUserStuff model.api model.jwtencoded)
+                                ++ (Todos.initCommands model.api model.jwtencoded)
 
                         False ->
-                            [ Port.setItem ( "firstName", newUser.firstName )
+                            [ Port.storageSetItem ( "user", Entity.userEncoder newUser )
                             , Navigation.newUrl "/"
                             ]
-                                ++ (Todos.initUserStuff model.api model.jwtencoded)
+                                ++ (Todos.initCommands model.api model.jwtencoded)
             in
                 ( { model
                     | user = newUser
@@ -266,7 +230,7 @@ update msg model =
 
         -- GAMES
         PlayGame slug ->
-            ( { model | playingGame = True }, Cmd.none )
+            ( { model | playingGame = not model.playingGame }, Cmd.none )
 
         StopPlaying slug ->
             ( { model | playingGame = False }, Cmd.none )
@@ -341,7 +305,16 @@ update msg model =
         RoleResp (Err err) ->
             (httpErrorState model err)
 
+        GetStoredUser string ->
+            case JD.decodeString Entity.userDecoder string of
+                Ok user_ ->
+                    ( { model | user = user_ }, Cmd.none )
 
+                _ ->
+                    ( model, Cmd.none )
+
+
+httpErrorState : Model -> Http.Error -> ( Model, Cmd msg )
 httpErrorState model err =
     ( { model
         | loading = ( False, "" )

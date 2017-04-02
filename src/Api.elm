@@ -10,7 +10,7 @@ import Time
 
 type alias JwtPayload =
     { aud : String
-    , exp : Int
+    , exp : Float
     , iat : Int
     , iss : String
     , sub : String
@@ -22,7 +22,7 @@ isOld : Time.Time -> String -> Bool
 isOld now token =
     case jwtDecoded token of
         Ok decoded ->
-            (toFloat decoded.exp) < (now / 1000)
+            decoded.exp < (Time.inSeconds now)
 
         Err _ ->
             False
@@ -37,7 +37,7 @@ jwtPayloadDecoder : JD.Decoder JwtPayload
 jwtPayloadDecoder =
     JP.decode JwtPayload
         |> JP.required "aud" (JD.string)
-        |> JP.required "exp" (JD.int)
+        |> JP.required "exp" (JD.float)
         |> JP.required "iat" (JD.int)
         |> JP.required "iss" (JD.string)
         |> JP.required "sub" (JD.string)

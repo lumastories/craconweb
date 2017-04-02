@@ -19,12 +19,17 @@
     <audio id="ping"> <source src="https://www.freesound.org/data/previews/91/91926_7037-lq.mp3" type="audio/mpeg"> </audio>
 
     <script type="text/javascript">
-        function fetch(key) {
-            var value = localStorage.getItem(key);
-            return value ? value : "";
+        
+        
+        
+        if(localStorage.getItem("token")==null){
+          var token = "";
+        } else {
+          var token = JSON.parse(localStorage.getItem("token")).token;
         }
-
-        var flags = {"token": fetch("token")
+        
+      
+        var flags = {"token": token
                     , "time": Date.now()
                     }
 
@@ -32,22 +37,44 @@
 
         var app = Elm.Main.fullscreen(flags);
 
-        app.ports.setItem.subscribe(function(keyValue) {
-            var [key, value] = keyValue;
-            localStorage.setItem(key, value);
+        
+
+        app.ports.playAudioPing.subscribe(function(model) {
+            document.getElementById("ping").play()
+        });
+        
+        // Local Storage Ports
+        
+        app.ports.storageGetItem.subscribe(function(key){
+            app.ports.getUserResponse.send(localStorage.getItem(key) ? localStorage.getItem(key) : "");
         });
 
-        app.ports.removeItem.subscribe(function(key) {
+        app.ports.storageSetItem.subscribe(function(keyValue){
+            var [key, value] = keyValue;
+            setLocalStorageItem(key, value);
+        });
+
+        app.ports.storageRemoveItem.subscribe(function(key){
             localStorage.removeItem(key);
         });
 
-        app.ports.clearLocalStorage.subscribe(function(clear) {
+        app.ports.storageClear.subscribe(function(i){
             localStorage.clear();
         });
 
-        app.ports.pinger.subscribe(function(model) {
-            document.getElementById("ping").play()
-        });
+        /**
+         * Set a value of any type in localStorage.
+         * (Serializes in JSON before storing since Storage objects can only hold strings.)
+         *
+         * @param {String} key   Key in localStorage
+         * @param {*}      value The value to set
+         */
+        function setLocalStorageItem(key, value) {
+          window.localStorage.setItem(key,
+            JSON.stringify(value)
+          );
+        }
+
 
 
     </script>

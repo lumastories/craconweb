@@ -7,6 +7,7 @@ import Jwt
 import Navigation
 import Routing
 import Time
+import Json.Decode as JD
 
 
 type alias Model =
@@ -42,7 +43,13 @@ type alias Model =
     , responseTimes : List Time.Time
     , startTime : Time.Time
     , playingGame : Bool
+    , myGroupSlug : Maybe String
     }
+
+
+
+-- What group is the user in?
+-- Control, Experimental or Unknown
 
 
 type Visitor
@@ -64,13 +71,13 @@ type
     | TryLogin
     | Logout
     | ResetNotifications
+    | NewCurrentTime Time.Time
       -- GAMES
     | Presses Char
     | MainMenuToggle
     | GetTimeAndThen (Time.Time -> Msg)
     | CalcTimeDelta Time.Time
     | Tick Time.Time
-    | VerifyToken Time.Time
     | PlayGame Slug
     | StopPlaying Slug
       -- HTTP
@@ -84,3 +91,6 @@ type
       -- ADMIN
     | TryRegisterUser
     | SetRegistration String String
+      -- Local Storage Access
+      --| ReceiveFromLocalStorage ( String, JD.Value )
+    | GetStoredUser String

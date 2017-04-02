@@ -8,7 +8,7 @@ import UrlParser exposing (..)
 
 
 adminPaths =
-    [ "/admin", "/register" ]
+    [ adminPath, registerPath ]
 
 
 type alias MenuItem =

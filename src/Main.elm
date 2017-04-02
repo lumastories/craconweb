@@ -3,7 +3,6 @@ module Main exposing (..)
 import Api
 import Char
 import Empty
-import Http
 import Keyboard exposing (..)
 import Model
 import Navigation
@@ -12,6 +11,8 @@ import Time
 import Update
 import View
 import Todos
+import Port
+import Task
 
 
 main : Program Flags Model.Model Model.Msg
@@ -28,7 +29,9 @@ subscriptions : Model.Model -> Sub Model.Msg
 subscriptions model =
     Sub.batch
         [ Keyboard.presses (\code -> Model.Presses (Char.fromCode code))
-          -- , Time.every Time.millisecond Model.Tick
+          -- , Time.every Time.minute Model.VerifyToken
+          --, Port.storageGetItemResponse Model.ReceiveFromLocalStorage
+        , Port.getUserResponse Model.GetStoredUser
         ]
 
 
@@ -80,16 +83,10 @@ init flags location =
         commands_ =
             case visitor_ of
                 Model.Anonymous ->
-                    []
+                    [ Task.perform Model.NewCurrentTime Time.now ]
 
-                Model.LoggedIn jwt ->
-                    case (List.map .name jwt.roles |> List.member "admin") of
-                        True ->
-                            (Todos.initAdminStuff api_ flags.token)
-                                ++ (Todos.initUserStuff api_ flags.token)
-
-                        False ->
-                            Todos.initUserStuff api_ flags.token
+                Model.LoggedIn _ ->
+                    (Todos.initCommands api_ flags.token) ++ [ Task.perform Model.NewCurrentTime Time.now ]
 
         initModel =
             { api = api_
@@ -124,6 +121,7 @@ init flags location =
             , responseTimes = []
             , startTime = 0
             , playingGame = False
+            , myGroupSlug = Nothing
             }
     in
         ( initModel, Cmd.batch commands_ )

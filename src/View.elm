@@ -30,10 +30,10 @@ loginPageButtonClass : ( Bool, String ) -> String
 loginPageButtonClass loading =
     case loading of
         ( False, _ ) ->
-            "button is-dark"
+            "button is-fullwidth is-success"
 
         ( True, _ ) ->
-            "button is-dark is-loading"
+            "button is-fullwidth is-success is-loading"
 
 
 loginPageBoxForm : Model -> Html Msg
@@ -41,9 +41,7 @@ loginPageBoxForm model =
     div [ class "box", marginS ]
         [ Html.form
             [ onSubmit TryLogin ]
-            [ label [ class "label" ]
-                [ text "Email" ]
-            , p [ class "control" ]
+            [ p [ class "control" ]
                 [ input
                     [ class "input"
                     , placeholder "Email"
@@ -52,8 +50,7 @@ loginPageBoxForm model =
                     ]
                     []
                 ]
-            , label [ class "label" ]
-                [ text "Password" ]
+            , br [] []
             , p [ class "control" ]
                 [ input
                     [ class "input"
@@ -97,9 +94,19 @@ navBar model =
                 [ logo "/"
                 ]
             , navToggler model.isMenuActive
-            , navRight model.isMenuActive model.activeRoute
+            , navRight model.isMenuActive model.activeRoute model.visitor
             ]
         ]
+
+
+isAdmin visitor =
+    case visitor of
+        LoggedIn jwt ->
+            List.map .name jwt.roles
+                |> List.member "admin"
+
+        _ ->
+            False
 
 
 navToggler : Bool -> Html Msg
@@ -112,13 +119,23 @@ navToggler activeMenu =
         ]
 
 
-navRight activeMenu activeRoute =
+adminLink visitor =
+    case isAdmin visitor of
+        True ->
+            navLink "Admin" R.adminPath False
+
+        False ->
+            div [] []
+
+
+navRight activeMenu activeRoute visitor =
     div
         [ id "nav-menu", class <| "nav-right nav-menu" ++ (isActive activeMenu) ]
         [ navLink "Games" R.homePath (R.HomeRoute == activeRoute)
         , navLink "Badges" R.badgesPath (R.BadgesRoute == activeRoute)
         , navLink "Instructions" R.instructionsPath (R.InstructionsRoute == activeRoute)
-        , a ([ class "nav-item is-tab", onClick Logout ] ++ linkAttrs "/login") [ text "Logout" ]
+        , adminLink visitor
+        , a ([ class "nav-item is-tab", onClick Logout ]) [ text "Logout" ]
         ]
 
 
@@ -171,7 +188,8 @@ homePageBody model =
             [ class "hero-body" ]
             [ div
                 [ class "container" ]
-                [ homePageGrid model
+                [ h1 [ class "title is-1" ] [ text <| "Welcome, " ++ model.user.firstName ]
+                , homePageGrid model
                 ]
             ]
         ]
@@ -282,8 +300,21 @@ notFoundPage model =
     basicPage model
         [ div
             [ class "container" ]
-            [ h1 [ class "title is-1" ] [ text "Page Not Found (Oops!)" ]
-            , h3 [] [ text "Maybe you are in the wrong place?" ]
+            [ h1 [ class "title is-1" ] [ text "Poem 404" ]
+            , h5 [ class "subtitle is-5" ] [ text "Page Not Found" ]
+            , p []
+                [ text "I shall be telling this with a sigh"
+                , br [] []
+                , text "Somewhere ages and ages hence:"
+                , br [] []
+                , text "Two roads diverged in a wood, and I—"
+                , br [] []
+                , text "I took the one less traveled by,"
+                , br [] []
+                , text "And that has made all the difference."
+                , br [] []
+                ]
+            , em [] [ text "— Robert Frost" ]
             ]
         ]
 
@@ -356,7 +387,11 @@ goNoGoGamePlay model =
                 ]
 
         True ->
-            div [] [ text "playing game! this is so much fun!" ]
+            div []
+                [ text "playing game! this is so much fun!"
+                , br [] []
+                , a [ class "button is-danger  is-block", onClick (PlayGame "gonogo") ] [ text "Stop Game" ]
+                ]
 
 
 setTime : Msg
@@ -612,15 +647,17 @@ registerPage model =
         ]
 
 
-adminTop =
+adminTop firstName =
     div [ class "columns" ]
         [ div [ class "column" ]
-            [ h1 [ class "title" ] [ text <| "Users" ] ]
+            [ h6 [ class "subtitle is-6" ] [ text <| "Welcome " ++ firstName ]
+            , h1 [ class "title" ] [ text "Users" ]
+            ]
         , div [ class "column" ]
             [ div [ class "block is-pulled-right" ]
                 [ bButton "Register User" R.registerPath "is-success"
                 , bButton "Go to games" R.homePath "is-link"
-                , a ([ class "button is-link", onClick Logout ] ++ linkAttrs "/login") [ text "Logout" ]
+                , a ([ class "button is-link", onClick Logout ]) [ text "Logout" ]
                 ]
             ]
         ]
@@ -629,7 +666,7 @@ adminTop =
 adminPage : Model -> Html Msg
 adminPage model =
     basicAdminPage model
-        [ adminTop
+        [ adminTop model.user.firstName
         , hr [] []
         , usersTable model
         ]
