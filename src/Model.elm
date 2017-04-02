@@ -8,6 +8,7 @@ import Navigation
 import Routing
 import Time
 import Json.Decode as JD
+import Port
 
 
 type alias Model =
@@ -55,11 +56,6 @@ type alias CsvData =
     }
 
 
-
--- What group is the user in?
--- Control, Experimental or Unknown
-
-
 type Visitor
     = Anonymous
     | LoggedIn Api.JwtPayload
@@ -74,6 +70,7 @@ type
     -- SHARED
     = UpdateLocation String
     | OnUpdateLocation Navigation.Location
+    | GetStoredUser String
     | UpdateEmail String
     | UpdatePassword String
     | TryLogin
@@ -101,6 +98,3 @@ type
     | SetRegistration String String
     | CsvSelected
     | CsvRead CsvData
-      -- Local Storage Access
-      --| ReceiveFromLocalStorage ( String, JD.Value )
-    | GetStoredUser String
