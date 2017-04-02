@@ -20,6 +20,12 @@ import Todos
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        CsvSelected ->
+            model ! []
+
+        CsvRead _ ->
+            model ! []
+
         NewCurrentTime now ->
             {- if playing game, calculate time since game started
                display stims according to Entity.Game rules

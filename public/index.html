@@ -38,6 +38,31 @@
         var app = Elm.Main.fullscreen(flags);
 
         
+        // File reader ports
+
+        app.ports.fileSelected.subscribe(function (id){
+            //https://www.paramander.com/blog/using-ports-to-deal-with-files-in-elm-0-17
+            var node = document.getElementById(id);
+            if (node === null){
+                return;
+            }
+            var file = node.files[0];
+            var reader = new FileReader();
+            reader.onload = (function(event){
+                // target is the file
+                var base64encoded = event.target.result;
+                var portData = {
+                    contents: base64encoded,
+                    filename: file.name
+                };
+                // send file to elm port
+                app.ports.fileContentRead.send(portData);
+            });
+            reader.readAsDataURL(file);
+
+        });
+
+        // Audio ports
 
         app.ports.playAudioPing.subscribe(function(model) {
             document.getElementById("ping").play()

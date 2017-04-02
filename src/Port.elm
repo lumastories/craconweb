@@ -14,19 +14,38 @@ type alias Value =
     Json.Encode.Value
 
 
-{-| Subscriptions (Receive from JS)
+type alias CsvData =
+    { contents : String
+    , filename : String
+    }
+
+
+{-| Subscriptions (Receive from JS) & Commands (Send to JS)
 -}
 
 
 
---port storageGetItemResponse : (( Key, Value ) -> msg) -> Sub msg
+-- FileReader() access
+-- call the JS interop, msg = CsvSelected
+
+
+port fileSelected : String -> Cmd msg
+
+
+
+-- receive the function, msg = CsvRead CsvData
+
+
+port fileContentRead : (CsvData -> msg) -> Sub msg
+
+
+
+-- localStorage Access
 
 
 port getUserResponse : (String -> msg) -> Sub msg
 
 
-{-| Commands (Send to JS)
--}
 port storageGetItem : Key -> Cmd msg
 
 
