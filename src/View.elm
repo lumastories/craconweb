@@ -662,7 +662,7 @@ registerPage model =
 adminTop firstName =
     div [ class "columns" ]
         [ div [ class "column" ]
-            [ h6 [ class "subtitle is-6" ] [ text <| "Welcome " ++ firstName ]
+            [ h6 [ class "subtitle is-6" ] [ text <| "Hi, " ++ firstName ]
             , h1 [ class "title" ] [ text "Users" ]
             ]
         , div [ class "column" ]
@@ -715,7 +715,7 @@ uploadButton =
             ]
         , span
             []
-            [ text "Upload CSV"
+            [ text "Upload"
             ]
         ]
 
@@ -736,7 +736,7 @@ usersTable model =
                 , th [] [ text "Last Name" ]
                 , th [] [ text "Username" ]
                 , th [] [ text "Email" ]
-                , th [] [ text "Actions" ]
+                , th [] [ text "Valuations" ]
                 ]
             ]
         , tbody [] (userRows model.users model.csvId)

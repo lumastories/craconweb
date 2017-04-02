@@ -3,9 +3,11 @@ module Api exposing (..)
 import Entity
 import Http
 import Json.Decode as JD
+import Json.Encode as JE
 import Json.Decode.Pipeline as JP
 import Jwt
 import Time
+import Protobuf exposing (..)
 
 
 type alias CsvData =
@@ -107,10 +109,6 @@ fetchUser api token sub =
         }
 
 
-
--- TODO chain http requests?
-
-
 fetchUsers : String -> String -> Http.Request (List Entity.User)
 fetchUsers api token =
     Http.request
@@ -143,22 +141,39 @@ createUserRecord api token user =
         }
 
 
+csvDataEncoder : CsvData -> JE.Value
+csvDataEncoder v =
+    JE.object <|
+        List.filterMap identity <|
+            [ (requiredFieldEncoder "upload" JE.string "" v.upload)
+            , (requiredFieldEncoder "userid" JE.string "" v.userid)
+            ]
 
---uploadCsv :
---    String
---    -> String
---    -> CsvData
---    -> Http.Request CsvData
---uploadCsv filesrv token csvData =
---    Http.request
---        { method = "POST"
---        , headers = defaultHeaders token
---        , url = (filesrv ++ "/upload/ugimgset/" ++ csvData.userid)
---        , body = Http.jsonBody <| csvDataEncoder csvData
---        , expect = Http.expectJson Entity.userDecoder
---        , timeout = Nothing
---        , withCredentials = False
---        }
+
+csvDataDecoder : JD.Decoder CsvData
+csvDataDecoder =
+    JD.lazy <|
+        \_ ->
+            decode CsvData
+                |> required "userid" JD.string ""
+                |> required "upload" JD.string ""
+
+
+uploadCsv :
+    String
+    -> String
+    -> CsvData
+    -> Http.Request CsvData
+uploadCsv tasksrv token csvData =
+    Http.request
+        { method = "POST"
+        , headers = defaultHeaders token
+        , url = (tasksrv ++ "/upload/ugimgset")
+        , body = Http.jsonBody <| csvDataEncoder csvData
+        , expect = Http.expectJson csvDataDecoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
 
 
 fetchGroup : String -> String -> String -> Http.Request Entity.Group
@@ -220,20 +235,3 @@ errorCodeDecoder =
 isAdmin : JwtPayload -> Bool
 isAdmin jwt =
     List.map .name jwt.roles |> List.member "admin"
-
-
-
--- Copied from Protobuf.elm
-
-
-withDefault : a -> JD.Decoder a -> JD.Decoder a
-withDefault default decoder =
-    JD.oneOf
-        [ decoder
-        , JD.succeed default
-        ]
-
-
-required : String -> JD.Decoder a -> a -> JD.Decoder (a -> b) -> JD.Decoder b
-required name decoder default d =
-    JD.map2 (|>) (withDefault default <| JD.field name decoder) d

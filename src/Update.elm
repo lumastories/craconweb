@@ -21,10 +21,14 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         TryCsvUpload ->
-            ( model
-              --, Http.send CsvUploadResp (Api.uploadCsv api token model.mCsvFile)
-            , Cmd.none
-            )
+            case model.mCsvFile of
+                Just mCsvFile ->
+                    ( model
+                    , Http.send CsvUploadResp (Api.uploadCsv "http://localhost:8668" model.jwtencoded mCsvFile)
+                    )
+
+                Nothing ->
+                    model ! []
 
         CsvUploadResp csvData ->
             -- TODO make a request to set local ugimages!
