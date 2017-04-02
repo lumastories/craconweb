@@ -43,7 +43,12 @@ init flags location =
         -- else Routing.parseLocation location
         -- else (not exist - login route, anon user)
         api_ =
-            "http://localhost:8680"
+            case location.hostname of
+                "localhost" ->
+                    "http://localhost:8680"
+
+                _ ->
+                    "https://api.cravecontrol.org"
 
         blockAdminRoutes : Navigation.Location -> Routing.Route
         blockAdminRoutes location =
