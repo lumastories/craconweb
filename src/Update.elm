@@ -40,10 +40,6 @@ update msg model =
 
         CsvRead data ->
             let
-                l =
-                    toString data
-                        |> Debug.log "CsvRead data ->"
-
                 newCsvFile =
                     Just
                         { upload = data.upload
@@ -234,9 +230,6 @@ update msg model =
 
         UserResp (Ok newUser) ->
             let
-                l =
-                    Debug.log "user roles" (toString newUser.roles)
-
                 isAdmin =
                     case model.visitor of
                         LoggedIn jwt ->

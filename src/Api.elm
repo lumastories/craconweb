@@ -141,15 +141,6 @@ createUserRecord api token user =
         }
 
 
-csvDataEncoder : CsvData -> JE.Value
-csvDataEncoder v =
-    JE.object <|
-        List.filterMap identity <|
-            [ (requiredFieldEncoder "upload" JE.string "" v.upload)
-            , (requiredFieldEncoder "userid" JE.string "" v.userid)
-            ]
-
-
 csvDataDecoder : JD.Decoder CsvData
 csvDataDecoder =
     JD.lazy <|
@@ -157,6 +148,18 @@ csvDataDecoder =
             decode CsvData
                 |> required "userid" JD.string ""
                 |> required "upload" JD.string ""
+
+
+csvDataParts : CsvData -> List Http.Part
+csvDataParts data =
+    [ Http.stringPart "userid" data.userid
+    , Http.stringPart "upload" data.upload
+    ]
+
+
+
+--data.upload
+--data.userid
 
 
 uploadCsv :
@@ -169,7 +172,7 @@ uploadCsv tasksrv token csvData =
         { method = "POST"
         , headers = defaultHeaders token
         , url = (tasksrv ++ "/upload/ugimgset")
-        , body = Http.jsonBody <| csvDataEncoder csvData
+        , body = Http.multipartBody <| csvDataParts csvData
         , expect = Http.expectJson csvDataDecoder
         , timeout = Nothing
         , withCredentials = False
