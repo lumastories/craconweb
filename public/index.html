@@ -53,9 +53,9 @@
             var reader = new FileReader();
             reader.onload = (function(event){
                 // target is the file
-                var base64encoded = event.target.result;
+                var csvFile = event.target.result;
                 var portData = {
-                    upload: base64encoded,
+                    upload: csvFile,
                     userid: node.className
                 };
 
@@ -64,7 +64,8 @@
                 // send file to elm port
                 app.ports.fileContentRead.send(portData);
             });
-            reader.readAsDataURL(file);
+
+            reader.readAsText(file);
 
         });
 

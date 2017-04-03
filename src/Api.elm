@@ -3,7 +3,6 @@ module Api exposing (..)
 import Entity
 import Http
 import Json.Decode as JD
-import Json.Encode as JE
 import Json.Decode.Pipeline as JP
 import Jwt
 import Time
@@ -84,33 +83,27 @@ createAuthRecord api authRecord =
 
 fetchGame : String -> String -> String -> Http.Request Entity.Game
 fetchGame api token slug =
-    Http.request
-        { method = "GET"
-        , headers = defaultHeaders token
-        , url = api ++ "/game/" ++ slug
-        , body = Http.emptyBody
-        , expect = Http.expectJson Entity.gameDecoder
-        , timeout = Nothing
-        , withCredentials = False
-        }
+    getRequest token (api ++ "/game/" ++ slug) Entity.gameDecoder
 
 
 fetchUser : String -> String -> String -> Http.Request Entity.User
 fetchUser api token sub =
-    Http.request
-        { method = "GET"
-        , headers = defaultHeaders token
-        , url = api ++ "/user/" ++ sub
-        , body = Http.emptyBody
-        , expect = Http.expectJson Entity.userDecoder
-        , timeout = Nothing
-        , withCredentials = False
-        }
+    getRequest token (api ++ "/user/" ++ sub) Entity.userDecoder
 
 
 fetchUsers : String -> String -> Http.Request (List Entity.User)
 fetchUsers api token =
     getRequest token (api ++ "/users?createdEach=true") (JD.field "users" (JD.list Entity.userDecoder))
+
+
+fetchGroup : String -> String -> String -> Http.Request Entity.Group
+fetchGroup api token slug =
+    getRequest token (api ++ "/group/" ++ slug) Entity.groupDecoder
+
+
+fetchRole : String -> String -> String -> Http.Request Entity.Role
+fetchRole api token slug =
+    getRequest token (api ++ "/role/" ++ slug) Entity.roleDecoder
 
 
 createUserRecord :
@@ -141,8 +134,8 @@ csvDataDecoder =
 
 csvDataParts : CsvData -> List Http.Part
 csvDataParts data =
-    [ Http.stringPart "userid" data.userid
-    , Http.stringPart "upload" data.upload
+    [ Http.stringPart "upload" data.upload
+    , Http.stringPart "userid" data.userid
     ]
 
 
@@ -163,20 +156,7 @@ uploadCsv tasksrv token csvData =
         }
 
 
-fetchGroup : String -> String -> String -> Http.Request Entity.Group
-fetchGroup api token slug =
-    getRequest token (api ++ "/group/" ++ slug) Entity.groupDecoder
-
-
-fetchRole : String -> String -> String -> Http.Request Entity.Role
-fetchRole api token slug =
-    getRequest token (api ++ "/role/" ++ slug) Entity.roleDecoder
-
-
-
--- trouble is, jsonDecoder is specifi
-
-
+getRequest : String -> String -> JD.Decoder a -> Http.Request a
 getRequest token endpoint jsonDecoder =
     Http.request
         { method = "GET"
@@ -189,16 +169,13 @@ getRequest token endpoint jsonDecoder =
         }
 
 
-
--- server message decoders
-
-
 type alias ErrorCode =
     { error : String
     , code : Int
     }
 
 
+decodeErrorCode : String -> ErrorCode
 decodeErrorCode errorCode =
     case JD.decodeString errorCodeDecoder errorCode of
         Ok ed ->

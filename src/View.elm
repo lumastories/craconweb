@@ -1,12 +1,12 @@
 module View exposing (view)
 
-import Entity
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Model exposing (..)
 import Routing as R
 import Json.Decode as JD
+import Entity
 
 
 -- LOGIN PAGE
@@ -78,6 +78,7 @@ loginPageBoxForm model =
 -- ROUTING HELPERS
 
 
+linkAttrs : String -> List (Attribute Msg)
 linkAttrs path =
     [ href <| path, R.onLinkClick <| UpdateLocation path ]
 
@@ -100,6 +101,7 @@ navBar model =
         ]
 
 
+isAdmin : Visitor -> Bool
 isAdmin visitor =
     case visitor of
         LoggedIn jwt ->
@@ -120,6 +122,7 @@ navToggler activeMenu =
         ]
 
 
+adminLink : Visitor -> Html Msg
 adminLink visitor =
     case isAdmin visitor of
         True ->
@@ -129,6 +132,7 @@ adminLink visitor =
             div [] []
 
 
+navRight : Bool -> R.Route -> Visitor -> Html Msg
 navRight activeMenu activeRoute visitor =
     div
         [ id "nav-menu", class <| "nav-right nav-menu" ++ (isActive activeMenu) ]
@@ -140,6 +144,7 @@ navRight activeMenu activeRoute visitor =
         ]
 
 
+navLink : String -> String -> Bool -> Html Msg
 navLink text_ path active =
     let
         class_ =
@@ -152,6 +157,7 @@ navLink text_ path active =
             [ text text_ ]
 
 
+logo : String -> Html Msg
 logo linkPath =
     a
         [ class "nav-item"
@@ -161,6 +167,7 @@ logo linkPath =
         [ img [ src "img/logo.png" ] [] ]
 
 
+isActive : Bool -> String
 isActive active =
     if active then
         " is-active"
@@ -263,6 +270,7 @@ homePageGameCard gameSlug src_ title about =
 -- The parent of basic pages.
 
 
+notification : ( Bool, String ) -> String -> Html Msg
 notification ( isEnabled, content ) mods =
     if isEnabled then
         div
@@ -360,6 +368,7 @@ gamePage model =
         ]
 
 
+visualSearchGame : Model -> Html Msg
 visualSearchGame model =
     basicPage model
         [ div
@@ -370,6 +379,7 @@ visualSearchGame model =
         ]
 
 
+goNoGoGame : Model -> Html Msg
 goNoGoGame model =
     basicPage model
         [ div
@@ -380,21 +390,31 @@ goNoGoGame model =
         ]
 
 
+goNoGoGamePlay : Model -> Html Msg
 goNoGoGamePlay model =
     case model.playingGame of
         False ->
             div []
-                [ a [ class "button is-info is-large", onClick (PlayGame "gonogo") ] [ text "Start Game" ]
+                [ a
+                    [ class "button is-info is-large"
+                    , onClick (PlayGame "gonogo")
+                    ]
+                    [ text "Start Game" ]
                 ]
 
         True ->
             div []
                 [ goNoGoGameBoard model
                 , br [] []
-                , a [ class "button is-danger  is-block", onClick (PlayGame "gonogo") ] [ text "Stop Game" ]
+                , a
+                    [ class "button is-danger  is-block"
+                    , onClick (PlayGame "gonogo")
+                    ]
+                    [ text "Stop Game" ]
                 ]
 
 
+goNoGoGameBoard : Model -> Html Msg
 goNoGoGameBoard model =
     div []
         [ p [] [ text "instructions block" ]
@@ -432,6 +452,7 @@ dotProbeGame model =
 --        |> List.map (li [] [ img [ src src_ ] [] ])
 
 
+instBlock : String -> String -> Html Msg
 instBlock title content =
     div [ class "column" ]
         [ p [ class "title" ] [ text title ]
@@ -532,6 +553,7 @@ bigLogo =
 -}
 
 
+textInput : String -> String -> Html Msg
 textInput field_ placeholder_ =
     p [ class "control" ]
         [ input
@@ -544,6 +566,7 @@ textInput field_ placeholder_ =
         ]
 
 
+emailInput : String -> String -> Html Msg
 emailInput field_ placeholder_ =
     p [ class "control" ]
         [ input
@@ -556,11 +579,13 @@ emailInput field_ placeholder_ =
         ]
 
 
+regLabel : String -> Html Msg
 regLabel title =
     label [ class "label" ]
         [ text title ]
 
 
+firstLastReg : Html Msg
 firstLastReg =
     div [ class "columns" ]
         [ div [ class "column" ]
@@ -574,6 +599,7 @@ firstLastReg =
         ]
 
 
+userEmailPassReg : Html Msg
 userEmailPassReg =
     div [ class "columns" ]
         [ div [ class "column" ]
@@ -610,6 +636,7 @@ groupDropDown groupIdExp groupIdCon =
             p [] []
 
 
+registerUserForm : Model -> Html Msg
 registerUserForm model =
     Html.form
         [ onSubmit TryRegisterUser ]
@@ -622,6 +649,7 @@ registerUserForm model =
         ]
 
 
+regButtons : ( Bool, String ) -> Html Msg
 regButtons ( loading, _ ) =
     div
         [ class "field is-grouped" ]
@@ -641,6 +669,7 @@ regButtons ( loading, _ ) =
         ]
 
 
+divColumns : List (Html Msg) -> Html Msg
 divColumns children =
     div [ class "columns" ] children
 
@@ -659,6 +688,7 @@ registerPage model =
         ]
 
 
+adminTop : String -> Html Msg
 adminTop firstName =
     div [ class "columns" ]
         [ div [ class "column" ]
@@ -704,6 +734,7 @@ bButton title path mods =
         [ text title ]
 
 
+uploadButton : Html Msg
 uploadButton =
     a
         [ class "button is-small", onClick TryCsvUpload ]
@@ -728,6 +759,7 @@ uploadButton =
 -- link to edit
 
 
+usersTable : Model -> Html Msg
 usersTable model =
     table [ class "table" ]
         [ thead []
@@ -743,6 +775,7 @@ usersTable model =
         ]
 
 
+csvUploader : String -> String -> Html Msg
 csvUploader userid csvId =
     Html.form
         []
@@ -757,6 +790,7 @@ csvUploader userid csvId =
         ]
 
 
+userRows : List Entity.User -> String -> List (Html Msg)
 userRows users csvId =
     let
         row user =

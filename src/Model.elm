@@ -3,11 +3,9 @@ module Model exposing (..)
 import Api
 import Entity
 import Http
-import Jwt
 import Navigation
 import Routing
 import Time
-import Json.Decode as JD
 
 
 type alias Model =

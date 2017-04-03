@@ -1,8 +1,6 @@
 port module Port exposing (..)
 
-import Entity
 import Json.Encode
-import Model
 import Api exposing (CsvData)
 
 

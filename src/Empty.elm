@@ -1,11 +1,9 @@
 module Empty exposing (..)
 
-import Api
 import Entity
 import Model
 import Navigation
 import Routing
-import Dict
 
 
 emptyModel : Model.Model -> Model.Model
@@ -47,6 +45,7 @@ emptyUser =
     }
 
 
+emptyUserRecord : Entity.UserRecord
 emptyUserRecord =
     { username = ""
     , email = ""
@@ -82,13 +81,15 @@ emptyLocation =
     }
 
 
-emptyUserRole =
+emptyRole : Entity.Role
+emptyRole =
     { id = ""
     , name = "user"
     , weight = 0
     }
 
 
+emptyGame : Entity.Game
 emptyGame =
     { id = ""
     , name = ""

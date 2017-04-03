@@ -7,6 +7,7 @@ import Navigation
 import UrlParser exposing (..)
 
 
+adminPaths : List String
 adminPaths =
     [ adminPath, registerPath ]
 

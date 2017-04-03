@@ -24,7 +24,8 @@ update msg model =
             case model.mCsvFile of
                 Just mCsvFile ->
                     ( model
-                    , Http.send CsvUploadResp (Api.uploadCsv "http://localhost:8668" model.jwtencoded mCsvFile)
+                    , Http.send CsvUploadResp
+                        (Api.uploadCsv "http://localhost:8668" model.jwtencoded mCsvFile)
                     )
 
                 Nothing ->
