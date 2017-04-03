@@ -32,7 +32,6 @@ pastExpiration now token =
         Ok decoded ->
             decoded.exp < (Time.inSeconds now)
 
-        -- are we past expiration?
         Err _ ->
             False
 
@@ -111,17 +110,7 @@ fetchUser api token sub =
 
 fetchUsers : String -> String -> Http.Request (List Entity.User)
 fetchUsers api token =
-    Http.request
-        { method = "GET"
-        , headers = defaultHeaders token
-        , url = api ++ "/users?createdEach=true"
-        , body = Http.emptyBody
-        , expect =
-            Http.expectJson <|
-                JD.field "users" (JD.list Entity.userDecoder)
-        , timeout = Nothing
-        , withCredentials = False
-        }
+    getRequest token (api ++ "/users?createdEach=true") (JD.field "users" (JD.list Entity.userDecoder))
 
 
 createUserRecord :
@@ -157,11 +146,6 @@ csvDataParts data =
     ]
 
 
-
---data.upload
---data.userid
-
-
 uploadCsv :
     String
     -> String
@@ -181,25 +165,25 @@ uploadCsv tasksrv token csvData =
 
 fetchGroup : String -> String -> String -> Http.Request Entity.Group
 fetchGroup api token slug =
-    Http.request
-        { method = "GET"
-        , headers = defaultHeaders token
-        , url = api ++ "/group/" ++ slug
-        , body = Http.emptyBody
-        , expect = Http.expectJson Entity.groupDecoder
-        , timeout = Nothing
-        , withCredentials = False
-        }
+    getRequest token (api ++ "/group/" ++ slug) Entity.groupDecoder
 
 
 fetchRole : String -> String -> String -> Http.Request Entity.Role
 fetchRole api token slug =
+    getRequest token (api ++ "/role/" ++ slug) Entity.roleDecoder
+
+
+
+-- trouble is, jsonDecoder is specifi
+
+
+getRequest token endpoint jsonDecoder =
     Http.request
         { method = "GET"
         , headers = defaultHeaders token
-        , url = api ++ "/role/" ++ slug
+        , url = endpoint
         , body = Http.emptyBody
-        , expect = Http.expectJson Entity.roleDecoder
+        , expect = Http.expectJson jsonDecoder
         , timeout = Nothing
         , withCredentials = False
         }
