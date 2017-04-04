@@ -15,6 +15,13 @@ type alias Value =
 port fileSelected : String -> Cmd msg
 
 
+
+-- cssId, userid, token
+
+
+port uploadFile : ( String, String, String ) -> Cmd msg
+
+
 port fileContentRead : (CsvData -> msg) -> Sub msg
 
 

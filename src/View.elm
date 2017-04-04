@@ -7,6 +7,7 @@ import Model exposing (..)
 import Routing as R
 import Json.Decode as JD
 import Entity
+import Access as A
 
 
 -- LOGIN PAGE
@@ -27,14 +28,14 @@ loginPage model =
         ]
 
 
-loginPageButtonClass : ( Bool, String ) -> String
+loginPageButtonClass : Maybe String -> String
 loginPageButtonClass loading =
     case loading of
-        ( False, _ ) ->
-            "button is-fullwidth is-success"
-
-        ( True, _ ) ->
+        Just _ ->
             "button is-fullwidth is-success is-loading"
+
+        Nothing ->
+            "button is-fullwidth is-success"
 
 
 loginPageBoxForm : Model -> Html Msg
@@ -164,7 +165,7 @@ logo linkPath =
         , href <| linkPath
         , R.onLinkClick <| UpdateLocation linkPath
         ]
-        [ img [ src "img/logo.png" ] [] ]
+        [ img [ src "/img/logo.png" ] [] ]
 
 
 isActive : Bool -> String
@@ -270,16 +271,18 @@ homePageGameCard gameSlug src_ title about =
 -- The parent of basic pages.
 
 
-notification : ( Bool, String ) -> String -> Html Msg
-notification ( isEnabled, content ) mods =
-    if isEnabled then
-        div
-            [ class <| "notification " ++ mods ]
-            [ button [ class "delete", onClick ResetNotifications ] []
-            , text content
-            ]
-    else
-        div [] []
+notification : Maybe String -> String -> Html Msg
+notification notifText mods =
+    case notifText of
+        Just nTxt ->
+            div
+                [ class <| "notification " ++ mods ]
+                [ button [ class "delete", onClick ResetNotifications ] []
+                , text nTxt
+                ]
+
+        Nothing ->
+            div [] []
 
 
 basicPage : Model -> List (Html Msg) -> Html Msg
@@ -309,28 +312,47 @@ notFoundPage model =
     basicPage model
         [ div
             [ class "container" ]
-            [ h1 [ class "title is-1" ] [ text "Poem 404" ]
-            , h5 [ class "subtitle is-5" ] [ text "Page Not Found" ]
-            , p []
-                [ text "I shall be telling this with a sigh"
-                , br [] []
-                , text "Somewhere ages and ages hence:"
-                , br [] []
-                , text "Two roads diverged in a wood, and I—"
-                , br [] []
-                , text "I took the one less traveled by,"
-                , br [] []
-                , text "And that has made all the difference."
+            [ poem404
+                [ h1 [ class "title is-1" ] [ text "Poem 404" ]
+                , h5 [ class "subtitle is-5" ] [ text "Page Not Found" ]
+                , p []
+                    [ text "I shall be telling this with a sigh"
+                    , br [] []
+                    , text "Somewhere ages and ages hence:"
+                    , br [] []
+                    , text "Two roads diverged in a wood, and I-"
+                    , br [] []
+                    , text "I took the one less traveled by,"
+                    , br [] []
+                    , text "And that has made all the difference."
+                    , br [] []
+                    ]
+                , em [] [ text "- Robert Frost" ]
                 , br [] []
                 ]
-            , em [] [ text "— Robert Frost" ]
+            ]
+        ]
+
+
+poem404 : List (Html Msg) -> Html Msg
+poem404 children =
+    div
+        [ class "columns" ]
+        [ div
+            [ class "column is-6 is-offset-3" ]
+            [ div
+                [ class "card" ]
+                [ div
+                    [ class "card-content" ]
+                    children
+                ]
             ]
         ]
 
 
 badge : String -> Html Msg
 badge text_ =
-    p [] [ i [ class "fa fa-certificate fa-5x" ] [], text text_ ]
+    p [] [ i [ class "fa fa-certificate fa-6" ] [], text text_ ]
 
 
 badgesPage : Model -> Html Msg
@@ -579,8 +601,8 @@ emailInput field_ placeholder_ =
         ]
 
 
-regLabel : String -> Html Msg
-regLabel title =
+label_ : String -> Html Msg
+label_ title =
     label [ class "label" ]
         [ text title ]
 
@@ -589,11 +611,11 @@ firstLastReg : Html Msg
 firstLastReg =
     div [ class "columns" ]
         [ div [ class "column" ]
-            [ regLabel "First Name"
+            [ label_ "First Name"
             , textInput "firstName" ""
             ]
         , div [ class "column" ]
-            [ regLabel "Last Name"
+            [ label_ "Last Name"
             , textInput "lastName" ""
             ]
         ]
@@ -603,15 +625,15 @@ userEmailPassReg : Html Msg
 userEmailPassReg =
     div [ class "columns" ]
         [ div [ class "column" ]
-            [ regLabel "Username"
+            [ label_ "Username"
             , textInput "username" "joey123"
             ]
         , div [ class "column" ]
-            [ regLabel "Email"
+            [ label_ "Email"
             , emailInput "email" "joe@example.com"
             ]
         , div [ class "column" ]
-            [ regLabel "Password"
+            [ label_ "Password"
             , textInput "password" "longfancyphrase"
             ]
         ]
@@ -649,24 +671,26 @@ registerUserForm model =
         ]
 
 
-regButtons : ( Bool, String ) -> Html Msg
-regButtons ( loading, _ ) =
-    div
-        [ class "field is-grouped" ]
-        [ button
-            [ class <|
-                "button is-primary "
-                    ++ (if loading then
-                            "is-loading"
-                        else
-                            ""
-                       )
+regButtons : Maybe String -> Html Msg
+regButtons loading =
+    let
+        class_ =
+            case loading of
+                Just l ->
+                    "button is-primary is-loading"
+
+                Nothing ->
+                    "button is-primary"
+    in
+        div
+            [ class "field is-grouped" ]
+            [ button
+                [ class class_ ]
+                [ text "Submit" ]
+            , button
+                ([ class "button is-link" ] ++ (linkAttrs R.adminPath))
+                [ text "Cancel" ]
             ]
-            [ text "Submit" ]
-        , button
-            ([ class "button is-link" ] ++ (linkAttrs R.adminPath))
-            [ text "Cancel" ]
-        ]
 
 
 divColumns : List (Html Msg) -> Html Msg
@@ -676,7 +700,7 @@ divColumns children =
 
 registerPage : Model -> Html Msg
 registerPage model =
-    basicAdminPage model
+    basicAdminPage model.glitching
         [ divColumns
             [ div [ class "column is-half is-offset-one-quarter" ]
                 [ h1
@@ -707,7 +731,7 @@ adminTop firstName =
 
 adminPage : Model -> Html Msg
 adminPage model =
-    basicAdminPage model
+    basicAdminPage model.glitching
         [ adminTop model.user.firstName
         , hr [] []
         , usersTable model
@@ -732,6 +756,26 @@ bButton title path mods =
         , R.onLinkClick <| UpdateLocation path
         ]
         [ text title ]
+
+
+iconButton : String -> String -> String -> String -> Html Msg
+iconButton text_ path icon mods =
+    a
+        [ class <| "button " ++ mods
+        , href <| path
+        , R.onLinkClick <| UpdateLocation path
+        ]
+        [ span
+            [ class <| "icon " ++ mods ]
+            [ i
+                [ class <| "fa " ++ icon ]
+                []
+            ]
+        , span
+            []
+            [ text text_
+            ]
+        ]
 
 
 uploadButton : Html Msg
@@ -761,14 +805,14 @@ uploadButton =
 
 usersTable : Model -> Html Msg
 usersTable model =
-    table [ class "table" ]
+    table [ class "table is-bordered is-striped is-narrow" ]
         [ thead []
             [ tr []
                 [ th [] [ text "First Name" ]
                 , th [] [ text "Last Name" ]
                 , th [] [ text "Username" ]
                 , th [] [ text "Email" ]
-                , th [] [ text "Valuations" ]
+                , th [] [ text "Actions" ]
                 ]
             ]
         , tbody [] (userRows model.users model.csvId)
@@ -782,6 +826,7 @@ csvUploader userid csvId =
         [ input
             [ type_ "file"
             , id csvId
+            , accept ".csv"
             , class userid
             , on "change" (JD.succeed CsvSelected)
             ]
@@ -800,7 +845,7 @@ userRows users csvId =
                 , td [] [ text user.username ]
                 , td [] [ text user.email ]
                 , td []
-                    [ csvUploader user.id csvId
+                    [ iconButton "Edit" (R.editPath ++ user.id) "fa-wrench" "is-small"
                     ]
                 ]
     in
@@ -808,14 +853,48 @@ userRows users csvId =
             |> List.map row
 
 
-basicAdminPage : Model -> List (Html Msg) -> Html Msg
-basicAdminPage model children =
+basicAdminPage : Maybe String -> List (Html Msg) -> Html Msg
+basicAdminPage glitching children =
     section [ class "section" ]
         [ div
             [ class "container" ]
             children
-        , notification model.glitching "is-warning"
+        , notification glitching "is-warning"
         ]
+
+
+editUser : Entity.User -> Html Msg
+editUser user =
+    basicAdminPage Nothing
+        [ divColumns
+            [ div [ class "column is-half is-offset-one-quarter" ]
+                [ h1
+                    [ class "title" ]
+                    [ text <| "Editing " ++ user.firstName ]
+                , p [] [ text "form here TODO" ]
+                ]
+            ]
+        ]
+
+
+editUser404 : Html Msg
+editUser404 =
+    basicAdminPage Nothing
+        [ divColumns
+            [ div [ class "column is-half is-offset-one-quarter" ]
+                [ h1 [ class "title" ] [ text "User not found" ] ]
+            ]
+        ]
+
+
+editUserPage : Model -> String -> Html Msg
+editUserPage model userid =
+    case (A.userName model.users userid) of
+        Just user ->
+            editUser user
+
+        Nothing ->
+            editUser404
 
 
 view : Model -> Html Msg
@@ -864,5 +943,8 @@ view model =
 
                 R.GameRouteRs ->
                     gamePage model
+
+                R.EditUserRoute userid ->
+                    editUserPage model userid
     in
         div [] [ page ]

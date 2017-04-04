@@ -9,8 +9,7 @@ import Routing
 emptyModel : Model.Model -> Model.Model
 emptyModel model =
     { model
-        | loading = ( False, "" )
-        , activeRoute = Routing.LoginRoute
+        | activeRoute = Routing.LoginRoute
         , presses = []
         , jwtencoded = ""
         , visitor = Model.Anonymous
@@ -20,7 +19,8 @@ emptyModel model =
         , currentTimeDelta = 0
         , user = emptyUser
         , authRecord = emptyAuthRecord
-        , glitching = ( False, "" )
+        , loading = Nothing
+        , glitching = Nothing
         , responseTimes = []
         , startTime = 0
         , playingGame = False

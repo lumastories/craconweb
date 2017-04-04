@@ -45,7 +45,7 @@ Match a location given by the Navigation package and return the matched route.
 -}
 parseLocation : Navigation.Location -> Route
 parseLocation location =
-    case (UrlParser.parsePath matchers location) of
+    case (parsePath matchers location) of
         Just route ->
             route
 
@@ -86,6 +86,7 @@ type Route
     | InstructionsRoute
     | AdminRoute
     | RegisterRoute
+    | EditUserRoute String
 
 
 homePath : String
@@ -128,6 +129,11 @@ instructionsPath =
     "/instructions"
 
 
+editPath : String
+editPath =
+    "/edit/"
+
+
 
 -- Private
 
@@ -135,19 +141,20 @@ instructionsPath =
 {-|
 Define how to match urls
 -}
-matchers : UrlParser.Parser (Route -> a) a
+matchers : Parser (Route -> a) a
 matchers =
-    UrlParser.oneOf
-        [ UrlParser.map HomeRoute UrlParser.top
-        , UrlParser.map LoginRoute (UrlParser.s "login")
-        , UrlParser.map GameRouteVs (UrlParser.s "visualsearch")
-        , UrlParser.map GameRouteDp (UrlParser.s "dotprobe")
-        , UrlParser.map GameRouteGn (UrlParser.s "gonogo")
-        , UrlParser.map GameRouteSs (UrlParser.s "stopsignal")
-        , UrlParser.map GameRouteRs (UrlParser.s "respondsignal")
-        , UrlParser.map BadgesRoute (UrlParser.s "badges")
-        , UrlParser.map SettingsRoute (UrlParser.s "settings")
-        , UrlParser.map InstructionsRoute (UrlParser.s "instructions")
-        , UrlParser.map AdminRoute (UrlParser.s "admin")
-        , UrlParser.map RegisterRoute (UrlParser.s "register")
+    oneOf
+        [ map HomeRoute top
+        , map LoginRoute (s "login")
+        , map GameRouteVs (s "visualsearch")
+        , map GameRouteDp (s "dotprobe")
+        , map GameRouteGn (s "gonogo")
+        , map GameRouteSs (s "stopsignal")
+        , map GameRouteRs (s "respondsignal")
+        , map BadgesRoute (s "badges")
+        , map SettingsRoute (s "settings")
+        , map InstructionsRoute (s "instructions")
+        , map AdminRoute (s "admin")
+        , map RegisterRoute (s "register")
+        , map EditUserRoute (s "edit" </> string)
         ]

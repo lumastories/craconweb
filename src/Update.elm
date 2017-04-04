@@ -24,8 +24,7 @@ update msg model =
             case model.mCsvFile of
                 Just mCsvFile ->
                     ( model
-                    , Http.send CsvUploadResp
-                        (Api.uploadCsv "http://localhost:8668" model.jwtencoded mCsvFile)
+                    , Port.uploadFile ( "CsvInputId", "5288569251877209110", model.jwtencoded )
                     )
 
                 Nothing ->
@@ -108,8 +107,38 @@ update msg model =
             in
                 ( { model | tmpUserRecord = tmpUserRecord_ }, Cmd.none )
 
+        EditUserAccount key value ->
+            let
+                tmpUserRecord_old_ =
+                    model.tmpUserRecord
+
+                tmpUserRecord_old =
+                    { tmpUserRecord_old_ | roles = [ model.userRole.id ] }
+
+                tmpUserRecord_ =
+                    case key of
+                        "email" ->
+                            { tmpUserRecord_old | email = value }
+
+                        "password" ->
+                            { tmpUserRecord_old | password = value }
+
+                        "username" ->
+                            { tmpUserRecord_old | username = value }
+
+                        "firstName" ->
+                            { tmpUserRecord_old | firstName = value }
+
+                        "lastName" ->
+                            { tmpUserRecord_old | lastName = value }
+
+                        _ ->
+                            tmpUserRecord_old
+            in
+                ( { model | tmpUserRecord = tmpUserRecord_ }, Cmd.none )
+
         TryRegisterUser ->
-            ( { model | loading = ( True, "loading..." ) }
+            ( { model | loading = Just "loading..." }
             , Cmd.batch
                 [ Http.send RegisterUserResp
                     (Api.createUserRecord
@@ -125,14 +154,14 @@ update msg model =
                 users_ =
                     [ newUser ] ++ model.users
             in
-                ( { model | loading = ( False, "" ), users = users_, tmpUserRecord = Empty.emptyUserRecord }, Navigation.newUrl Routing.adminPath )
+                ( { model | loading = Nothing, users = users_, tmpUserRecord = Empty.emptyUserRecord }, Navigation.newUrl Routing.adminPath )
 
         -- SHARED
         ResetNotifications ->
             ( { model
-                | glitching = ( False, "" )
-                , informing = ( False, "" )
-                , loading = ( False, "" )
+                | glitching = Nothing
+                , informing = Nothing
+                , loading = Nothing
               }
             , Cmd.none
             )
@@ -184,13 +213,14 @@ update msg model =
                             model.authRecord
                         )
             in
-                ( { model | loading = ( True, "loading..." ) }, cmd )
+                ( { model | loading = Just "loading..." }, cmd )
 
         Logout ->
             let
                 cmds =
                     [ Port.storageClear ()
                     , Navigation.newUrl "/login"
+                    , Port.playAudioPing ()
                     ]
             in
                 ( Empty.emptyModel model, Cmd.batch cmds )
@@ -204,10 +234,10 @@ update msg model =
                     case jwtdecoded_ of
                         Ok jwt ->
                             ( { model
-                                | loading = ( False, "" )
+                                | loading = Nothing
                                 , visitor = LoggedIn jwt
                                 , jwtencoded = auth.token
-                                , glitching = ( False, "" )
+                                , glitching = Nothing
                               }
                             , [ Port.storageSetItem ( "token", JE.object [ ( "token", JE.string auth.token ) ] )
                               , Http.send UserResp
@@ -221,8 +251,8 @@ update msg model =
 
                         Err err ->
                             ( { model
-                                | loading = ( False, "" )
-                                , glitching = ( True, toString err )
+                                | loading = Nothing
+                                , glitching = Just (toString err)
                               }
                             , []
                             )
@@ -347,8 +377,8 @@ update msg model =
 httpErrorState : Model -> Http.Error -> ( Model, Cmd msg )
 httpErrorState model err =
     ( { model
-        | loading = ( False, "" )
-        , glitching = ( True, httpHumanError err )
+        | loading = Nothing
+        , glitching = Just (httpHumanError err)
         , httpErr = toString err
       }
     , Cmd.none

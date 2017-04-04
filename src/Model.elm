@@ -24,9 +24,9 @@ type alias Model =
     , invalidImages : List Entity.Ugimage
     , fillerImages : List Entity.Ugimage
     , userGroupId : Maybe String
-    , loading : ( Bool, String )
-    , glitching : ( Bool, String )
-    , informing : ( Bool, String )
+    , loading : Maybe String
+    , glitching : Maybe String
+    , informing : Maybe String
     , users : List Entity.User
     , tmpUserRecord : Entity.UserRecord
     , userRole : Entity.Role
@@ -88,6 +88,7 @@ type
       -- ADMIN
     | TryRegisterUser
     | SetRegistration String String
+    | EditUserAccount String String
     | CsvSelected
     | CsvRead Api.CsvData
     | TryCsvUpload

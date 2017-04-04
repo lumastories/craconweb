@@ -5,9 +5,9 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" type="text/css" href="css/font-awesome.min.css">
-    <link rel="stylesheet" type="text/css" href="css/bulma.css">
-    <script type="text/javascript" src="js/app.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/bulma.css">
+    <script type="text/javascript" src="/js/app.js"></script>
     <style type="text/css">
         html {
             background:#EFEFEF;
@@ -19,7 +19,6 @@
     <audio id="ping"> <source src="https://www.freesound.org/data/previews/91/91926_7037-lq.mp3" type="audio/mpeg"> </audio>
 
     <script type="text/javascript">
-
 
 
         if(localStorage.getItem("token")==null){
@@ -41,9 +40,6 @@
         // File reader ports
 
         app.ports.fileSelected.subscribe(function (id){
-            //https://www.paramander.com/blog/using-ports-to-deal-with-files-in-elm-0-17
-
-            console.log(id);
 
             var node = document.getElementById(id);
             if (node === null){
@@ -59,8 +55,6 @@
                     userid: node.className
                 };
 
-                console.log(portData);
-
                 // send file to elm port
                 app.ports.fileContentRead.send(portData);
             });
@@ -69,10 +63,55 @@
 
         });
 
+        app.ports.uploadFile.subscribe(function(id, sub, token){
+
+            var filePicker = document.getElementById(id);
+
+            filePicker.addEventListener('change', function(e) {
+
+
+                var file = this.files[0];
+                var formData = new FormData();
+
+                formData.append("upload", file);
+
+                var xhr = new XMLHttpRequest();
+                xhr.send(formData);
+
+                // xhr.addEventListener('progress', function(e) {
+                //     var done = e.position || e.loaded, total = e.totalSize || e.total;
+                //     console.log('xhr progress: ' + (Math.floor(done/total*1000)/10) + '%');
+                // }, false);
+
+                // if ( xhr.upload ) {
+                //     xhr.upload.onprogress = function(e) {
+                //         var done = e.position || e.loaded, total = e.totalSize || e.total;
+                //         console.log('xhr.upload progress: ' + done + ' / ' + total + ' = ' + (Math.floor(done/total*1000)/10) + '%');
+                //     };
+                // };
+
+                xhr.onreadystatechange = function(e) {
+                    if ( 4 == this.readyState ) {
+                        console.log(['xhr upload complete', e]);
+                    }
+                };
+
+                xhr.open('post', "http://localhost:8668/upload/ugimgset", true);
+                xhr.setRequestHeader("Content-Type","multipart/form-data");
+                xhr.setRequestHeader("Authorization", "Bearer " + token);
+
+                // TODO add "userid" part
+
+                xhr.send(file);
+
+            }, false);
+
+        });
+
         // Audio ports
 
-        app.ports.playAudioPing.subscribe(function(model) {
-            document.getElementById("ping").play()
+        app.ports.playAudioPing.subscribe(function(nothing) {
+            document.getElementById("ping").play();
         });
 
         // Local Storage Ports
@@ -106,8 +145,6 @@
             JSON.stringify(value)
           );
         }
-
-
 
     </script>
 
