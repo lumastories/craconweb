@@ -88,7 +88,7 @@ type
       -- ADMIN
     | TryRegisterUser
     | SetRegistration String String
+    | TryUpdateUser
     | EditUserAccount String String
     | CsvSelected
     | CsvRead Api.CsvData
-    | TryCsvUpload

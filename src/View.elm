@@ -492,6 +492,7 @@ instructionsPage model =
             , hr [] []
             , div
                 [ class "columns" ]
+                -- TODO fetch instructions from API
                 [ instBlock "Stop Signal" """You will see pictures presented
                      in either a dark blue or light gray border. Press the space
                       bar as quickly as you can. BUT only if you see a blue border
@@ -693,6 +694,28 @@ regButtons loading =
             ]
 
 
+editButtons : Maybe String -> Html Msg
+editButtons loading =
+    let
+        class_ =
+            case loading of
+                Just l ->
+                    "button is-primary is-loading"
+
+                Nothing ->
+                    "button is-primary"
+    in
+        div
+            [ class "field is-grouped" ]
+            [ button
+                [ class class_ ]
+                [ text "Update" ]
+            , button
+                ([ class "button is-link" ] ++ (linkAttrs R.adminPath))
+                [ text "Cancel" ]
+            ]
+
+
 divColumns : List (Html Msg) -> Html Msg
 divColumns children =
     div [ class "columns" ] children
@@ -716,14 +739,15 @@ adminTop : String -> Html Msg
 adminTop firstName =
     div [ class "columns" ]
         [ div [ class "column" ]
-            [ h6 [ class "subtitle is-6" ] [ text <| "Hi, " ++ firstName ]
-            , h1 [ class "title" ] [ text "Users" ]
+            [ h1 [ class "title" ] [ text "Users" ]
             ]
         , div [ class "column" ]
             [ div [ class "block is-pulled-right" ]
-                [ bButton "Register User" R.registerPath "is-success"
+                [ h6 [ class "subtitle is-6" ] [ text <| "Hello, " ++ firstName ]
+                , bButton "Register User" R.registerPath "is-success"
                 , bButton "Go to games" R.homePath "is-link"
-                , a ([ class "button is-link", onClick Logout ]) [ text "Logout" ]
+                , a ([ class "button is-link", onClick Logout ])
+                    [ text "Logout" ]
                 ]
             ]
         ]
@@ -733,7 +757,6 @@ adminPage : Model -> Html Msg
 adminPage model =
     basicAdminPage model.glitching
         [ adminTop model.user.firstName
-        , hr [] []
         , usersTable model
         ]
 
@@ -781,7 +804,7 @@ iconButton text_ path icon mods =
 uploadButton : Html Msg
 uploadButton =
     a
-        [ class "button is-small", onClick TryCsvUpload ]
+        [ class "button is-small", onClick TryUpdateUser ]
         [ span
             [ class "icon is-small" ]
             [ i
@@ -845,7 +868,10 @@ userRows users csvId =
                 , td [] [ text user.username ]
                 , td [] [ text user.email ]
                 , td []
-                    [ iconButton "Edit" (R.editPath ++ user.id) "fa-wrench" "is-small"
+                    [ iconButton "Edit"
+                        (R.editPath ++ user.id)
+                        "fa-wrench"
+                        "is-small"
                     ]
                 ]
     in
@@ -863,6 +889,13 @@ basicAdminPage glitching children =
         ]
 
 
+editUserForm : Entity.User -> Html Msg
+editUserForm user =
+    Html.form [ onSubmit TryUpdateUser ]
+        [ csvUploader user.id "csv"
+        ]
+
+
 editUser : Entity.User -> Html Msg
 editUser user =
     basicAdminPage Nothing
@@ -871,7 +904,7 @@ editUser user =
                 [ h1
                     [ class "title" ]
                     [ text <| "Editing " ++ user.firstName ]
-                , p [] [ text "form here TODO" ]
+                , editUserForm user
                 ]
             ]
         ]
