@@ -5,7 +5,6 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Model exposing (..)
 import Routing as R
-import Json.Decode as JD
 import Entity
 import Access as A
 
@@ -561,7 +560,7 @@ bigLogo =
     p [ style [ ( "text-align", "center" ) ] ]
         [ img
             [ class "logo is-vcentered"
-            , src "img/logo.svg"
+            , src "/img/logo.svg"
             , style [ ( "max-width", "300px" ) ]
             ]
             []
@@ -859,7 +858,11 @@ basicAdminPage glitching children =
 editUserForm : Entity.User -> Html Msg
 editUserForm user =
     Html.form
-        []
+        [ enctype "multipart/form-data"
+        , name "csvfile"
+        , action "http://localhost:8668/upload/ugimgset"
+        , method "POST"
+        ]
         [ input
             [ type_ "file"
             , id "csv"

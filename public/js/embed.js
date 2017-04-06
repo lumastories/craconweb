@@ -1,8 +1,8 @@
 function token(){
     if(localStorage.getItem("token")==null){
-      return "";
+      return ""
     } else {
-      return JSON.parse(localStorage.getItem("token")).token;
+      return JSON.parse(localStorage.getItem("token")).token
     }
 }
 
@@ -11,87 +11,78 @@ var flags = {"token": token()
             , "time": Date.now()
             }
 
-console.log(flags);
+console.log(flags)
 
-var app = Elm.Main.fullscreen(flags);
+var app = Elm.Main.fullscreen(flags)
 
 
 // File reader ports
 
 app.ports.fileSelected.subscribe(function (id){
 
-    var node = document.getElementById(id);
+    var node = document.getElementById(id)
     if (node === null){
-        return;
+        return
     }
-    var file = node.files[0];
-    var reader = new FileReader();
+    var file = node.files[0]
+    var reader = new FileReader()
     reader.onload = (function(event){
         // target is the file
-        var csvFile = event.target.result;
+        var csvFile = event.target.result
         var portData = {
             upload: csvFile,
             userid: node.className
-        };
+        }
 
         // send file to elm port
-        app.ports.fileContentRead.send(portData);
-    });
+        app.ports.fileContentRead.send(portData)
+    })
 
-    reader.readAsText(file);
+    reader.readAsText(file)
 
-});
+})
 
 app.ports.uploadFile.subscribe(function(userid){
-
-    function filePicker(){
-        return document.getElementById("csv");
+    var file = document.getElementById("csv").files[0];
+    var fr = new FileReader();
+    fr.readAsText(file, "UTF-8");
+    fr.onload = function (evt) {
+        console.log(evt.target.result);
+        var fd = new FormData();
+        fd.append("userid", userid)
+        fd.append("upload", file) // <<<<< when I change this to evt.target.result I get
+        var xhr = new XMLHttpRequest()
+        xhr.open('post', "http://localhost:8668/upload/ugimgset", true)
+        xhr.setRequestHeader("Content-Type", "multipart/form-data")
+        xhr.setRequestHeader("Authorization", "Bearer " + token() )
+        xhr.send(fd)
     }
-
-    var file = filePicker().files[0];
-    var formData = new FormData();
-
-    formData.append("upload", file);
-    formData.append("userid", userid);
-
-    var xhr = new XMLHttpRequest();
-
-    xhr.onreadystatechange = function(e) {
-        if ( 4 == this.readyState ) {
-            console.log(['xhr upload complete', e]);
-        }
-    };
-
-    xhr.open('post', "http://localhost:8668/upload/ugimgset", true);
-    xhr.setRequestHeader("Content-Type","multipart/form-data");
-    xhr.setRequestHeader("Authorization", "Bearer " + token() );
-    xhr.send(formData);
-});
+})
 
 // Audio ports
 
 app.ports.playAudioPing.subscribe(function(nothing) {
-    document.getElementById("ping").play();
-});
+    document.getElementById("ping").play()
+})
 
 // Local Storage Ports
 
 app.ports.storageGetItem.subscribe(function(key){
-    app.ports.getUserResponse.send(localStorage.getItem(key) ? localStorage.getItem(key) : "");
-});
+    app.ports.getUserResponse.send(localStorage.getItem(key) ? localStorage.getItem(key) : "")
+})
 
 app.ports.storageSetItem.subscribe(function(keyValue){
-    var [key, value] = keyValue;
-    setLocalStorageItem(key, value);
-});
+    var [key, value] = keyValue
+    setLocalStorageItem(key, value)
+})
 
 app.ports.storageRemoveItem.subscribe(function(key){
-    localStorage.removeItem(key);
-});
+    localStorage.removeItem(key)
+})
 
 app.ports.storageClear.subscribe(function(i){
-    localStorage.clear();
-});
+    localStorage.clear()
+})
 
 /**
  * Set a value of any type in localStorage.
@@ -103,5 +94,5 @@ app.ports.storageClear.subscribe(function(i){
 function setLocalStorageItem(key, value) {
   window.localStorage.setItem(key,
     JSON.stringify(value)
-  );
+  )
 }
