@@ -1,7 +1,7 @@
 .DS_Store
 elm-format
 src/elm-stuff/
-*.js
+public/js/app.js
 node_modules/
 store.db
 notes.md
