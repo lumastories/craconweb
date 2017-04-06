@@ -1,22 +1,8 @@
-function token(){
-    if(localStorage.getItem("token")==null){
-      return ""
-    } else {
-      return JSON.parse(localStorage.getItem("token")).token
-    }
-}
-
-
 var flags = {"token": token()
-            , "time": Date.now()
+            ,"time": Date.now()
             }
 
-console.log(flags)
-
 var app = Elm.Main.fullscreen(flags)
-
-
-// File reader ports
 
 app.ports.fileSelected.subscribe(function (id){
 
@@ -27,7 +13,7 @@ app.ports.fileSelected.subscribe(function (id){
     var file = node.files[0]
     var reader = new FileReader()
     reader.onload = (function(event){
-        // target is the file
+
         var csvFile = event.target.result
         var portData = {
             upload: csvFile,
@@ -43,14 +29,15 @@ app.ports.fileSelected.subscribe(function (id){
 })
 
 app.ports.uploadFile.subscribe(function(userid){
-    var file = document.getElementById("csv").files[0];
+    var form = document.getElementById("csvForm")
+    var file = document.getElementById("csvFilInput").files[0];
     var fr = new FileReader();
     fr.readAsText(file, "UTF-8");
     fr.onload = function (evt) {
         console.log(evt.target.result);
-        var fd = new FormData();
+        var fd = new FormData(form);
         fd.append("userid", userid)
-        fd.append("upload", file) // <<<<< when I change this to evt.target.result I get
+        fd.append("upload", file) // <<<<< AGONY
         var xhr = new XMLHttpRequest()
         xhr.open('post', "http://localhost:8668/upload/ugimgset", true)
         xhr.setRequestHeader("Content-Type", "multipart/form-data")
@@ -95,4 +82,13 @@ function setLocalStorageItem(key, value) {
   window.localStorage.setItem(key,
     JSON.stringify(value)
   )
+}
+
+
+function token(){
+    if(localStorage.getItem("token")==null){
+      return ""
+    } else {
+      return JSON.parse(localStorage.getItem("token")).token
+    }
 }

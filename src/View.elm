@@ -742,8 +742,7 @@ adminTop firstName =
             ]
         , div [ class "column" ]
             [ div [ class "block is-pulled-right" ]
-                [ h6 [ class "subtitle is-6" ] [ text <| "Hello, " ++ firstName ]
-                , bButton "Register User" R.registerPath "is-success"
+                [ bButton "Register User" R.registerPath "is-success"
                 , bButton "Go to games" R.homePath "is-link"
                 , a ([ class "button is-link", onClick Logout ])
                     [ text "Logout" ]
@@ -862,10 +861,11 @@ editUserForm user =
         , name "csvfile"
         , action "http://localhost:8668/upload/ugimgset"
         , method "POST"
+        , id "csvForm"
         ]
         [ input
             [ type_ "file"
-            , id "csv"
+            , id "csvFilInput"
             , accept ".csv"
             ]
             []
