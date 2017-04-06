@@ -20,8 +20,8 @@ import Todos
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        TryUpdateUser ->
-            ( model, Port.uploadFile ( "csv", "5288569251877209110", model.jwtencoded ) )
+        TryUpdateUser userId ->
+            ( model, Port.uploadFile userId )
 
         CsvUploadResp csvData ->
             -- TODO make a request to set local ugimages!

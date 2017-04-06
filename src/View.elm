@@ -801,23 +801,6 @@ iconButton text_ path icon mods =
         ]
 
 
-uploadButton : Html Msg
-uploadButton =
-    a
-        [ class "button is-small", onClick TryUpdateUser ]
-        [ span
-            [ class "icon is-small" ]
-            [ i
-                [ class "fa fa-file-text-o" ]
-                []
-            ]
-        , span
-            []
-            [ text "Upload"
-            ]
-        ]
-
-
 
 -- lastLogin
 -- created
@@ -839,22 +822,6 @@ usersTable model =
                 ]
             ]
         , tbody [] (userRows model.users model.csvId)
-        ]
-
-
-csvUploader : String -> String -> Html Msg
-csvUploader userid csvId =
-    Html.form
-        []
-        [ input
-            [ type_ "file"
-            , id csvId
-            , accept ".csv"
-            , class userid
-            , on "change" (JD.succeed CsvSelected)
-            ]
-            []
-        , uploadButton
         ]
 
 
@@ -891,8 +858,27 @@ basicAdminPage glitching children =
 
 editUserForm : Entity.User -> Html Msg
 editUserForm user =
-    Html.form [ onSubmit TryUpdateUser ]
-        [ csvUploader user.id "csv"
+    Html.form
+        []
+        [ input
+            [ type_ "file"
+            , id "csv"
+            , accept ".csv"
+            ]
+            []
+        , a
+            [ class "button is-small", onClick <| TryUpdateUser user.id ]
+            [ span
+                [ class "icon is-small" ]
+                [ i
+                    [ class "fa fa-file-text-o" ]
+                    []
+                ]
+            , span
+                []
+                [ text "Upload"
+                ]
+            ]
         ]
 
 
