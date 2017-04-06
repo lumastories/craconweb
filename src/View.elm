@@ -867,6 +867,14 @@ editUserForm user =
             [ type_ "file"
             , id "csvFilInput"
             , accept ".csv"
+            , name "upload"
+            ]
+            []
+        , input
+            [ type_ "hidden"
+            , id "csvFilInput"
+            , name "userid"
+            , value user.id
             ]
             []
         , a

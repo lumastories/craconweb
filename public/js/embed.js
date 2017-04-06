@@ -30,20 +30,14 @@ app.ports.fileSelected.subscribe(function (id){
 
 app.ports.uploadFile.subscribe(function(userid){
     var form = document.getElementById("csvForm")
-    var file = document.getElementById("csvFilInput").files[0];
-    var fr = new FileReader();
-    fr.readAsText(file, "UTF-8");
-    fr.onload = function (evt) {
-        console.log(evt.target.result);
-        var fd = new FormData(form);
-        fd.append("userid", userid)
-        fd.append("upload", file) // <<<<< AGONY
-        var xhr = new XMLHttpRequest()
-        xhr.open('post', "http://localhost:8668/upload/ugimgset", true)
-        xhr.setRequestHeader("Content-Type", "multipart/form-data")
-        xhr.setRequestHeader("Authorization", "Bearer " + token() )
-        xhr.send(fd)
-    }
+
+    var fd = new FormData(form);
+
+    var xhr = new XMLHttpRequest()
+    xhr.open('post', "http://localhost:8668/upload/ugimgset", true)
+    xhr.setRequestHeader("Content-Type", "multipart/form-data")
+    xhr.setRequestHeader("Authorization", "Bearer " + token() )
+    xhr.send(fd)
 })
 
 // Audio ports
