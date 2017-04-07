@@ -1,7 +1,6 @@
 port module Port exposing (..)
 
 import Json.Encode
-import Api exposing (CsvData)
 
 
 type alias Key =
