@@ -214,7 +214,7 @@ homePageGameCards model =
     let
         toCard g =
             div [ class "column" ]
-                [ homePageGameCard g.slug (R.imageBaseUrl ++ g.icon) g.name g.dscript ]
+                [ homePageGameCard g.slug (model.filesrv ++ "/repo/" ++ g.icon) g.name g.dscript ]
     in
         List.map toCard
             [ model.gonogoGame
@@ -854,12 +854,12 @@ basicAdminPage glitching children =
         ]
 
 
-editUserForm : Entity.User -> Html Msg
-editUserForm user =
+editUserForm : String -> Entity.User -> Html Msg
+editUserForm tasksrv user =
     Html.form
         [ enctype "multipart/form-data"
         , name "csvfile"
-        , action <| R.tasksrvBaseUrl ++ "upload/ugimgset"
+        , action <| tasksrv ++ "/upload/ugimgset"
         , method "POST"
         , id "csvForm"
         ]
@@ -893,15 +893,15 @@ editUserForm user =
         ]
 
 
-editUser : Entity.User -> Html Msg
-editUser user =
+editUser : String -> Entity.User -> Html Msg
+editUser tasksrv user =
     basicAdminPage Nothing
         [ divColumns
             [ div [ class "column is-half is-offset-one-quarter" ]
                 [ h1
                     [ class "title" ]
                     [ text <| "Editing " ++ user.firstName ]
-                , editUserForm user
+                , editUserForm tasksrv user
                 ]
             ]
         ]
@@ -921,7 +921,7 @@ editUserPage : Model -> String -> Html Msg
 editUserPage model userid =
     case (A.userName model.users userid) of
         Just user ->
-            editUser user
+            editUser model.tasksrv user
 
         Nothing ->
             editUser404

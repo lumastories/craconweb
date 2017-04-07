@@ -38,17 +38,19 @@ subscriptions model =
 init : Flags -> Navigation.Location -> ( Model.Model, Cmd Model.Msg )
 init flags location =
     let
-        -- if token exists check if token is expired then Routing.LoginRoute
-        -- else check if is not admin block /admin and /register routes
-        -- else Routing.parseLocation location
-        -- else (not exist - login route, anon user)
-        api_ =
+        ( httpsrv, tasksrv, filesrv ) =
             case location.hostname of
                 "localhost" ->
-                    "http://localhost:8680"
+                    ( "http://localhost:8680"
+                    , "http://localhost:8668"
+                    , "http://localhost:8654"
+                    )
 
                 _ ->
-                    "https://api.cravecontrol.org"
+                    ( "https://api.cravecontrol.org"
+                    , "https://task.cravecontrol.org"
+                    , "https://file.cravecontrol.org"
+                    )
 
         blockAdminRoutes : Navigation.Location -> Routing.Route
         blockAdminRoutes location =
@@ -92,11 +94,13 @@ init flags location =
                     [ Task.perform Model.NewCurrentTime Time.now ]
 
                 Model.LoggedIn _ ->
-                    (Todos.initCommands api_ flags.token)
+                    (Todos.initCommands httpsrv flags.token)
                         ++ [ Task.perform Model.NewCurrentTime Time.now ]
 
         initModel =
-            { api = api_
+            { api = httpsrv
+            , tasksrv = tasksrv
+            , filesrv = filesrv
             , jwtencoded = flags.token
             , activeRoute = route_
             , presses = []

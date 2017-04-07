@@ -10,6 +10,8 @@ import Time
 
 type alias Model =
     { api : String
+    , tasksrv : String
+    , filesrv : String
     , jwtencoded : String
     , activeRoute : Routing.Route
     , presses : List Char
