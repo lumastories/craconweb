@@ -20,26 +20,11 @@ import Todos
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        TryUpdateUser userId ->
-            ( model, Port.uploadFile userId )
+        TryUpdateUser ->
+            ( model, Port.uploadFile ( model.tasksrv ++ "/upload/ugimgset", "csvForm" ) )
 
-        CsvUploadResp csvData ->
-            -- TODO make a request to set local ugimages!
-            -- And to fetch them from filesrv
-            ( model, Cmd.none )
-
-        CsvSelected ->
-            ( model, Port.fileSelected model.csvId )
-
-        CsvRead data ->
-            let
-                newCsvFile =
-                    Just
-                        { upload = data.upload
-                        , userid = data.userid
-                        }
-            in
-                ( { model | mCsvFile = newCsvFile }, Cmd.none )
+        SetStatus message ->
+            ( { model | informing = Just message }, Cmd.none )
 
         NewCurrentTime now ->
             {- if playing game, calculate time since game started
@@ -358,7 +343,7 @@ update msg model =
         RoleResp (Err err) ->
             (httpErrorState model err)
 
-        GetStoredUser string ->
+        SetUser string ->
             case JD.decodeString Entity.userDecoder string of
                 Ok user_ ->
                     ( { model | user = user_ }, Cmd.none )

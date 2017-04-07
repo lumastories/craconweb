@@ -878,7 +878,7 @@ editUserForm tasksrv user =
             ]
             []
         , a
-            [ class "button is-small", onClick <| TryUpdateUser user.id ]
+            [ class "button is-small", onClick TryUpdateUser ]
             [ span
                 [ class "icon is-small" ]
                 [ i
@@ -893,14 +893,15 @@ editUserForm tasksrv user =
         ]
 
 
-editUser : String -> Entity.User -> Html Msg
-editUser tasksrv user =
+editUser : Maybe String -> String -> Entity.User -> Html Msg
+editUser informing tasksrv user =
     basicAdminPage Nothing
         [ divColumns
             [ div [ class "column is-half is-offset-one-quarter" ]
                 [ h1
                     [ class "title" ]
                     [ text <| "Editing " ++ user.firstName ]
+                , notification informing ""
                 , editUserForm tasksrv user
                 ]
             ]
@@ -921,7 +922,7 @@ editUserPage : Model -> String -> Html Msg
 editUserPage model userid =
     case (A.userName model.users userid) of
         Just user ->
-            editUser model.tasksrv user
+            editUser model.informing model.tasksrv user
 
         Nothing ->
             editUser404

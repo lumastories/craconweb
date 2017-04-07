@@ -12,17 +12,10 @@ type alias Value =
     Json.Encode.Value
 
 
-port fileSelected : String -> Cmd msg
+port uploadFile : ( String, String ) -> Cmd msg
 
 
-
--- cssId, userid, token
-
-
-port uploadFile : String -> Cmd msg
-
-
-port fileContentRead : (CsvData -> msg) -> Sub msg
+port status : (String -> msg) -> Sub msg
 
 
 port getUserResponse : (String -> msg) -> Sub msg

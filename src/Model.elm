@@ -64,7 +64,7 @@ type
     -- SHARED
     = UpdateLocation String
     | OnUpdateLocation Navigation.Location
-    | GetStoredUser String
+    | SetUser String
     | UpdateEmail String
     | UpdatePassword String
     | TryLogin
@@ -86,11 +86,9 @@ type
     | RegisterUserResp (Result Http.Error Entity.User)
     | GroupResp (Result Http.Error Entity.Group)
     | RoleResp (Result Http.Error Entity.Role)
-    | CsvUploadResp (Result Http.Error Api.CsvData)
       -- ADMIN
     | TryRegisterUser
     | SetRegistration String String
-    | TryUpdateUser String
+    | TryUpdateUser
     | EditUserAccount String String
-    | CsvSelected
-    | CsvRead Api.CsvData
+    | SetStatus String

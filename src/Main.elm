@@ -30,8 +30,8 @@ subscriptions model =
     Sub.batch
         [ Keyboard.presses (\code -> Model.Presses (Char.fromCode code))
           --, Time.every Time.second Model.NewCurrentTime
-        , Port.getUserResponse Model.GetStoredUser
-        , Port.fileContentRead Model.CsvRead
+        , Port.getUserResponse Model.SetUser
+        , Port.status Model.SetStatus
         ]
 
 
