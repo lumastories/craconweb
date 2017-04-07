@@ -214,7 +214,7 @@ homePageGameCards model =
     let
         toCard g =
             div [ class "column" ]
-                [ homePageGameCard g.slug g.icon g.name g.dscript ]
+                [ homePageGameCard g.slug (R.imageBaseUrl ++ g.icon) g.name g.dscript ]
     in
         List.map toCard
             [ model.gonogoGame
@@ -235,7 +235,7 @@ homePageGameCard gameSlug src_ title about =
                 [ class "image is-4by3" ]
                 [ a (linkAttrs gameSlug)
                     [ img
-                        [ src <| "http://localhost:8654/repo/" ++ src_
+                        [ src src_
                         , alt title
                         ]
                         []
@@ -859,7 +859,7 @@ editUserForm user =
     Html.form
         [ enctype "multipart/form-data"
         , name "csvfile"
-        , action "http://localhost:8668/upload/ugimgset"
+        , action <| R.tasksrvBaseUrl ++ "upload/ugimgset"
         , method "POST"
         , id "csvForm"
         ]

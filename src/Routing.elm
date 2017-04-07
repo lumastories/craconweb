@@ -7,6 +7,16 @@ import Navigation
 import UrlParser exposing (..)
 
 
+tasksrvBaseUrl : String
+tasksrvBaseUrl =
+    "http://localhost:8668/"
+
+
+imageBaseUrl : String
+imageBaseUrl =
+    "http://localhost:8654/repo/"
+
+
 adminPaths : List String
 adminPaths =
     [ adminPath, registerPath ]

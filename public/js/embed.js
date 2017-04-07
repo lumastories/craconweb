@@ -1,3 +1,25 @@
+"use strict";
+function sub(f) {
+  try {
+    var r = new XMLHttpRequest();
+    r.onload = function() {
+      console.log(r.responseText);
+    }
+    r.open("POST", "http://localhost:8668/upload/ugimgset", true);
+    r.setRequestHeader("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJjcmFjb25hcGkiLCJleHAiOjE0OTE1NDQ0NTQsImlhdCI6MTQ5MTUxNTY1NCwiaXNzIjoiY3JhY29uYXBpIiwic3ViIjoiNzc3ODY3NDM4MDk0OTE4OTAwNyIsInJvbGVzIjpbeyJpZCI6Ijc2OTYyMzc3NjA5NDkxNTkwMTIiLCJuYW1lIjoiYWRtaW4iLCJ3ZWlnaHQiOjEwMDAwfV19.2IsyVLlHDFr2mCNFLfVHvlnNx0rYViBc1-iJWG8rTwE")
+
+    console.log(document.getElementById('upload').files[0]);
+
+    var fd = new FormData(f);
+    r.send(fd);
+
+  } catch(e) {
+    console.log(e.message);
+  }
+
+  return false;
+}
+
 var flags = {"token": token()
             ,"time": Date.now()
             }
@@ -30,12 +52,9 @@ app.ports.fileSelected.subscribe(function (id){
 
 app.ports.uploadFile.subscribe(function(userid){
     var form = document.getElementById("csvForm")
-
     var fd = new FormData(form);
-
     var xhr = new XMLHttpRequest()
     xhr.open('post', "http://localhost:8668/upload/ugimgset", true)
-    xhr.setRequestHeader("Content-Type", "multipart/form-data")
     xhr.setRequestHeader("Authorization", "Bearer " + token() )
     xhr.send(fd)
 })
@@ -80,9 +99,9 @@ function setLocalStorageItem(key, value) {
 
 
 function token(){
-    if(localStorage.getItem("token")==null){
-      return ""
-    } else {
-      return JSON.parse(localStorage.getItem("token")).token
+    if( localStorage.getItem("token") == null ){
+        return "";
     }
+
+    return JSON.parse(localStorage.getItem("token")).token;
 }
