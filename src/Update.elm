@@ -17,6 +17,17 @@ import Time
 import Todos
 
 
+{-
+   TODO
+
+   requestOne
+   |> Http.toTask
+   |> Task.andThen (\oneResult -> requestTwo oneResult |> Http.toTask)
+   |> Task.attempt MsgConstructor
+
+-}
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
