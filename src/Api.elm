@@ -70,6 +70,20 @@ createAuthRecord httpsrv authRecord =
         }
 
 
+fetchUgimages : String -> String -> String -> String -> String -> Http.Request Entity.Ugimages
+fetchUgimages httpsrv token ugimgsetId limit gimgtypeSlug =
+    getRequest token
+        (httpsrv
+            ++ "/ugimgset/"
+            ++ ugimgsetId
+            ++ "/ugimages?valDesc=true&limit="
+            ++ limit
+            ++ "&valEach=true&gimgtypeSlug="
+            ++ gimgtypeSlug
+        )
+        Entity.ugimagesDecoder
+
+
 fetchUgimgsets : String -> String -> String -> Http.Request Entity.Ugimgsets
 fetchUgimgsets httpsrv token sub =
     getRequest token
