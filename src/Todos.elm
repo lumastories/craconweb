@@ -25,6 +25,7 @@ initCommands api token =
                     , Http.send Model.GameResp (Api.fetchGame api token "respondsignal")
                     , Http.send Model.GameResp (Api.fetchGame api token "visualsearch")
                     , Port.storageGetItem "user"
+                    , Navigation.newUrl Routing.adminPath
                     ]
 
                 False ->
@@ -34,6 +35,7 @@ initCommands api token =
                     , Http.send Model.GameResp (Api.fetchGame api token "respondsignal")
                     , Http.send Model.GameResp (Api.fetchGame api token "visualsearch")
                     , Port.storageGetItem "user"
+                    , Navigation.newUrl "/"
                     ]
 
         Err _ ->
