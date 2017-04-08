@@ -25,23 +25,44 @@ type alias JwtPayload =
     }
 
 
-pastExpiration : Time.Time -> String -> Bool
-pastExpiration now token =
-    case jwtDecoded token of
+emptyJwtPayload : JwtPayload
+emptyJwtPayload =
+    { aud = ""
+    , exp = 0
+    , iat = 0
+    , iss = ""
+    , sub = ""
+    , roles = []
+    }
+
+
+
+--type Result error value
+--    = Ok value
+--    | Err error
+
+
+okyToky : Time.Time -> String -> Result String JwtPayload
+okyToky now token =
+    case Jwt.decodeToken jwtDecoder token of
         Ok decoded ->
-            decoded.exp < (Time.inSeconds now)
+            case Jwt.isExpired now token of 
+                Ok _ ->
+                    Ok decoded
+                _ ->
+                    Err "Expired"
+        _ ->
+            Err "Decoding problem"
 
-        Err _ ->
-            False
 
-
+-- TODO remove this
 jwtDecoded : String -> Result Jwt.JwtError JwtPayload
 jwtDecoded token =
-    Jwt.decodeToken jwtPayloadDecoder token
+    Jwt.decodeToken jwtDecoder token
 
 
-jwtPayloadDecoder : JD.Decoder JwtPayload
-jwtPayloadDecoder =
+jwtDecoder : JD.Decoder JwtPayload
+jwtDecoder =
     JP.decode JwtPayload
         |> JP.required "aud" (JD.string)
         |> JP.required "exp" (JD.float)

@@ -1,7 +1,6 @@
 module Main exposing (..)
 
---import Api
-
+import Api
 import Char
 import Empty
 import Keyboard exposing (..)
@@ -47,7 +46,13 @@ init flags location =
             servers location.hostname
 
         ( route_, visitor_, commands_ ) =
-            genesis flags
+            case Api.okyToky flags.time flags.token of
+                Ok decoded ->
+                    -- set route, visitor and command based on location and decoded.sub
+                    ( R.LoginRoute, M.Anon, [] )
+
+                Err _ ->
+                    ( R.LoginRoute, M.Anon, [] )
 
         baseModel =
             { httpsrv = httpsrv
@@ -113,8 +118,3 @@ servers hostname =
             , "https://tasksrv.cravecontrol.org"
             , "https://filesrv.cravecontrol.org"
             )
-
-
-genesis : Flags -> ( R.Route, M.Visitor, List (Cmd M.Msg) )
-genesis flags =
-    ( R.LoginRoute, M.Anonymous, [] )

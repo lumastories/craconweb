@@ -51,7 +51,7 @@ type alias Model =
 
 
 type Visitor
-    = Anonymous
+    = Anon
     | LoggedIn Api.JwtPayload
 
 
