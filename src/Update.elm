@@ -231,33 +231,24 @@ update msg model =
             in
                 ( model_, Cmd.batch commands_ )
 
-        UserResp (Ok newUser) ->
+        UserResp (Ok u) ->
             let
-                isAdmin =
-                    case model.visitor of
-                        LoggedIn jwt ->
-                            List.map .name jwt.roles
-                                |> List.member "admin"
-
-                        _ ->
-                            False
-
                 commands =
-                    case isAdmin of
+                    case (isAdmin model.visitor) of
                         True ->
-                            [ Port.storageSetItem ( "user", Entity.userEncoder newUser )
+                            [ Port.storageSetItem ( "user", Entity.userEncoder u )
                             , Navigation.newUrl Routing.adminPath
                             ]
                                 ++ (Todos.initCommands model.api model.jwtencoded)
 
                         False ->
-                            [ Port.storageSetItem ( "user", Entity.userEncoder newUser )
+                            [ Port.storageSetItem ( "user", Entity.userEncoder u )
                             , Navigation.newUrl "/"
                             ]
                                 ++ (Todos.initCommands model.api model.jwtencoded)
             in
                 ( { model
-                    | user = newUser
+                    | user = u
                     , activeRoute = HomeRoute
                   }
                 , Cmd.batch commands
@@ -344,6 +335,17 @@ update msg model =
 
                 _ ->
                     ( model, Cmd.none )
+
+
+isAdmin : Visitor -> Bool
+isAdmin visitor =
+    case visitor of
+        LoggedIn jwt ->
+            List.map .name jwt.roles
+                |> List.member "admin"
+
+        _ ->
+            False
 
 
 httpErrorState : Model -> Http.Error -> ( Model, Cmd msg )
