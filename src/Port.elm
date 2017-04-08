@@ -36,6 +36,9 @@ port upload : ( String, String, String ) -> Cmd msg
 port set : ( Key, Value ) -> Cmd msg
 
 
+port get : Key -> Cmd msg
+
+
 port remove : Key -> Cmd msg
 
 

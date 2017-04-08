@@ -9,7 +9,7 @@ var app = Elm.Main.fullscreen(flags)
 // Local Storage Ports
 
 app.ports.get.subscribe(function(key){
-    app.ports.user.send(localStorage.getItem(key) ? localStorage.getItem(key) : "")
+    app.ports.user.send(localStorage.getItem(key) ? localStorage.getItem(key) : "");
 })
 
 app.ports.set.subscribe(function(keyValue){

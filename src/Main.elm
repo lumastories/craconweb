@@ -7,6 +7,7 @@ import Keyboard exposing (..)
 import Model as M
 import Navigation
 import Routing as R
+import Http
 
 
 --import Time
@@ -45,14 +46,20 @@ init flags location =
         ( httpsrv, tasksrv, filesrv ) =
             servers location.hostname
 
+        -- based on localtion and jwt
         ( route_, visitor_, commands_ ) =
             case Api.okyToky flags.time flags.token of
-                Ok decoded ->
-                    -- set route, visitor and command based on location and decoded.sub
-                    ( R.LoginRoute, M.Anon, [] )
+                Ok jwt ->
+                    ( R.parseLocation location
+                    , M.LoggedIn jwt
+                    , myCommands httpsrv jwt flags.token
+                    )
 
                 Err _ ->
-                    ( R.LoginRoute, M.Anon, [] )
+                    ( R.LoginRoute
+                    , M.Anon
+                    , Navigation.newUrl R.loginPath
+                    )
 
         baseModel =
             { httpsrv = httpsrv
@@ -95,13 +102,50 @@ init flags location =
             , theUserId = Nothing
             }
     in
-        ( baseModel, Cmd.batch commands_ )
+        ( baseModel, commands_ )
 
 
 type alias Flags =
     { token : String
     , time : Float
     }
+
+
+myCommands : String -> Api.JwtPayload -> String -> Cmd M.Msg
+myCommands httpsrv jwt token =
+    case Api.isAdmin jwt of
+        True ->
+            Cmd.batch
+                ((userData httpsrv token)
+                    ++ (adminData httpsrv token)
+                )
+
+        False ->
+            Cmd.batch (userData httpsrv token)
+
+
+
+-- if they are an admin
+
+
+adminData : String -> String -> List (Cmd M.Msg)
+adminData httpsrv token =
+    [ Http.send M.UsersResp (Api.fetchUsers httpsrv token)
+    , Http.send M.RoleResp (Api.fetchRole httpsrv token "user")
+    , Http.send M.GroupResp (Api.fetchGroup httpsrv token "control_a")
+    , Http.send M.GroupResp (Api.fetchGroup httpsrv token "experimental_a")
+    , Navigation.newUrl R.adminPath
+    ]
+
+
+userData : String -> String -> List (Cmd M.Msg)
+userData httpsrv token =
+    [ Http.send M.GameResp (Api.fetchGame httpsrv token "gonogo")
+    , Http.send M.GameResp (Api.fetchGame httpsrv token "dotprobe")
+    , Http.send M.GameResp (Api.fetchGame httpsrv token "stopsignal")
+    , Http.send M.GameResp (Api.fetchGame httpsrv token "respondsignal")
+    , Http.send M.GameResp (Api.fetchGame httpsrv token "visualsearch")
+    ]
 
 
 servers : String -> ( String, String, String )
