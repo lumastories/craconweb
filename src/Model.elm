@@ -73,7 +73,6 @@ type
     = UpdateLocation String
     | OnUpdateLocation Navigation.Location
       -- Subscription handling
-    | SetUser String
     | SetStatus String
     | UpdateEmail String
     | UpdatePassword String
@@ -119,6 +118,11 @@ errorCodeEncoder errorCode =
             { error = "error"
             , code = 0
             }
+
+
+tokenEncoder : String -> JE.Value
+tokenEncoder token =
+    JE.object [ ( "token", JE.string token ) ]
 
 
 errorCodeDecoder : JD.Decoder ErrorCode

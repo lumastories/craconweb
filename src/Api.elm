@@ -70,6 +70,17 @@ createAuthRecord httpsrv authRecord =
         }
 
 
+fetchUgimgsets : String -> String -> String -> Http.Request Entity.Ugimgsets
+fetchUgimgsets httpsrv token sub =
+    getRequest token
+        (httpsrv
+            ++ "/user/"
+            ++ sub
+            ++ "/ugimgsets?createdDesc=true&limit=1&createdEach=true"
+        )
+        Entity.ugimgsetsDecoder
+
+
 fetchGame : String -> String -> String -> Http.Request Entity.Game
 fetchGame httpsrv token slug =
     getRequest token (httpsrv ++ "/game/" ++ slug) Entity.gameDecoder

@@ -2,10 +2,7 @@ module Update exposing (update)
 
 import Api
 import Empty
-import Entity
 import Http
-import Json.Decode as JD
-import Json.Encode as JE
 import Model exposing (..)
 import Navigation
 import Navigation
@@ -218,7 +215,7 @@ update msg model =
                                 , glitching = Nothing
                               }
                             , Cmd.batch
-                                [ Port.set ( "token", JE.object [ ( "token", JE.string auth.token ) ] )
+                                [ Port.set ( "token", tokenEncoder auth.token )
                                 , Api.fetchAll model.httpsrv jwt auth.token
                                 , Navigation.newUrl R.homePath
                                 ]
@@ -315,14 +312,6 @@ update msg model =
 
         RoleResp (Err err) ->
             (httpErrorState model err)
-
-        SetUser string ->
-            case JD.decodeString Entity.userDecoder string of
-                Ok user_ ->
-                    ( { model | user = user_ }, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
 
 
 isAdmin : Visitor -> Bool
