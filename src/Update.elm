@@ -13,28 +13,6 @@ import Task
 import Time
 
 
---Navigation.newUrl R.homePath
-{-
-      TODO
-
-      requestOne
-      |> Http.toTask
-      |> Task.andThen (\oneResult -> requestTwo oneResult |> Http.toTask)
-      |> Task.attempt MsgConstructor
-
-   \oneResult -> Task.map2 (,) (Task.succeed oneResult) (requestTwo oneResult |> Http.toTask)
-
-   ThingsResp Result Http.Error (Thing1, Thing2)
-
-   or
-
-   UserResp (Ok u) ->
-        fetch user related data
-    UserRelated (Ok d)
-
--}
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
