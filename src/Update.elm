@@ -11,12 +11,12 @@ import Navigation
 import Navigation
 import Port
 import Process
-import Routing exposing (..)
+import Routing as R
 import Task
 import Time
-import Todos
 
 
+--Navigation.newUrl R.homePath
 {-
       TODO
 
@@ -132,7 +132,7 @@ update msg model =
                 users_ =
                     [ newUser ] ++ model.users
             in
-                ( { model | loading = Nothing, users = users_, tmpUserRecord = Empty.emptyUserRecord }, Navigation.newUrl Routing.adminPath )
+                ( { model | loading = Nothing, users = users_, tmpUserRecord = Empty.emptyUserRecord }, Navigation.newUrl R.adminPath )
 
         -- SHARED
         ResetNotifications ->
@@ -155,7 +155,7 @@ update msg model =
 
         OnUpdateLocation location ->
             ( { model
-                | activeRoute = parseLocation location
+                | activeRoute = R.parseLocation location
                 , isMenuActive = False
               }
             , Cmd.none
@@ -185,7 +185,7 @@ update msg model =
         TryLogin ->
             let
                 cmd =
-                    Http.send LoginResp
+                    Http.send AuthResp
                         (Api.createAuthRecord
                             model.httpsrv
                             model.authRecord
@@ -203,12 +203,12 @@ update msg model =
             in
                 ( Empty.emptyModel model, Cmd.batch cmds )
 
-        LoginResp (Ok auth) ->
+        AuthResp (Ok auth) ->
             let
                 jwtdecoded_ =
                     Api.jwtDecoded auth.token
 
-                ( model_, commands_ ) =
+                ( model_, command_ ) =
                     case jwtdecoded_ of
                         Ok jwt ->
                             ( { model
@@ -217,14 +217,11 @@ update msg model =
                                 , jwtencoded = auth.token
                                 , glitching = Nothing
                               }
-                            , [ Port.set ( "token", JE.object [ ( "token", JE.string auth.token ) ] )
-                              , Http.send UserResp
-                                    (Api.fetchUser
-                                        model.httpsrv
-                                        auth.token
-                                        jwt.sub
-                                    )
-                              ]
+                            , Cmd.batch
+                                [ Port.set ( "token", JE.object [ ( "token", JE.string auth.token ) ] )
+                                , Api.fetchAll model.httpsrv jwt auth.token
+                                , Navigation.newUrl R.homePath
+                                ]
                             )
 
                         Err err ->
@@ -232,17 +229,17 @@ update msg model =
                                 | loading = Nothing
                                 , glitching = Just (toString err)
                               }
-                            , []
+                            , Cmd.none
                             )
             in
-                ( model_, Cmd.batch commands_ )
+                ( model_, command_ )
 
         UserResp (Ok user_) ->
             ( { model
                 | user = user_
-                , activeRoute = HomeRoute
               }
-            , Cmd.batch (Todos.initCommands model.httpsrv model.jwtencoded)
+            , Cmd.none
+              -- todo Api.fetchAll
             )
 
         -- GAMES
@@ -298,7 +295,7 @@ update msg model =
         RoleResp (Ok role) ->
             ( { model | userRole = role }, Cmd.none )
 
-        LoginResp (Err err) ->
+        AuthResp (Err err) ->
             (httpErrorState model err)
 
         UserResp (Err err) ->
@@ -360,7 +357,7 @@ httpHumanError err =
             "Oops. There's been a network error."
 
         Http.BadStatus s ->
-            "Server error: " ++ (.error (Api.decodeErrorCode s.body))
+            "Server error: " ++ (.error (errorCodeEncoder s.body))
 
         Http.BadPayload str _ ->
             "Bad payload"

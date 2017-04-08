@@ -1,11 +1,13 @@
 module Model exposing (..)
 
-import Api
 import Entity
 import Http
 import Navigation
 import Routing
 import Time
+import Json.Decode as JD
+import Json.Encode as JE
+import Json.Decode.Pipeline as JP
 
 
 type alias Model =
@@ -48,7 +50,17 @@ type alias Model =
 
 type Visitor
     = Anon
-    | LoggedIn Api.JwtPayload
+    | LoggedIn JwtPayload
+
+
+type alias JwtPayload =
+    { aud : String
+    , exp : Float
+    , iat : Int
+    , iss : String
+    , sub : String
+    , roles : List Entity.Role
+    }
 
 
 type alias Slug =
@@ -77,7 +89,7 @@ type
     | PlayGame Slug
     | StopPlaying Slug
       -- HTTP
-    | LoginResp (Result Http.Error Entity.Auth)
+    | AuthResp (Result Http.Error Entity.Auth)
     | UserResp (Result Http.Error Entity.User)
     | GameResp (Result Http.Error Entity.Game)
     | UsersResp (Result Http.Error (List Entity.User))
@@ -89,3 +101,39 @@ type
     | SetRegistration String String
     | TryUpdateUser
     | EditUserAccount String String
+
+
+type alias ErrorCode =
+    { error : String
+    , code : Int
+    }
+
+
+errorCodeEncoder : String -> ErrorCode
+errorCodeEncoder errorCode =
+    case JD.decodeString errorCodeDecoder errorCode of
+        Ok ed ->
+            ed
+
+        Err _ ->
+            { error = "error"
+            , code = 0
+            }
+
+
+errorCodeDecoder : JD.Decoder ErrorCode
+errorCodeDecoder =
+    JP.decode ErrorCode
+        |> JP.required "error" JD.string
+        |> JP.required "code" JD.int
+
+
+jwtDecoder : JD.Decoder JwtPayload
+jwtDecoder =
+    JP.decode JwtPayload
+        |> JP.required "aud" (JD.string)
+        |> JP.required "exp" (JD.float)
+        |> JP.required "iat" (JD.int)
+        |> JP.required "iss" (JD.string)
+        |> JP.required "sub" (JD.string)
+        |> JP.required "roles" (JD.list Entity.roleDecoder)

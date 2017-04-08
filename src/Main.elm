@@ -7,17 +7,9 @@ import Keyboard exposing (..)
 import Model as M
 import Navigation
 import Routing as R
-import Http
-
-
---import Time
-
 import Update
 import View
 import Port
-
-
---import Task
 
 
 main : Program Flags M.Model M.Msg
@@ -52,7 +44,7 @@ init flags location =
                 Ok jwt ->
                     ( R.parseLocation location
                     , M.LoggedIn jwt
-                    , myData httpsrv jwt flags.token
+                    , Api.fetchAll httpsrv jwt flags.token
                     )
 
                 Err _ ->
@@ -105,38 +97,6 @@ type alias Flags =
     { token : String
     , time : Float
     }
-
-
-myData : String -> Api.JwtPayload -> String -> Cmd M.Msg
-myData httpsrv jwt token =
-    case Api.isAdmin jwt of
-        True ->
-            Cmd.batch
-                ((userData httpsrv token)
-                    ++ (adminData httpsrv token)
-                )
-
-        False ->
-            Cmd.batch (userData httpsrv token)
-
-
-adminData : String -> String -> List (Cmd M.Msg)
-adminData httpsrv token =
-    [ Http.send M.UsersResp (Api.fetchUsers httpsrv token)
-    , Http.send M.RoleResp (Api.fetchRole httpsrv token "user")
-    , Http.send M.GroupResp (Api.fetchGroup httpsrv token "control_a")
-    , Http.send M.GroupResp (Api.fetchGroup httpsrv token "experimental_a")
-    ]
-
-
-userData : String -> String -> List (Cmd M.Msg)
-userData httpsrv token =
-    [ Http.send M.GameResp (Api.fetchGame httpsrv token "gonogo")
-    , Http.send M.GameResp (Api.fetchGame httpsrv token "dotprobe")
-    , Http.send M.GameResp (Api.fetchGame httpsrv token "stopsignal")
-    , Http.send M.GameResp (Api.fetchGame httpsrv token "respondsignal")
-    , Http.send M.GameResp (Api.fetchGame httpsrv token "visualsearch")
-    ]
 
 
 servers : String -> ( String, String, String )

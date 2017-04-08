@@ -1,68 +1,43 @@
-module Api exposing (jwtDecoded , okyToky, isAdmin , fetchGame , fetchUser , fetchUsers , fetchGroup , fetchRole , createUserRecord, createAuthRecord, decodeErrorCode, JwtPayload )
+module Api exposing (jwtDecoded, okyToky, isAdmin, fetchGame, fetchUser, fetchUsers, fetchGroup, fetchRole, createUserRecord, createAuthRecord, fetchAll)
+
 import Entity
 import Http
-import Json.Decode as JD
-import Json.Decode.Pipeline as JP
 import Jwt
 import Time
-import Protobuf exposing (..)
+import Model as M
+import Json.Decode as JD
 
 
-type alias JwtPayload =
-    { aud : String
-    , exp : Float
-    , iat : Int
-    , iss : String
-    , sub : String
-    , roles : List Entity.Role
-    }
+fetchAll : String -> M.JwtPayload -> String -> Cmd M.Msg
+fetchAll httpsrv jwt token =
+    case isAdmin jwt of
+        True ->
+            Cmd.batch <|
+                (userData httpsrv token jwt.sub)
+                    ++ (adminData httpsrv token)
+
+        False ->
+            Cmd.batch <| userData httpsrv token jwt.sub
 
 
-emptyJwtPayload : JwtPayload
-emptyJwtPayload =
-    { aud = ""
-    , exp = 0
-    , iat = 0
-    , iss = ""
-    , sub = ""
-    , roles = []
-    }
+adminData : String -> String -> List (Cmd M.Msg)
+adminData httpsrv token =
+    [ Http.send M.UsersResp (fetchUsers httpsrv token)
+    , Http.send M.RoleResp (fetchRole httpsrv token "user")
+    , Http.send M.GroupResp (fetchGroup httpsrv token "control_a")
+    , Http.send M.GroupResp (fetchGroup httpsrv token "experimental_a")
+    ]
 
 
-
---type Result error value
---    = Ok value
---    | Err error
-
-
-okyToky : Time.Time -> String -> Result String JwtPayload
-okyToky now token =
-    case Jwt.decodeToken jwtDecoder token of
-        Ok decoded ->
-            case Jwt.isExpired now token of 
-                Ok _ ->
-                    Ok decoded
-                _ ->
-                    Err "Expired"
-        _ ->
-            Err "Decoding problem"
-
-
--- TODO remove this
-jwtDecoded : String -> Result Jwt.JwtError JwtPayload
-jwtDecoded token =
-    Jwt.decodeToken jwtDecoder token
-
-
-jwtDecoder : JD.Decoder JwtPayload
-jwtDecoder =
-    JP.decode JwtPayload
-        |> JP.required "aud" (JD.string)
-        |> JP.required "exp" (JD.float)
-        |> JP.required "iat" (JD.int)
-        |> JP.required "iss" (JD.string)
-        |> JP.required "sub" (JD.string)
-        |> JP.required "roles" (JD.list Entity.roleDecoder)
+userData : String -> String -> String -> List (Cmd M.Msg)
+userData httpsrv token sub =
+    [ Http.send M.GameResp (fetchGame httpsrv token "gonogo")
+    , Http.send M.GameResp (fetchGame httpsrv token "dotprobe")
+    , Http.send M.GameResp (fetchGame httpsrv token "stopsignal")
+    , Http.send M.GameResp (fetchGame httpsrv token "respondsignal")
+    , Http.send M.GameResp (fetchGame httpsrv token "visualsearch")
+    , Http.send M.UserResp (fetchUser httpsrv token sub)
+    ]
 
 
 defaultHeaders : String -> List Http.Header
@@ -150,33 +125,26 @@ getRequest token endpoint jsonDecoder =
         }
 
 
-type alias ErrorCode =
-    { error : String
-    , code : Int
-    }
-
-
-decodeErrorCode : String -> ErrorCode
-decodeErrorCode errorCode =
-    case JD.decodeString errorCodeDecoder errorCode of
-        Ok ed ->
-            ed
-
-        Err _ ->
-            { error = "error"
-            , code = 0
-            }
-
-
-errorCodeDecoder : JD.Decoder ErrorCode
-errorCodeDecoder =
-    JD.lazy <|
-        \_ ->
-            JD.succeed ErrorCode
-                |> required "error" JD.string ""
-                |> required "code" JD.int 0
-
-
-isAdmin : JwtPayload -> Bool
+isAdmin : M.JwtPayload -> Bool
 isAdmin jwt =
     List.map .name jwt.roles |> List.member "admin"
+
+
+okyToky : Time.Time -> String -> Result String M.JwtPayload
+okyToky now token =
+    case Jwt.decodeToken M.jwtDecoder token of
+        Ok decoded ->
+            case Jwt.isExpired now token of
+                Ok _ ->
+                    Ok decoded
+
+                _ ->
+                    Err "Expired"
+
+        _ ->
+            Err "Decoding problem"
+
+
+jwtDecoded : String -> Result Jwt.JwtError M.JwtPayload
+jwtDecoded token =
+    Jwt.decodeToken M.jwtDecoder token
