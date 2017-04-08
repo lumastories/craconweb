@@ -69,11 +69,11 @@ defaultHeaders jwtencoded =
 
 
 createAuthRecord : String -> Entity.AuthRecord -> Http.Request Entity.Auth
-createAuthRecord api authRecord =
+createAuthRecord httpsrv authRecord =
     Http.request
         { method = "POST"
         , headers = []
-        , url = api ++ "/auth"
+        , url = httpsrv ++ "/auth"
         , body = (Entity.authRecordEncoder authRecord |> Http.jsonBody)
         , expect = Http.expectJson Entity.authDecoder
         , timeout = Nothing
@@ -82,28 +82,28 @@ createAuthRecord api authRecord =
 
 
 fetchGame : String -> String -> String -> Http.Request Entity.Game
-fetchGame api token slug =
-    getRequest token (api ++ "/game/" ++ slug) Entity.gameDecoder
+fetchGame httpsrv token slug =
+    getRequest token (httpsrv ++ "/game/" ++ slug) Entity.gameDecoder
 
 
 fetchUser : String -> String -> String -> Http.Request Entity.User
-fetchUser api token sub =
-    getRequest token (api ++ "/user/" ++ sub) Entity.userDecoder
+fetchUser httpsrv token sub =
+    getRequest token (httpsrv ++ "/user/" ++ sub) Entity.userDecoder
 
 
 fetchUsers : String -> String -> Http.Request (List Entity.User)
-fetchUsers api token =
-    getRequest token (api ++ "/users?createdEach=true") (JD.field "users" (JD.list Entity.userDecoder))
+fetchUsers httpsrv token =
+    getRequest token (httpsrv ++ "/users?createdEach=true") (JD.field "users" (JD.list Entity.userDecoder))
 
 
 fetchGroup : String -> String -> String -> Http.Request Entity.Group
-fetchGroup api token slug =
-    getRequest token (api ++ "/group/" ++ slug) Entity.groupDecoder
+fetchGroup httpsrv token slug =
+    getRequest token (httpsrv ++ "/group/" ++ slug) Entity.groupDecoder
 
 
 fetchRole : String -> String -> String -> Http.Request Entity.Role
-fetchRole api token slug =
-    getRequest token (api ++ "/role/" ++ slug) Entity.roleDecoder
+fetchRole httpsrv token slug =
+    getRequest token (httpsrv ++ "/role/" ++ slug) Entity.roleDecoder
 
 
 createUserRecord :
@@ -111,11 +111,11 @@ createUserRecord :
     -> String
     -> Entity.UserRecord
     -> Http.Request Entity.User
-createUserRecord api token user =
+createUserRecord httpsrv token user =
     Http.request
         { method = "POST"
         , headers = defaultHeaders token
-        , url = api ++ "/user"
+        , url = httpsrv ++ "/user"
         , body = Http.jsonBody <| Entity.userRecordEncoder user
         , expect = Http.expectJson Entity.userDecoder
         , timeout = Nothing

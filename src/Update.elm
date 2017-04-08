@@ -42,7 +42,13 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         TryUpdateUser ->
-            ( model, Port.uploadFile ( model.tasksrv ++ "/upload/ugimgset", "csvForm" ) )
+            ( model
+            , Port.upload
+                ( model.tasksrv ++ "/upload/ugimgset"
+                , "csvForm"
+                , model.jwtencoded
+                )
+            )
 
         SetStatus message ->
             ( { model | informing = Just message }, Cmd.none )
@@ -114,7 +120,7 @@ update msg model =
             , Cmd.batch
                 [ Http.send RegisterUserResp
                     (Api.createUserRecord
-                        model.api
+                        model.httpsrv
                         model.jwtencoded
                         model.tmpUserRecord
                     )
@@ -181,7 +187,7 @@ update msg model =
                 cmd =
                     Http.send LoginResp
                         (Api.createAuthRecord
-                            model.api
+                            model.httpsrv
                             model.authRecord
                         )
             in
@@ -190,9 +196,9 @@ update msg model =
         Logout ->
             let
                 cmds =
-                    [ Port.storageClear ()
+                    [ Port.clear ()
                     , Navigation.newUrl "/login"
-                    , Port.playAudioPing ()
+                    , Port.ping ()
                     ]
             in
                 ( Empty.emptyModel model, Cmd.batch cmds )
@@ -211,10 +217,10 @@ update msg model =
                                 , jwtencoded = auth.token
                                 , glitching = Nothing
                               }
-                            , [ Port.storageSetItem ( "token", JE.object [ ( "token", JE.string auth.token ) ] )
+                            , [ Port.set ( "token", JE.object [ ( "token", JE.string auth.token ) ] )
                               , Http.send UserResp
                                     (Api.fetchUser
-                                        model.api
+                                        model.httpsrv
                                         auth.token
                                         jwt.sub
                                     )
@@ -231,12 +237,12 @@ update msg model =
             in
                 ( model_, Cmd.batch commands_ )
 
-        UserResp (Ok u) ->
+        UserResp (Ok user_) ->
             ( { model
-                | user = u
+                | user = user_
                 , activeRoute = HomeRoute
               }
-            , Cmd.batch (Todos.initCommands model.api model.jwtencoded)
+            , Cmd.batch (Todos.initCommands model.httpsrv model.jwtencoded)
             )
 
         -- GAMES

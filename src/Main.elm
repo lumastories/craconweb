@@ -1,23 +1,28 @@
 module Main exposing (..)
 
-import Api
+--import Api
+
 import Char
 import Empty
 import Keyboard exposing (..)
-import Model
+import Model as M
 import Navigation
-import Routing
-import Time
+import Routing as R
+
+
+--import Time
+
 import Update
 import View
-import Todos
 import Port
-import Task
 
 
-main : Program Flags Model.Model Model.Msg
+--import Task
+
+
+main : Program Flags M.Model M.Msg
 main =
-    Navigation.programWithFlags Model.OnUpdateLocation
+    Navigation.programWithFlags M.OnUpdateLocation
         { init = init
         , view = View.view
         , update = Update.update
@@ -25,80 +30,27 @@ main =
         }
 
 
-subscriptions : Model.Model -> Sub Model.Msg
+subscriptions : M.Model -> Sub M.Msg
 subscriptions model =
     Sub.batch
-        [ Keyboard.presses (\code -> Model.Presses (Char.fromCode code))
-          --, Time.every Time.second Model.NewCurrentTime
-        , Port.getUserResponse Model.SetUser
-        , Port.status Model.SetStatus
+        [ Keyboard.presses (\code -> M.Presses (Char.fromCode code))
+          --, Time.every Time.second M.NewCurrentTime
+        , Port.user M.SetUser
+        , Port.status M.SetStatus
         ]
 
 
-init : Flags -> Navigation.Location -> ( Model.Model, Cmd Model.Msg )
+init : Flags -> Navigation.Location -> ( M.Model, Cmd M.Msg )
 init flags location =
     let
         ( httpsrv, tasksrv, filesrv ) =
-            case location.hostname of
-                "localhost" ->
-                    ( "http://localhost:8680"
-                    , "http://localhost:8668"
-                    , "http://localhost:8654"
-                    )
+            servers location.hostname
 
-                _ ->
-                    ( "https://api.cravecontrol.org"
-                    , "https://task.cravecontrol.org"
-                    , "https://file.cravecontrol.org"
-                    )
+        ( route_, visitor_, commands_ ) =
+            genesis flags
 
-        blockAdminRoutes : Navigation.Location -> Routing.Route
-        blockAdminRoutes location =
-            case location.pathname of
-                "/admin" ->
-                    Routing.HomeRoute
-
-                "/register" ->
-                    Routing.HomeRoute
-
-                _ ->
-                    (Routing.parseLocation location)
-
-        -- TODO simplify this pyrimad!
-        ( route_, visitor_ ) =
-            case flags.token of
-                "" ->
-                    ( Routing.LoginRoute, Model.Anonymous )
-
-                _ ->
-                    case Api.pastExpiration flags.time flags.token of
-                        True ->
-                            ( Routing.LoginRoute, Model.Anonymous )
-
-                        False ->
-                            case Api.jwtDecoded flags.token of
-                                Ok jwt ->
-                                    case (List.map .name jwt.roles |> List.member "admin") of
-                                        True ->
-                                            ( Routing.parseLocation location, Model.LoggedIn jwt )
-
-                                        False ->
-                                            ( blockAdminRoutes location, Model.LoggedIn jwt )
-
-                                _ ->
-                                    ( Routing.LoginRoute, Model.Anonymous )
-
-        commands_ =
-            case visitor_ of
-                Model.Anonymous ->
-                    [ Task.perform Model.NewCurrentTime Time.now ]
-
-                Model.LoggedIn _ ->
-                    (Todos.initCommands httpsrv flags.token)
-                        ++ [ Task.perform Model.NewCurrentTime Time.now ]
-
-        initModel =
-            { api = httpsrv
+        baseModel =
+            { httpsrv = httpsrv
             , tasksrv = tasksrv
             , filesrv = filesrv
             , jwtencoded = flags.token
@@ -106,7 +58,7 @@ init flags location =
             , presses = []
             , visitor = visitor_
             , isMenuActive = False
-            , mainMenuItems = Routing.initMenuItems
+            , mainMenuItems = R.initMenuItems
             , currentTime = 0
             , currentTimeDelta = 0
             , user = Empty.emptyUser
@@ -138,10 +90,31 @@ init flags location =
             , theUserId = Nothing
             }
     in
-        ( initModel, Cmd.batch commands_ )
+        ( baseModel, Cmd.batch commands_ )
 
 
 type alias Flags =
     { token : String
     , time : Float
     }
+
+
+servers : String -> ( String, String, String )
+servers hostname =
+    case hostname of
+        "localhost" ->
+            ( "http://localhost:8680"
+            , "http://localhost:8668"
+            , "http://localhost:8654"
+            )
+
+        _ ->
+            ( "https://httpsrv.cravecontrol.org"
+            , "https://tasksrv.cravecontrol.org"
+            , "https://filesrv.cravecontrol.org"
+            )
+
+
+genesis : Flags -> ( R.Route, M.Visitor, List (Cmd M.Msg) )
+genesis flags =
+    ( R.LoginRoute, M.Anonymous, [] )

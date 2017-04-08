@@ -11,25 +11,35 @@ type alias Value =
     Json.Encode.Value
 
 
-port uploadFile : ( String, String ) -> Cmd msg
+
+{-
+   From js
+-}
 
 
 port status : (String -> msg) -> Sub msg
 
 
-port getUserResponse : (String -> msg) -> Sub msg
+port user : (String -> msg) -> Sub msg
 
 
-port storageGetItem : Key -> Cmd msg
+
+{-
+   To Js
+-}
+-- Task Server path, id of form, jwt token
 
 
-port storageSetItem : ( Key, Value ) -> Cmd msg
+port upload : ( String, String, String ) -> Cmd msg
 
 
-port storageRemoveItem : Key -> Cmd msg
+port set : ( Key, Value ) -> Cmd msg
 
 
-port storageClear : () -> Cmd msg
+port remove : Key -> Cmd msg
 
 
-port playAudioPing : () -> Cmd msg
+port clear : () -> Cmd msg
+
+
+port ping : () -> Cmd msg

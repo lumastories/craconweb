@@ -9,7 +9,7 @@ import Time
 
 
 type alias Model =
-    { api : String
+    { httpsrv : String
     , tasksrv : String
     , filesrv : String
     , jwtencoded : String
@@ -64,7 +64,9 @@ type
     -- SHARED
     = UpdateLocation String
     | OnUpdateLocation Navigation.Location
+      -- Subscription handling
     | SetUser String
+    | SetStatus String
     | UpdateEmail String
     | UpdatePassword String
     | TryLogin
@@ -91,4 +93,3 @@ type
     | SetRegistration String String
     | TryUpdateUser
     | EditUserAccount String String
-    | SetStatus String

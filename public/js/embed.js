@@ -4,13 +4,46 @@ var flags = {"token": token()
 
 var app = Elm.Main.fullscreen(flags)
 
-app.ports.uploadFile.subscribe(function(pathAndId){
-    var [tasksrvPath, formId] = pathAndId
+// Ports
+
+// Local Storage Ports
+
+app.ports.get.subscribe(function(key){
+    app.ports.user.send(localStorage.getItem(key) ? localStorage.getItem(key) : "")
+})
+
+app.ports.set.subscribe(function(keyValue){
+    var [key, value] = keyValue
+    setLocalStorageItem(key, value)
+})
+
+app.ports.remove.subscribe(function(key){
+    localStorage.removeItem(key)
+})
+
+app.ports.clear.subscribe(function(i){
+    localStorage.clear()
+})
+
+// Audio ports
+
+app.ports.ping.subscribe(function(nothing) {
+    document.getElementById("ping").play()
+})
+
+/**
+ * in: where to upload, css form id, token to use
+ * side: Uploads form as multi-part, sends statusText to status port
+ * out: nothing
+ */
+
+app.ports.upload.subscribe(function(pathIdToken){
+    var [tasksrvPath, formId, token] = pathIdToken
     try {
         var fd = new FormData(document.getElementById(formId));
         var r = new XMLHttpRequest()
         r.open("POST", tasksrvPath, true)
-        r.setRequestHeader("Authorization", "Bearer " + token() )
+        r.setRequestHeader("Authorization", "Bearer " + token )
         r.send(fd)
         r.onload = function() {
             app.ports.status.send(r.statusText)
@@ -19,31 +52,6 @@ app.ports.uploadFile.subscribe(function(pathAndId){
         console.log(e.message);
     }
 
-})
-
-// Audio ports
-
-app.ports.playAudioPing.subscribe(function(nothing) {
-    document.getElementById("ping").play()
-})
-
-// Local Storage Ports
-
-app.ports.storageGetItem.subscribe(function(key){
-    app.ports.getUserResponse.send(localStorage.getItem(key) ? localStorage.getItem(key) : "")
-})
-
-app.ports.storageSetItem.subscribe(function(keyValue){
-    var [key, value] = keyValue
-    setLocalStorageItem(key, value)
-})
-
-app.ports.storageRemoveItem.subscribe(function(key){
-    localStorage.removeItem(key)
-})
-
-app.ports.storageClear.subscribe(function(i){
-    localStorage.clear()
 })
 
 /**
@@ -59,11 +67,16 @@ function setLocalStorageItem(key, value) {
   )
 }
 
-
+/**
+ * Get a token or an empty string if token does not exist
+ * (Serializes in JSON before storing since Storage objects can only hold strings.)
+ *
+ * @param {}
+ * @returns    jwt token as a string
+ */
 function token(){
     if( localStorage.getItem("token") == null ){
         return "";
     }
-
     return JSON.parse(localStorage.getItem("token")).token;
 }
