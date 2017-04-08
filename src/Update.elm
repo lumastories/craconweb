@@ -18,12 +18,22 @@ import Todos
 
 
 {-
-   TODO
+      TODO
 
-   requestOne
-   |> Http.toTask
-   |> Task.andThen (\oneResult -> requestTwo oneResult |> Http.toTask)
-   |> Task.attempt MsgConstructor
+      requestOne
+      |> Http.toTask
+      |> Task.andThen (\oneResult -> requestTwo oneResult |> Http.toTask)
+      |> Task.attempt MsgConstructor
+
+   \oneResult -> Task.map2 (,) (Task.succeed oneResult) (requestTwo oneResult |> Http.toTask)
+
+   ThingsResp Result Http.Error (Thing1, Thing2)
+
+   or
+
+   UserResp (Ok u) ->
+        fetch user related data
+    UserRelated (Ok d)
 
 -}
 
@@ -97,34 +107,7 @@ update msg model =
                 ( { model | tmpUserRecord = tmpUserRecord_ }, Cmd.none )
 
         EditUserAccount key value ->
-            let
-                tmpUserRecord_old_ =
-                    model.tmpUserRecord
-
-                tmpUserRecord_old =
-                    { tmpUserRecord_old_ | roles = [ model.userRole.id ] }
-
-                tmpUserRecord_ =
-                    case key of
-                        "email" ->
-                            { tmpUserRecord_old | email = value }
-
-                        "password" ->
-                            { tmpUserRecord_old | password = value }
-
-                        "username" ->
-                            { tmpUserRecord_old | username = value }
-
-                        "firstName" ->
-                            { tmpUserRecord_old | firstName = value }
-
-                        "lastName" ->
-                            { tmpUserRecord_old | lastName = value }
-
-                        _ ->
-                            tmpUserRecord_old
-            in
-                ( { model | tmpUserRecord = tmpUserRecord_ }, Cmd.none )
+            model ! []
 
         TryRegisterUser ->
             ( { model | loading = Just "loading..." }

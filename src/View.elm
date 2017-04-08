@@ -693,28 +693,6 @@ regButtons loading =
             ]
 
 
-editButtons : Maybe String -> Html Msg
-editButtons loading =
-    let
-        class_ =
-            case loading of
-                Just l ->
-                    "button is-primary is-loading"
-
-                Nothing ->
-                    "button is-primary"
-    in
-        div
-            [ class "field is-grouped" ]
-            [ button
-                [ class class_ ]
-                [ text "Update" ]
-            , button
-                ([ class "button is-link" ] ++ (linkAttrs R.adminPath))
-                [ text "Cancel" ]
-            ]
-
-
 divColumns : List (Html Msg) -> Html Msg
 divColumns children =
     div [ class "columns" ] children
@@ -862,6 +840,7 @@ editUserForm tasksrv user =
         , action <| tasksrv ++ "/upload/ugimgset"
         , method "POST"
         , id "csvForm"
+        , class "box"
         ]
         [ input
             [ type_ "file"
@@ -877,10 +856,17 @@ editUserForm tasksrv user =
             , value user.id
             ]
             []
-        , a
-            [ class "button is-small", onClick TryUpdateUser ]
+        ]
+
+
+editButtons : Html Msg
+editButtons =
+    div
+        [ class "field is-grouped is-pulled-right" ]
+        [ a
+            [ class "button is-primary", onClick TryUpdateUser ]
             [ span
-                [ class "icon is-small" ]
+                [ class "icon" ]
                 [ i
                     [ class "fa fa-file-text-o" ]
                     []
@@ -890,6 +876,9 @@ editUserForm tasksrv user =
                 [ text "Upload"
                 ]
             ]
+        , button
+            ([ class "button is-link" ] ++ (linkAttrs R.adminPath))
+            [ text "Cancel" ]
         ]
 
 
@@ -900,9 +889,15 @@ editUser informing tasksrv user =
             [ div [ class "column is-half is-offset-one-quarter" ]
                 [ h1
                     [ class "title" ]
-                    [ text <| "Editing " ++ user.firstName ]
-                , notification informing ""
+                    [ text "Upload valuations for "
+                    , strong [] [ text user.firstName ]
+                    ]
+                , br [] []
+                , notification informing "is-warning"
                 , editUserForm tasksrv user
+                , br []
+                    []
+                , editButtons
                 ]
             ]
         ]
