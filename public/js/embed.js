@@ -6,12 +6,6 @@ var app = Elm.Main.fullscreen(flags)
 
 // Ports
 
-// Local Storage Ports
-
-app.ports.get.subscribe(function(key){
-    app.ports.user.send(localStorage.getItem(key) ? localStorage.getItem(key) : "");
-})
-
 app.ports.set.subscribe(function(keyValue){
     var [key, value] = keyValue
     setLocalStorageItem(key, value)
@@ -24,8 +18,6 @@ app.ports.remove.subscribe(function(key){
 app.ports.clear.subscribe(function(i){
     localStorage.clear()
 })
-
-// Audio ports
 
 app.ports.ping.subscribe(function(nothing) {
     document.getElementById("ping").play()

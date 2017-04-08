@@ -27,7 +27,6 @@ subscriptions model =
     Sub.batch
         [ Keyboard.presses (\code -> M.Presses (Char.fromCode code))
           --, Time.every Time.second M.NewCurrentTime
-        , Port.user M.SetUser
         , Port.status M.SetStatus
         ]
 

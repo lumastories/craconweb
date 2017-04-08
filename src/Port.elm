@@ -20,9 +20,6 @@ type alias Value =
 port status : (String -> msg) -> Sub msg
 
 
-port user : (String -> msg) -> Sub msg
-
-
 
 {-
    To Js
@@ -34,9 +31,6 @@ port upload : ( String, String, String ) -> Cmd msg
 
 
 port set : ( Key, Value ) -> Cmd msg
-
-
-port get : Key -> Cmd msg
 
 
 port remove : Key -> Cmd msg
