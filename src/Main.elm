@@ -52,7 +52,7 @@ init flags location =
                 Ok jwt ->
                     ( R.parseLocation location
                     , M.LoggedIn jwt
-                    , myCommands httpsrv jwt flags.token
+                    , myData httpsrv jwt flags.token
                     )
 
                 Err _ ->
@@ -96,10 +96,6 @@ init flags location =
             , responseTimes = []
             , startTime = 0
             , playingGame = False
-            , myGroupSlug = Nothing
-            , csvId = "CsvInputId"
-            , mCsvFile = Nothing
-            , theUserId = Nothing
             }
     in
         ( baseModel, commands_ )
@@ -111,8 +107,8 @@ type alias Flags =
     }
 
 
-myCommands : String -> Api.JwtPayload -> String -> Cmd M.Msg
-myCommands httpsrv jwt token =
+myData : String -> Api.JwtPayload -> String -> Cmd M.Msg
+myData httpsrv jwt token =
     case Api.isAdmin jwt of
         True ->
             Cmd.batch
@@ -122,10 +118,6 @@ myCommands httpsrv jwt token =
 
         False ->
             Cmd.batch (userData httpsrv token)
-
-
-
--- if they are an admin
 
 
 adminData : String -> String -> List (Cmd M.Msg)

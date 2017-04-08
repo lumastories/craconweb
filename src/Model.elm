@@ -43,10 +43,6 @@ type alias Model =
     , responseTimes : List Time.Time
     , startTime : Time.Time
     , playingGame : Bool
-    , myGroupSlug : Maybe String
-    , csvId : String
-    , mCsvFile : Maybe Api.CsvData
-    , theUserId : Maybe String
     }
 
 

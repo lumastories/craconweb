@@ -1,5 +1,4 @@
-module Api exposing (..)
-
+module Api exposing (jwtDecoded , okyToky, isAdmin , fetchGame , fetchUser , fetchUsers , fetchGroup , fetchRole , createUserRecord, createAuthRecord, decodeErrorCode, JwtPayload )
 import Entity
 import Http
 import Json.Decode as JD
@@ -7,12 +6,6 @@ import Json.Decode.Pipeline as JP
 import Jwt
 import Time
 import Protobuf exposing (..)
-
-
-type alias CsvData =
-    { upload : String
-    , userid : String
-    }
 
 
 type alias JwtPayload =
@@ -139,39 +132,6 @@ createUserRecord httpsrv token user =
         , url = httpsrv ++ "/user"
         , body = Http.jsonBody <| Entity.userRecordEncoder user
         , expect = Http.expectJson Entity.userDecoder
-        , timeout = Nothing
-        , withCredentials = False
-        }
-
-
-csvDataDecoder : JD.Decoder CsvData
-csvDataDecoder =
-    JD.lazy <|
-        \_ ->
-            decode CsvData
-                |> required "userid" JD.string ""
-                |> required "upload" JD.string ""
-
-
-csvDataParts : CsvData -> List Http.Part
-csvDataParts data =
-    [ Http.stringPart "upload" data.upload
-    , Http.stringPart "userid" data.userid
-    ]
-
-
-uploadCsv :
-    String
-    -> String
-    -> CsvData
-    -> Http.Request CsvData
-uploadCsv tasksrv token csvData =
-    Http.request
-        { method = "POST"
-        , headers = defaultHeaders token
-        , url = (tasksrv ++ "/upload/ugimgset")
-        , body = Http.multipartBody <| csvDataParts csvData
-        , expect = Http.expectJson csvDataDecoder
         , timeout = Nothing
         , withCredentials = False
         }

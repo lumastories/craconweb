@@ -797,12 +797,12 @@ usersTable model =
                 , th [] [ text "Actions" ]
                 ]
             ]
-        , tbody [] (userRows model.users model.csvId)
+        , tbody [] (userRows model.users)
         ]
 
 
-userRows : List Entity.User -> String -> List (Html Msg)
-userRows users csvId =
+userRows : List Entity.User -> List (Html Msg)
+userRows users =
     let
         row user =
             tr []
