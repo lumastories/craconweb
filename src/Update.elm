@@ -232,27 +232,12 @@ update msg model =
                 ( model_, Cmd.batch commands_ )
 
         UserResp (Ok u) ->
-            let
-                commands =
-                    case (isAdmin model.visitor) of
-                        True ->
-                            [ Port.storageSetItem ( "user", Entity.userEncoder u )
-                            , Navigation.newUrl Routing.adminPath
-                            ]
-                                ++ (Todos.initCommands model.api model.jwtencoded)
-
-                        False ->
-                            [ Port.storageSetItem ( "user", Entity.userEncoder u )
-                            , Navigation.newUrl "/"
-                            ]
-                                ++ (Todos.initCommands model.api model.jwtencoded)
-            in
-                ( { model
-                    | user = u
-                    , activeRoute = HomeRoute
-                  }
-                , Cmd.batch commands
-                )
+            ( { model
+                | user = u
+                , activeRoute = HomeRoute
+              }
+            , Cmd.batch (Todos.initCommands model.api model.jwtencoded)
+            )
 
         -- GAMES
         PlayGame slug ->
