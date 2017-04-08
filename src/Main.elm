@@ -46,7 +46,7 @@ init flags location =
         ( httpsrv, tasksrv, filesrv ) =
             servers location.hostname
 
-        -- based on localtion and jwt
+        -- based on location and jwt
         ( route_, visitor_, commands_ ) =
             case Api.okyToky flags.time flags.token of
                 Ok jwt ->
@@ -134,7 +134,6 @@ adminData httpsrv token =
     , Http.send M.RoleResp (Api.fetchRole httpsrv token "user")
     , Http.send M.GroupResp (Api.fetchGroup httpsrv token "control_a")
     , Http.send M.GroupResp (Api.fetchGroup httpsrv token "experimental_a")
-    , Navigation.newUrl R.adminPath
     ]
 
 
