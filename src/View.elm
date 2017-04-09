@@ -12,13 +12,25 @@ import Access as A
 -- LOGIN PAGE
 
 
+bigLogo : String -> Html Msg
+bigLogo filesrv =
+    p [ style [ ( "text-align", "center" ) ] ]
+        [ img
+            [ class "logo is-vcentered"
+            , src (filesrv ++ "/repo/logo.svg")
+            , style [ ( "max-width", "300px" ) ]
+            ]
+            []
+        ]
+
+
 loginPage : Model -> Html Msg
 loginPage model =
     section []
         [ div [ class "container" ]
             [ div [ class "columns is-desktop" ]
                 [ div [ class "column is-half is-offset-one-quarter" ]
-                    [ bigLogo
+                    [ bigLogo model.filesrv
                     , loginPageBoxForm model
                     , notification model.glitching "is-warning"
                     ]
@@ -93,7 +105,7 @@ navBar model =
         [ class "nav has-shadow" ]
         [ div [ class "container" ]
             [ div [ class "nav-left" ]
-                [ logo "/"
+                [ tinyLogo model.filesrv
                 ]
             , navToggler model.isMenuActive
             , navRight model.isMenuActive model.activeRoute model.visitor
@@ -157,14 +169,14 @@ navLink text_ path active =
             [ text text_ ]
 
 
-logo : String -> Html Msg
-logo linkPath =
+tinyLogo : String -> Html Msg
+tinyLogo filesrv =
     a
         [ class "nav-item"
-        , href <| linkPath
-        , R.onLinkClick <| UpdateLocation linkPath
+        , href <| R.homePath
+        , R.onLinkClick <| UpdateLocation R.homePath
         ]
-        [ img [ src "/img/logo.png" ] [] ]
+        [ img [ src (filesrv ++ "/repo/logo.png") ] [] ]
 
 
 isActive : Bool -> String
@@ -553,18 +565,6 @@ toStyle styles =
             |> List.map (\s -> String.split ":" s)
             |> List.filter (\e -> e /= [ "" ])
             |> List.map toTuple
-
-
-bigLogo : Html Msg
-bigLogo =
-    p [ style [ ( "text-align", "center" ) ] ]
-        [ img
-            [ class "logo is-vcentered"
-            , src "/img/logo.svg"
-            , style [ ( "max-width", "300px" ) ]
-            ]
-            []
-        ]
 
 
 
