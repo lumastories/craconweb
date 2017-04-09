@@ -95,6 +95,9 @@ type
     | RegisterUserResp (Result Http.Error Entity.User)
     | GroupResp (Result Http.Error Entity.Group)
     | RoleResp (Result Http.Error Entity.Role)
+    | FillerResp (Result Http.Error (List Entity.Ugimage))
+    | ValidResp (Result Http.Error (List Entity.Ugimage))
+    | InvalidResp (Result Http.Error (List Entity.Ugimage))
       -- ADMIN
     | TryRegisterUser
     | SetRegistration String String

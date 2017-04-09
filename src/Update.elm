@@ -270,6 +270,24 @@ update msg model =
         RoleResp (Ok role) ->
             ( { model | userRole = role }, Cmd.none )
 
+        FillerResp (Ok ugimages) ->
+            ( { model | fillerImages = ugimages }, Cmd.none )
+
+        ValidResp (Ok ugimages) ->
+            ( { model | validImages = ugimages }, Cmd.none )
+
+        InvalidResp (Ok ugimages) ->
+            ( { model | invalidImages = ugimages }, Cmd.none )
+
+        FillerResp (Err err) ->
+            (httpErrorState model err)
+
+        ValidResp (Err err) ->
+            (httpErrorState model err)
+
+        InvalidResp (Err err) ->
+            (httpErrorState model err)
+
         AuthResp (Err err) ->
             (httpErrorState model err)
 
