@@ -11,3 +11,8 @@ userName : List Entity.User -> String -> Maybe Entity.User
 userName users userid =
     List.filter (\u -> u.id == userid) users
         |> List.head
+
+
+names : List { record | names : a } -> List a
+names =
+    List.map .names

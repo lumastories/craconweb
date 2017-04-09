@@ -26,7 +26,7 @@ type alias Model =
     , authRecord : Entity.AuthRecord
     , validImages : List Entity.Ugimage
     , invalidImages : List Entity.Ugimage
-    , fillerImages : List Entity.Ugimage
+    , fillerImages : Maybe Entity.Ugimages
     , userGroupId : Maybe String
     , loading : Maybe String
     , glitching : Maybe String
@@ -46,6 +46,11 @@ type alias Model =
     , startTime : Time.Time
     , playingGame : Bool
     }
+
+
+type ValuationsError
+    = ReqFail Http.Error
+    | MissingValuations
 
 
 type Visitor
@@ -95,7 +100,7 @@ type
     | RegisterUserResp (Result Http.Error Entity.User)
     | GroupResp (Result Http.Error Entity.Group)
     | RoleResp (Result Http.Error Entity.Role)
-    | FillerResp (Result Http.Error (List Entity.Ugimage))
+    | FillerResp (Result ValuationsError Entity.Ugimages)
     | ValidResp (Result Http.Error (List Entity.Ugimage))
     | InvalidResp (Result Http.Error (List Entity.Ugimage))
       -- ADMIN

@@ -9,7 +9,7 @@ import Navigation
 import Port
 import Process
 import Routing as R
-import Task
+import Task exposing (Task)
 import Time
 
 
@@ -93,7 +93,7 @@ update msg model =
         TryRegisterUser ->
             ( { model | loading = Just "loading..." }
             , Cmd.batch
-                [ Http.send RegisterUserResp
+                [ Task.attempt RegisterUserResp
                     (Api.createUserRecord
                         model.httpsrv
                         model.jwtencoded
@@ -160,7 +160,7 @@ update msg model =
         TryLogin ->
             let
                 cmd =
-                    Http.send AuthResp
+                    Task.attempt AuthResp
                         (Api.createAuthRecord
                             model.httpsrv
                             model.authRecord
@@ -271,7 +271,7 @@ update msg model =
             ( { model | userRole = role }, Cmd.none )
 
         FillerResp (Ok ugimages) ->
-            ( { model | fillerImages = ugimages }, Cmd.none )
+            ( { model | fillerImages = Just ugimages }, Cmd.none )
 
         ValidResp (Ok ugimages) ->
             ( { model | validImages = ugimages }, Cmd.none )
@@ -280,7 +280,7 @@ update msg model =
             ( { model | invalidImages = ugimages }, Cmd.none )
 
         FillerResp (Err err) ->
-            (httpErrorState model err)
+            (valuationsErrState model err)
 
         ValidResp (Err err) ->
             (httpErrorState model err)
@@ -321,6 +321,17 @@ isAdmin visitor =
             False
 
 
+valuationsErrState : Model -> ValuationsError -> ( Model, Cmd msg )
+valuationsErrState model err =
+    ( { model
+        | loading = Nothing
+        , glitching = Just (valuationsError err)
+        , httpErr = toString err
+      }
+    , Cmd.none
+    )
+
+
 httpErrorState : Model -> Http.Error -> ( Model, Cmd msg )
 httpErrorState model err =
     ( { model
@@ -330,6 +341,16 @@ httpErrorState model err =
       }
     , Cmd.none
     )
+
+
+valuationsError : ValuationsError -> String
+valuationsError err =
+    case err of
+        ReqFail httpErr ->
+            httpHumanError httpErr
+
+        MissingValuations ->
+            "You are missing customized game images! Are your image valuations uploaded?"
 
 
 httpHumanError : Http.Error -> String
