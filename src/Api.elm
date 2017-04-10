@@ -1,4 +1,17 @@
-module Api exposing (jwtDecoded, okyToky, isAdmin, fetchGame, fetchUser, fetchUsers, fetchGroup, fetchRole, createUserRecord, createAuthRecord, fetchAll)
+module Api
+    exposing
+        ( jwtDecoded
+        , okyToky
+        , isAdmin
+        , fetchGame
+        , fetchUser
+        , fetchUsers
+        , fetchGroup
+        , fetchRole
+        , createUserRecord
+        , createAuthRecord
+        , fetchAll
+        )
 
 import Entity
 import Http
@@ -99,9 +112,9 @@ fetchFiller httpsrv token sub =
             )
 
 
-ugimsetsToString : Entity.Ugimgsets -> Maybe String
-ugimsetsToString ugimgsets =
-    ugimgsets.ugimgsets
+ugimsetsToString : List Entity.Ugimgset -> Maybe String
+ugimsetsToString ugimgset =
+    ugimgset
         |> List.head
         |> Maybe.map .id
 
@@ -120,7 +133,7 @@ fetchUgimages httpsrv token limit gimgtypeSlug ugimgsetId =
         Entity.ugimagesDecoder
 
 
-fetchUgimgsets : String -> String -> String -> Task Http.Error Entity.Ugimgsets
+fetchUgimgsets : String -> String -> String -> Task Http.Error (List Entity.Ugimgset)
 fetchUgimgsets httpsrv token sub =
     getRequest token
         (httpsrv
@@ -128,7 +141,7 @@ fetchUgimgsets httpsrv token sub =
             ++ sub
             ++ "/ugimgsets?createdDesc=true&limit=1&createdEach=true"
         )
-        Entity.ugimgsetsDecoder
+        M.ugimgsetsDecoder
 
 
 fetchGame : String -> String -> String -> Task Http.Error Entity.Game

@@ -110,6 +110,23 @@ type
     | EditUserAccount String String
 
 
+
+-- {
+-- "ugimgsets":[
+--     {"id":"4485078910382159179"
+--     ,"ref":"382132079195309178_2017-04-09T13-39"
+--     ,"userId":"382132079195309178"
+--     ,"created":"2017-04-09T20:39:42.000Z"
+--     ,"updated":"2017-04-09T20:39:42.000Z"}
+--     ]
+-- }
+
+
+ugimgsetsDecoder : JD.Decoder (List Entity.Ugimgset)
+ugimgsetsDecoder =
+    JD.field "ugimgsets" (JD.list Entity.ugimgsetDecoder)
+
+
 type alias ErrorCode =
     { error : String
     , code : Int
