@@ -9,9 +9,6 @@ import Model as M
 import Json.Decode as JD
 
 
--- task that takes a ugimgsetId and returns a task with
-
-
 fetchAll : String -> M.JwtPayload -> String -> Cmd M.Msg
 fetchAll httpsrv jwt token =
     case isAdmin jwt of
@@ -26,7 +23,7 @@ fetchAll httpsrv jwt token =
 
 adminData : String -> String -> List (Cmd M.Msg)
 adminData httpsrv token =
-    [ Task.attempt M.UsersResp (fetchUsers httpsrv token)
+    [ Task.attempt M.UsersResp (fetchUsers_ httpsrv token)
     , Task.attempt M.RoleResp (fetchRole httpsrv token "user")
     , Task.attempt M.GroupResp (fetchGroup httpsrv token "control_a")
     , Task.attempt M.GroupResp (fetchGroup httpsrv token "experimental_a")
@@ -62,11 +59,6 @@ defaultHeaders jwtencoded =
         authHeaders
 
 
-
--- Http.send takes             (Result Error a -> msg)     and the request and produces a Cmd Msg
--- Task.attempt also takes a   (Result x a -> msg)         and a Task x a and produces the SAME THING
-
-
 createAuthRecord : String -> Entity.AuthRecord -> Task Http.Error Entity.Auth
 createAuthRecord httpsrv authRecord =
     Http.request
@@ -79,6 +71,16 @@ createAuthRecord httpsrv authRecord =
         , withCredentials = False
         }
         |> Http.toTask
+
+
+
+-- get Role id then fetch users
+
+
+fetchUsers_ : String -> String -> Task Http.Error (List Entity.User)
+fetchUsers_ httpsrv token =
+    fetchRole httpsrv token "user"
+        |> Task.andThen (\role -> fetchUsersInRole httpsrv token role.id)
 
 
 fetchFiller : String -> String -> String -> Task M.ValuationsError Entity.Ugimages
@@ -142,6 +144,11 @@ fetchUser httpsrv token sub =
 fetchUsers : String -> String -> Task Http.Error (List Entity.User)
 fetchUsers httpsrv token =
     getRequest token (httpsrv ++ "/users?createdEach=true") (JD.field "users" (JD.list Entity.userDecoder))
+
+
+fetchUsersInRole : String -> String -> String -> Task Http.Error (List Entity.User)
+fetchUsersInRole httpsrv token roleId =
+    getRequest token (httpsrv ++ "/users?createdEach=true&roleId=" ++ roleId) (JD.field "users" (JD.list Entity.userDecoder))
 
 
 fetchGroup : String -> String -> String -> Task Http.Error Entity.Group
