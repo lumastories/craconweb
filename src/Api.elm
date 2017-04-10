@@ -80,7 +80,7 @@ createAuthRecord httpsrv authRecord =
 fetchUsers_ : String -> String -> Task Http.Error (List Entity.User)
 fetchUsers_ httpsrv token =
     fetchRole httpsrv token "user"
-        |> Task.andThen (\role -> fetchUsersInRole httpsrv token role.id)
+        |> Task.andThen (fetchUsersInRole httpsrv token << .id)
 
 
 fetchFiller : String -> String -> String -> Task M.ValuationsError Entity.Ugimages
