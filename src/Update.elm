@@ -214,15 +214,16 @@ update msg model =
                 | user = user_
               }
             , Cmd.none
-              -- todo Api.fetchAll
             )
 
-        -- GAMES
-        PlayGame slug ->
-            ( { model | playingGame = True }, Cmd.none )
+        PlayGame cmd ->
+            ( model, cmd )
 
-        StopPlaying slug ->
-            ( { model | playingGame = False }, Cmd.none )
+        StopGame ->
+            ( { model | playingGame = Nothing }, Cmd.none )
+
+        InitGame playingGame ->
+            ( { model | playingGame = Just playingGame }, Cmd.none )
 
         GameResp (Ok game) ->
             case game.slug of

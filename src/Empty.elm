@@ -23,7 +23,7 @@ emptyModel model =
         , glitching = Nothing
         , responseTimes = []
         , startTime = 0
-        , playingGame = False
+        , playingGame = Nothing
     }
 
 

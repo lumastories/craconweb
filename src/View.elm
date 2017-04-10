@@ -7,6 +7,7 @@ import Model exposing (..)
 import Routing as R
 import Entity
 import Access as A
+import Task
 
 
 -- LOGIN PAGE
@@ -418,50 +419,45 @@ goNoGoGame model =
         [ div
             [ class "container" ]
             [ h1 [ class "title is-1" ] [ text model.gonogoGame.name ]
-            , goNoGoGamePlay model
+            , gameView model.playingGame
             ]
         ]
 
 
-goNoGoGamePlay : Model -> Html Msg
-goNoGoGamePlay model =
-    case model.playingGame of
-        False ->
+
+-- TODO pass in custom game images
+
+
+initGoNoGo : Cmd Msg
+initGoNoGo =
+    Task.succeed (GoNoGo [])
+        |> Task.perform InitGame
+
+
+gameView : Maybe PlayingGame -> Html Msg
+gameView playingGame =
+    case playingGame of
+        Just (GoNoGo trials) ->
+            div []
+                [ a
+                    [ class "button is-danger  is-block"
+                    , onClick StopGame
+                    ]
+                    [ text "Stop Game" ]
+                , p [] [ text <| toString trials ]
+                ]
+
+        Nothing ->
             div []
                 [ a
                     [ class "button is-info is-large"
-                    , onClick (PlayGame "gonogo")
+                    , onClick (PlayGame initGoNoGo)
                     ]
                     [ text "Start Game" ]
                 ]
 
-        True ->
-            div []
-                [ goNoGoGameBoard model
-                , br [] []
-                , a
-                    [ class "button is-danger  is-block"
-                    , onClick (PlayGame "gonogo")
-                    ]
-                    [ text "Stop Game" ]
-                ]
-
-
-goNoGoGameBoard : Model -> Html Msg
-goNoGoGameBoard model =
-    div []
-        [ p [] [ text "instructions block" ]
-        , a [ class "button" ] [ text "record start time" ]
-        ]
-
-
-
-{-
-   display instructions
-   display ugimages
-   messages
-   - SetTime
--}
+        _ ->
+            div [] [ text "i don't know how to play this game yet!" ]
 
 
 dotProbeGame : Model -> Html Msg

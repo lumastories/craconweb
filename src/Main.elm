@@ -10,6 +10,7 @@ import Routing as R
 import Update
 import View
 import Port
+import Time
 
 
 main : Program Flags M.Model M.Msg
@@ -26,9 +27,16 @@ subscriptions : M.Model -> Sub M.Msg
 subscriptions model =
     Sub.batch
         [ Keyboard.presses (\code -> M.Presses (Char.fromCode code))
-          --, Time.every Time.second M.NewCurrentTime
+        , ticker model.playingGame
         , Port.status M.SetStatus
         ]
+
+
+ticker : Maybe M.PlayingGame -> Sub M.Msg
+ticker playingGame =
+    playingGame
+        |> Maybe.map (\_ -> Time.every Time.millisecond M.NewCurrentTime)
+        |> Maybe.withDefault Sub.none
 
 
 init : Flags -> Navigation.Location -> ( M.Model, Cmd M.Msg )
@@ -86,7 +94,7 @@ init flags location =
             , visualsearchGame = Empty.emptyGame
             , responseTimes = []
             , startTime = 0
-            , playingGame = False
+            , playingGame = Nothing
             }
     in
         ( baseModel, commands_ )

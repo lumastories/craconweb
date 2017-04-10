@@ -44,8 +44,13 @@ type alias Model =
     , visualsearchGame : Entity.Game
     , responseTimes : List Time.Time
     , startTime : Time.Time
-    , playingGame : Bool
+    , playingGame : Maybe PlayingGame
     }
+
+
+type PlayingGame
+    = GoNoGo (List GNGTrial)
+    | OtherStupidGame
 
 
 type ValuationsError
@@ -68,8 +73,35 @@ type alias JwtPayload =
     }
 
 
-type alias Slug =
-    String
+type alias GNGTrial =
+    { side : Side
+    , border : Border
+    , trialType : TrialType
+    , imgUrl : String
+    , stage : Stage
+    }
+
+
+type Side
+    = Left
+    | Right
+
+
+type Border
+    = Solid
+    | Dashed
+
+
+type TrialType
+    = Filler
+    | Valid
+    | Invalid
+
+
+type Stage
+    = Display
+    | Blank
+    | RedCross
 
 
 type
@@ -90,8 +122,9 @@ type
     | Presses Char
     | StartGameWith Time.Time
     | Tick Time.Time
-    | PlayGame Slug
-    | StopPlaying Slug
+    | PlayGame (Cmd Msg)
+    | StopGame
+    | InitGame PlayingGame
       -- HTTP
     | AuthResp (Result Http.Error Entity.Auth)
     | UserResp (Result Http.Error Entity.User)
