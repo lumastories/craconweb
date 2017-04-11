@@ -10,11 +10,17 @@ import Navigation
 import Navigation
 import Port
 import Process
+import Random exposing (Generator)
 import Routing as R
-import StopSignal
 import Task exposing (Task)
-import Time
+import Time exposing (Time)
+
+
+-- Game Modules
+
 import GameManager as GM
+import StopSignal
+import GoNoGo
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -229,44 +235,70 @@ update msg model =
         -- TODO fetch configuration from the model
         InitStopSignal ->
             let
-                settings =
-                    { responseCount = 80
-                    , nonResponseCount = 80
-                    , blockCount = 10
-                    , blockSize = 40
+                trialSettings =
+                    { blockResponseCount = 20
+                    , blockNonResponseCount = 20
                     , pictureNoBorder = 100 * Time.millisecond
                     , pictureBorder = 900 * Time.millisecond
                     , redCross = 500 * Time.millisecond
                     }
-            in
-                case StopSignal.init settings [] [] of
-                    Err error ->
-                        ( model, Cmd.none )
 
-                    Ok generator ->
-                        ( model
-                        , GenGame.generatorToTask generator
-                            |> Task.andThen
-                                (\blocks ->
-                                    Time.now
-                                        |> Task.map
-                                            (\currTime ->
-                                                GM.init
-                                                    { gameConstructor = GM.StopSignal
-                                                    , blocks = blocks
-                                                    , currTime = currTime
-                                                    , settings = settings
-                                                    , instructionsView = StopSignal.instructions
-                                                    , instructionsDuration = 10 * Time.second
-                                                    , trialRestView = Html.text ""
-                                                    , trialRestDuration = 500 * Time.millisecond
-                                                    , blockRestView = StopSignal.blockRestView
-                                                    , blockRestDuration = 1500 * Time.millisecond
-                                                    }
-                                            )
-                                )
-                            |> Task.perform PlayGame
+                gameSettings blocks currTime =
+                    GM.init
+                        { gameConstructor = GM.StopSignal
+                        , blocks = blocks
+                        , currTime = currTime
+                        , settings = trialSettings
+                        , instructionsView = StopSignal.instructions
+                        , instructionsDuration = 10 * Time.second
+                        , trialRestView = Html.text ""
+                        , trialRestDuration = 500 * Time.millisecond
+                        , blockRestView = StopSignal.blockRestView
+                        , blockRestDuration = 1500 * Time.millisecond
+                        }
+            in
+                ( model
+                , StopSignal.init trialSettings [] []
+                    |> GenGame.generatorToTask
+                    |> Task.andThen
+                        (\blocks ->
+                            Time.now
+                                |> Task.map
+                                    (\currTime ->
+                                        gameSettings blocks currTime
+                                    )
                         )
+                    |> Task.perform PlayGame
+                )
+
+        -- TODO fetch configuration from the model
+        InitGoNoGo ->
+            let
+                trialSettings =
+                    { blockResponseCount = 20
+                    , blockNonResponseCount = 20
+                    , blockFillerResponseCount = 10
+                    , picture = 1250
+                    , redCross = 500
+                    }
+
+                settings blocks currTime =
+                    GM.init
+                        { gameConstructor = GM.GoNoGo
+                        , blocks = blocks
+                        , currTime = currTime
+                        , settings = trialSettings
+                        , instructionsView = GoNoGo.instructions
+                        , instructionsDuration = 10 * Time.second
+                        , trialRestView = Html.text ""
+                        , trialRestDuration = 500 * Time.millisecond
+                        , blockRestView = GoNoGo.blockRestView
+                        , blockRestDuration = 1500 * Time.millisecond
+                        }
+            in
+                ( model
+                , handleGameInit (GoNoGo.init trialSettings [] [] []) settings
+                )
 
         GameResp (Ok game) ->
             case game.slug of
@@ -355,6 +387,21 @@ update msg model =
 
         RoleResp (Err err) ->
             (httpErrorState model err)
+
+
+handleGameInit : Generator (List (List task)) -> (List (List task) -> Time -> GM.Game Msg) -> Cmd Msg
+handleGameInit blockGenerator gameF =
+    blockGenerator
+        |> GenGame.generatorToTask
+        |> Task.andThen
+            (\blocks ->
+                Time.now
+                    |> Task.map
+                        (\currTime ->
+                            gameF blocks currTime
+                        )
+            )
+        |> Task.perform PlayGame
 
 
 handleGameUpdate : (GM.Game Msg -> ( GM.GameStatus Msg, Cmd Msg )) -> Model -> ( Model, Cmd Msg )

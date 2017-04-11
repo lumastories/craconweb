@@ -2,14 +2,19 @@ module GoNoGo exposing (..)
 
 import GenGame
     exposing
-        ( Direction
+        ( Direction(Left, Right)
         , TrialResult(Continuing, Complete)
         , Reason(GoSuccess, NoGoSuccess, IndicationTimeout, WrongIndication, IndicatedOnNoGo)
         , checkTransition
         , updateReason
+        , take
         )
 import Html exposing (Html, div, img, text)
 import Html.Attributes exposing (class, src)
+import List.Extra
+import Random exposing (Generator)
+import Random.Extra
+import Random.List
 import Time exposing (Time)
 
 
@@ -34,9 +39,86 @@ type Kind
 
 
 type alias Settings =
-    { picture : Time
+    { blockResponseCount : Int
+    , blockNonResponseCount : Int
+    , blockFillerResponseCount : Int
+    , picture : Time
     , redCross : Time
-    , pause : Time
+    }
+
+
+init :
+    Settings
+    -> List String
+    -> List String
+    -> List String
+    -> Generator (List (List Trial))
+init settings responseUrls nonResponseUrls fillerUrls =
+    Random.map3
+        (\sGo sNoGo ( sGoFill, sNoGoFill ) ->
+            let
+                go =
+                    sGo
+                        |> List.map (initTrial Go)
+                        |> List.Extra.groupsOf settings.blockResponseCount
+
+                noGo =
+                    sNoGo
+                        |> List.map (initTrial NoGo)
+                        |> List.Extra.groupsOf settings.blockNonResponseCount
+
+                goFill =
+                    sGoFill
+                        |> List.map (initTrial Go)
+                        |> List.Extra.groupsOf ((settings.blockFillerResponseCount + 1) // 2)
+
+                noGoFill =
+                    sNoGoFill
+                        |> List.map (initTrial NoGo)
+                        |> List.Extra.groupsOf (settings.blockFillerResponseCount // 2)
+            in
+                List.Extra.zip4 go noGo goFill noGoFill
+                    |> List.map
+                        (\( a, b, c, d ) ->
+                            List.concat [ a, b, c, d ]
+                                |> Random.List.shuffle
+                                |> Random.andThen directionalize
+                        )
+                    |> Random.Extra.combine
+        )
+        (Random.List.shuffle responseUrls)
+        (Random.List.shuffle nonResponseUrls)
+        (Random.List.shuffle fillerUrls |> Random.map halve)
+        |> Random.andThen identity
+
+
+halve : List a -> ( List a, List a )
+halve xs =
+    let
+        len =
+            (List.length xs + 1) // 2
+    in
+        ( List.take len xs, List.drop len xs )
+
+
+directionalize : List (Direction -> a) -> Generator (List a)
+directionalize xs =
+    xs
+        |> List.map
+            (\x ->
+                Random.Extra.choice Left Right
+                    |> Random.map ((<|) x)
+            )
+        |> Random.Extra.combine
+
+
+initTrial : Kind -> String -> Direction -> Trial
+initTrial kind imageUrl direction =
+    { position = direction
+    , imageUrl = imageUrl
+    , kind = kind
+    , stage = NotStarted
+    , reason = Nothing
     }
 
 
@@ -133,3 +215,13 @@ border kind =
         div [ class "solidBorder" ]
     else
         div [ class "dashedBorder" ]
+
+
+instructions : Html msg
+instructions =
+    text ""
+
+
+blockRestView : List (Maybe Reason) -> Html msg
+blockRestView reasons =
+    text ""

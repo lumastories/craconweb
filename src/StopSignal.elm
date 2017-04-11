@@ -10,6 +10,7 @@ import GenGame
         )
 import Html exposing (Html, div, img, text)
 import Html.Attributes exposing (class, src)
+import List.Extra
 import Random exposing (Generator)
 import Random.Extra
 import Random.List
@@ -37,47 +38,32 @@ type Kind
 
 
 type alias Settings =
-    { responseCount : Int
-    , nonResponseCount : Int
-    , blockCount : Int
-    , blockSize : Int
+    { blockResponseCount : Int
+    , blockNonResponseCount : Int
     , pictureNoBorder : Time
     , pictureBorder : Time
     , redCross : Time
     }
 
 
-init : Settings -> List String -> List String -> Result String (Generator (List (List Trial)))
+init : Settings -> List String -> List String -> Generator (List (List Trial))
 init settings responseUrls nonResponseUrls =
-    Result.map2
-        (\resp nResp ->
+    Random.map2
+        (\sGo sNoGo ->
             let
-                gs =
-                    List.map (initTrial Go) responseUrls
+                go =
+                    List.Extra.groupsOf settings.blockResponseCount sGo
 
-                ngs =
-                    List.map (initTrial NoGo) nonResponseUrls
+                noGo =
+                    List.Extra.groupsOf settings.blockNonResponseCount sNoGo
             in
-                List.map
-                    (\_ -> mkBlock settings.blockSize gs ngs)
-                    (List.range 1 settings.blockCount)
+                List.Extra.zip go noGo
+                    |> List.map (\( a, b ) -> Random.List.shuffle (a ++ b))
                     |> Random.Extra.combine
         )
-        (take "Not enough response pictures to begin." settings.responseCount responseUrls)
-        (take "Not enough non-response pictures to begin." settings.nonResponseCount nonResponseUrls)
-
-
-mkBlock : Int -> List Trial -> List Trial -> Generator (List Trial)
-mkBlock size gos nogos =
-    Random.Extra.andThen2
-        (\gs ngs ->
-            Random.List.shuffle
-                (List.take (size // 2) ngs
-                    ++ List.take (size - (size // 2)) gs
-                )
-        )
-        (Random.List.shuffle gos)
-        (Random.List.shuffle nogos)
+        (Random.List.shuffle (List.map (initTrial Go) responseUrls))
+        (Random.List.shuffle (List.map (initTrial NoGo) nonResponseUrls))
+        |> Random.andThen identity
 
 
 initTrial : Kind -> String -> Trial
