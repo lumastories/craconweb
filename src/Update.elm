@@ -267,8 +267,8 @@ update msg model =
                     { blockResponseCount = 20
                     , blockNonResponseCount = 20
                     , blockFillerResponseCount = 10
-                    , picture = 1250
-                    , redCross = 500
+                    , picture = 1250 * Time.millisecond
+                    , redCross = 500 * Time.millisecond
                     }
 
                 gameSettings blocks currTime =
