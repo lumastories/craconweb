@@ -123,6 +123,7 @@ type
     | Presses Char
     | StartGameWith Time.Time
     | Tick Time.Time
+    | IntIndication Int
     | InitStopSignal
     | PlayGame (GameManager.Game Msg)
     | StopGame

@@ -6,6 +6,7 @@ module GameManager
         , init
         , updateTime
         , updateIndication
+        , updateIntIndication
         , view
         )
 

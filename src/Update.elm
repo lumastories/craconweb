@@ -302,17 +302,10 @@ update msg model =
                 ( { model | isMenuActive = active }, Cmd.none )
 
         Tick t ->
-            case model.playingGame of
-                Nothing ->
-                    ( { model | currentTime = t }, Cmd.none )
+            handleGameUpdate (GM.updateTime t) { model | currentTime = t }
 
-                Just game ->
-                    case GM.updateTime t game of
-                        ( GM.Running newGame, cmd ) ->
-                            ( { model | playingGame = Just newGame, currentTime = t }, cmd )
-
-                        ( GM.Results newGame, cmd ) ->
-                            ( { model | playingGame = Nothing, currentTime = t }, cmd )
+        IntIndication i ->
+            handleGameUpdate (GM.updateIntIndication i) model
 
         StartGameWith time ->
             ( { model
@@ -362,6 +355,21 @@ update msg model =
 
         RoleResp (Err err) ->
             (httpErrorState model err)
+
+
+handleGameUpdate : (GM.Game Msg -> ( GM.GameStatus Msg, Cmd Msg )) -> Model -> ( Model, Cmd Msg )
+handleGameUpdate f model =
+    case model.playingGame of
+        Nothing ->
+            ( model, Cmd.none )
+
+        Just game ->
+            case f game of
+                ( GM.Running newGame, cmd ) ->
+                    ( { model | playingGame = Just newGame }, cmd )
+
+                ( GM.Results newGame, cmd ) ->
+                    ( { model | playingGame = Nothing }, cmd )
 
 
 isAdmin : Visitor -> Bool
