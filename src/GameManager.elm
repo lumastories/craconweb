@@ -1,6 +1,7 @@
 module GameManager
     exposing
         ( Game(..)
+        , GameStatus(..)
         , InitConfig
         , init
         , updateTime

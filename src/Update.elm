@@ -2,7 +2,6 @@ module Update exposing (update)
 
 import Api
 import Empty
-import GameManager
 import GenGame
 import Html
 import Http
@@ -15,6 +14,7 @@ import Routing as R
 import StopSignal
 import Task exposing (Task)
 import Time
+import GameManager as GM
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -223,6 +223,9 @@ update msg model =
         PlayGame game ->
             ( { model | playingGame = Just game }, Cmd.none )
 
+        StopGame ->
+            ( { model | playingGame = Nothing }, Cmd.none )
+
         -- TODO fetch configuration from the model
         InitStopSignal ->
             let
@@ -248,8 +251,8 @@ update msg model =
                                     Time.now
                                         |> Task.map
                                             (\currTime ->
-                                                GameManager.init
-                                                    { gameConstructor = GameManager.StopSignal
+                                                GM.init
+                                                    { gameConstructor = GM.StopSignal
                                                     , blocks = blocks
                                                     , currTime = currTime
                                                     , settings = settings
@@ -265,11 +268,6 @@ update msg model =
                             |> Task.perform PlayGame
                         )
 
-        StopGame ->
-            ( { model | playingGame = Nothing }, Cmd.none )
-
-        -- InitGame playingGame ->
-        --     ( { model | playingGame = Just playingGame }, Cmd.none )
         GameResp (Ok game) ->
             case game.slug of
                 "gonogo" ->
@@ -304,7 +302,17 @@ update msg model =
                 ( { model | isMenuActive = active }, Cmd.none )
 
         Tick t ->
-            ( { model | currentTime = t }, Cmd.none )
+            case model.playingGame of
+                Nothing ->
+                    ( { model | currentTime = t }, Cmd.none )
+
+                Just game ->
+                    case GM.updateTime t game of
+                        ( GM.Running newGame, cmd ) ->
+                            ( { model | playingGame = Just newGame, currentTime = t }, cmd )
+
+                        ( GM.Results newGame, cmd ) ->
+                            ( { model | playingGame = Nothing, currentTime = t }, cmd )
 
         StartGameWith time ->
             ( { model
