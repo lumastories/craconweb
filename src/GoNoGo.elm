@@ -4,6 +4,7 @@ import GenGame
     exposing
         ( Direction
         , TrialResult(Continuing, Complete)
+        , Reason(GoSuccess, NoGoSuccess, IndicationTimeout, WrongIndication, IndicatedOnNoGo)
         , checkTransition
         , updateReason
         )
@@ -40,14 +41,6 @@ type alias Settings =
     }
 
 
-type Reason
-    = NoGoSuccess
-    | NoGoFail Time
-    | GoSuccess Time
-    | GoIncorrectIndication Time
-    | GoTimeout
-
-
 isGo : Kind -> Bool
 isGo kind =
     case kind of
@@ -58,7 +51,7 @@ isGo kind =
             False
 
 
-updateTime : Settings -> Time -> Trial -> TrialResult Reason Trial msg
+updateTime : Settings -> Time -> Trial -> TrialResult Trial msg
 updateTime settings currTime trial =
     let
         trans =
@@ -69,7 +62,7 @@ updateTime settings currTime trial =
                 let
                     ( stage, reason ) =
                         if isGo trial.kind then
-                            ( RedCross, GoTimeout )
+                            ( RedCross, IndicationTimeout )
                         else
                             ( Pause, NoGoSuccess )
                 in
@@ -85,7 +78,7 @@ updateTime settings currTime trial =
                     (Complete trial.reason)
 
 
-updateIndication : Time -> Direction -> Trial -> TrialResult Reason Trial msg
+updateIndication : Time -> Direction -> Trial -> TrialResult Trial msg
 updateIndication currTime direction trial =
     if trial.stage == Picture then
         if isGo trial.kind then
@@ -99,10 +92,10 @@ updateIndication currTime direction trial =
                 Continuing
                     { trial
                         | stage = RedCross
-                        , reason = updateReason (GoIncorrectIndication currTime) trial.reason
+                        , reason = updateReason (WrongIndication currTime) trial.reason
                     }
         else
-            Continuing { trial | reason = updateReason (NoGoFail currTime) trial.reason }
+            Continuing { trial | reason = updateReason (IndicatedOnNoGo currTime) trial.reason }
     else
         Continuing trial
 

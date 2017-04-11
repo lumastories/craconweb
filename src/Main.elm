@@ -32,7 +32,7 @@ subscriptions model =
         ]
 
 
-ticker : Maybe M.PlayingGame -> Sub M.Msg
+ticker : Maybe a -> Sub M.Msg
 ticker playingGame =
     playingGame
         |> Maybe.map (\_ -> Time.every Time.millisecond M.NewCurrentTime)

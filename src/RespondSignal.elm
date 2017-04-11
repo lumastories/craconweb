@@ -1,6 +1,12 @@
 module RespondSignal exposing (..)
 
-import GenGame exposing (Direction, TrialResult(Continuing, ContinuingWithEvent, Complete), checkTransition)
+import GenGame
+    exposing
+        ( Direction
+        , TrialResult(Continuing, ContinuingWithEvent, Complete)
+        , Reason(GoSuccess, NoGoSuccess, IndicationTimeout, WrongIndication, IndicatedOnNoGo)
+        , checkTransition
+        )
 import Html exposing (Html, img, text)
 import Html.Attributes exposing (class, src)
 import Time exposing (Time)
@@ -37,14 +43,6 @@ type alias Settings msg =
     }
 
 
-type Reason
-    = NoGoSuccess
-    | NoGoFail Time
-    | GoSuccess Time
-    | GoIncorrectIndication Time
-    | GoTimeout
-
-
 isGo : Kind -> Bool
 isGo kind =
     case kind of
@@ -55,7 +53,7 @@ isGo kind =
             False
 
 
-updateTime : Settings msg -> Time -> Trial -> TrialResult Reason Trial msg
+updateTime : Settings msg -> Time -> Trial -> TrialResult Trial msg
 updateTime settings currTime trial =
     let
         trans =
@@ -75,7 +73,7 @@ updateTime settings currTime trial =
                 let
                     reason =
                         if isGo trial.kind then
-                            GoTimeout
+                            IndicationTimeout
                         else
                             NoGoSuccess
                 in
@@ -91,13 +89,13 @@ updateTime settings currTime trial =
                     (Complete trial.reason)
 
 
-updateIndication : Time -> Trial -> TrialResult Reason Trial msg
+updateIndication : Time -> Trial -> TrialResult Trial msg
 updateIndication currTime trial =
     if trial.reason == Nothing && trial.stage == PicturePostAudio then
         if isGo trial.kind then
             Continuing { trial | stage = FixationCross, reason = Just (GoSuccess currTime) }
         else
-            Continuing { trial | stage = FixationCross, reason = Just (NoGoFail currTime) }
+            Continuing { trial | stage = FixationCross, reason = Just (IndicatedOnNoGo currTime) }
     else
         Continuing trial
 

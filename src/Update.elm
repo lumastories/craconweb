@@ -2,6 +2,9 @@ module Update exposing (update)
 
 import Api
 import Empty
+import GameManager
+import GenGame
+import Html
 import Http
 import Model exposing (..)
 import Navigation
@@ -9,6 +12,7 @@ import Navigation
 import Port
 import Process
 import Routing as R
+import StopSignal
 import Task exposing (Task)
 import Time
 
@@ -216,15 +220,56 @@ update msg model =
             , Cmd.none
             )
 
-        PlayGame cmd ->
-            ( model, cmd )
+        PlayGame game ->
+            ( { model | playingGame = Just game }, Cmd.none )
+
+        -- TODO fetch configuration from the model
+        InitStopSignal ->
+            let
+                settings =
+                    { responseCount = 80
+                    , nonResponseCount = 80
+                    , blockCount = 10
+                    , blockSize = 40
+                    , pictureNoBorder = 100 * Time.millisecond
+                    , pictureBorder = 900 * Time.millisecond
+                    , redCross = 500 * Time.millisecond
+                    }
+            in
+                case StopSignal.init settings [] [] of
+                    Err error ->
+                        ( model, Cmd.none )
+
+                    Ok generator ->
+                        ( model
+                        , GenGame.generatorToTask generator
+                            |> Task.andThen
+                                (\blocks ->
+                                    Time.now
+                                        |> Task.map
+                                            (\currTime ->
+                                                GameManager.init
+                                                    { gameConstructor = GameManager.StopSignal
+                                                    , blocks = blocks
+                                                    , currTime = currTime
+                                                    , settings = settings
+                                                    , instructionsView = StopSignal.instructions
+                                                    , instructionsDuration = 10 * Time.second
+                                                    , trialRestView = Html.text ""
+                                                    , trialRestDuration = 500 * Time.millisecond
+                                                    , blockRestView = StopSignal.blockRestView
+                                                    , blockRestDuration = 1500 * Time.millisecond
+                                                    }
+                                            )
+                                )
+                            |> Task.perform PlayGame
+                        )
 
         StopGame ->
             ( { model | playingGame = Nothing }, Cmd.none )
 
-        InitGame playingGame ->
-            ( { model | playingGame = Just playingGame }, Cmd.none )
-
+        -- InitGame playingGame ->
+        --     ( { model | playingGame = Just playingGame }, Cmd.none )
         GameResp (Ok game) ->
             case game.slug of
                 "gonogo" ->

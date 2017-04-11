@@ -1,14 +1,23 @@
 module StopSignal exposing (..)
 
-import GenGame exposing (Direction, TrialResult(Continuing, Complete), checkTransition, updateReason)
+import GenGame
+    exposing
+        ( TrialResult(Continuing, Complete)
+        , Reason(GoSuccess, NoGoSuccess, IndicationTimeout, IndicatedOnNoGo)
+        , checkTransition
+        , updateReason
+        , take
+        )
 import Html exposing (Html, div, img, text)
 import Html.Attributes exposing (class, src)
+import Random exposing (Generator)
+import Random.Extra
+import Random.List
 import Time exposing (Time)
 
 
 type alias Trial =
-    { position : Direction
-    , imageUrl : String
+    { imageUrl : String
     , kind : Kind
     , stage : Stage
     , lastTransition : Time
@@ -20,7 +29,6 @@ type Stage
     = PictureNoBorder
     | PictureBorder
     | RedCross
-    | Pause
 
 
 type Kind
@@ -29,19 +37,57 @@ type Kind
 
 
 type alias Settings =
-    { pictureNoBorder : Time
+    { responseCount : Int
+    , nonResponseCount : Int
+    , blockCount : Int
+    , blockSize : Int
+    , pictureNoBorder : Time
     , pictureBorder : Time
     , redCross : Time
-    , pause : Time
     }
 
 
-type Reason
-    = NoGoSuccess
-    | NoGoFail Time
-    | GoSuccess Time
-    | GoIncorrectIndication Time
-    | GoTimeout
+init : Settings -> List String -> List String -> Result String (Generator (List (List Trial)))
+init settings responseUrls nonResponseUrls =
+    Result.map2
+        (\resp nResp ->
+            let
+                gs =
+                    List.map (initTrial Go) responseUrls
+
+                ngs =
+                    List.map (initTrial NoGo) nonResponseUrls
+            in
+                List.map
+                    (\_ -> mkBlock settings.blockSize gs ngs)
+                    (List.range 1 settings.blockCount)
+                    |> Random.Extra.combine
+        )
+        (take "Not enough response pictures to begin." settings.responseCount responseUrls)
+        (take "Not enough non-response pictures to begin." settings.nonResponseCount nonResponseUrls)
+
+
+mkBlock : Int -> List Trial -> List Trial -> Generator (List Trial)
+mkBlock size gos nogos =
+    Random.Extra.andThen2
+        (\gs ngs ->
+            Random.List.shuffle
+                (List.take (size // 2) ngs
+                    ++ List.take (size - (size // 2)) gs
+                )
+        )
+        (Random.List.shuffle gos)
+        (Random.List.shuffle nogos)
+
+
+initTrial : Kind -> String -> Trial
+initTrial kind imageUrl =
+    { imageUrl = imageUrl
+    , kind = kind
+    , stage = PictureNoBorder
+    , lastTransition = 0
+    , reason = Nothing
+    }
 
 
 isGo : Kind -> Bool
@@ -54,7 +100,7 @@ isGo kind =
             False
 
 
-updateTime : Settings -> Time -> Trial -> TrialResult Reason Trial msg
+updateTime : Settings -> Time -> Trial -> TrialResult Trial msg
 updateTime settings currTime trial =
     let
         trans =
@@ -66,35 +112,29 @@ updateTime settings currTime trial =
                     (Continuing { trial | stage = PictureBorder })
 
             PictureBorder ->
-                let
-                    ( stage, reason ) =
-                        if isGo trial.kind then
-                            ( RedCross, GoTimeout )
-                        else
-                            ( Pause, NoGoSuccess )
-                in
+                if isGo trial.kind then
                     trans settings.pictureBorder
-                        (Continuing { trial | stage = stage, reason = updateReason reason trial.reason })
+                        (Continuing
+                            { trial
+                                | stage = RedCross
+                                , reason = updateReason IndicationTimeout trial.reason
+                            }
+                        )
+                else
+                    Complete (Just NoGoSuccess)
 
             RedCross ->
                 trans settings.redCross
-                    (Continuing { trial | stage = Pause, lastTransition = currTime })
-
-            Pause ->
-                trans settings.pause
                     (Complete trial.reason)
 
 
-updateIndication : Time -> Direction -> Trial -> TrialResult Reason Trial msg
-updateIndication currTime direction trial =
+updateIndication : Time -> Trial -> TrialResult Trial msg
+updateIndication currTime trial =
     if trial.stage == PictureBorder then
         if isGo trial.kind then
-            if trial.position == direction then
-                Continuing { trial | reason = updateReason (GoSuccess currTime) trial.reason }
-            else
-                Continuing { trial | reason = updateReason (GoIncorrectIndication currTime) trial.reason }
+            Continuing { trial | reason = updateReason (GoSuccess currTime) trial.reason }
         else
-            Continuing { trial | reason = updateReason (NoGoFail currTime) trial.reason }
+            Continuing { trial | reason = updateReason (IndicatedOnNoGo currTime) trial.reason }
     else
         Continuing trial
 
@@ -111,9 +151,6 @@ view trial =
         RedCross ->
             img [ src "redCrossUrl" ] []
 
-        Pause ->
-            text ""
-
 
 border : Kind -> List (Html msg) -> Html msg
 border kind =
@@ -121,3 +158,13 @@ border kind =
         div [ class "solidBorder" ]
     else
         div [ class "dashedBorder" ]
+
+
+instructions : Html msg
+instructions =
+    text "StopSignal instructions missing."
+
+
+blockRestView : List (Maybe Reason) -> Html msg
+blockRestView reasons =
+    text "Calculate block score and display."

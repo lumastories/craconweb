@@ -2,6 +2,7 @@ module Model exposing (..)
 
 import Entity
 import Http
+import GameManager
 import Navigation
 import Routing
 import Time
@@ -44,7 +45,7 @@ type alias Model =
     , visualsearchGame : Entity.Game
     , responseTimes : List Time.Time
     , startTime : Time.Time
-    , playingGame : Maybe PlayingGame
+    , playingGame : Maybe (GameManager.Game Msg)
     }
 
 
@@ -122,9 +123,10 @@ type
     | Presses Char
     | StartGameWith Time.Time
     | Tick Time.Time
-    | PlayGame (Cmd Msg)
+    | InitStopSignal
+    | PlayGame (GameManager.Game Msg)
     | StopGame
-    | InitGame PlayingGame
+      -- | InitGame PlayingGame
       -- HTTP
     | AuthResp (Result Http.Error Entity.Auth)
     | UserResp (Result Http.Error Entity.User)

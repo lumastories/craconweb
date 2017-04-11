@@ -4,6 +4,7 @@ import GenGame
     exposing
         ( Direction
         , TrialResult(Continuing, Complete)
+        , Reason(GoSuccess, WrongIndication)
         , checkTransition
         )
 import Html exposing (Html, text)
@@ -31,12 +32,7 @@ type alias Settings =
     }
 
 
-type Reason
-    = CorrectIndication Time
-    | IncorrectIndication Time
-
-
-updateTime : Settings -> Time -> Trial -> TrialResult Reason Trial msg
+updateTime : Settings -> Time -> Trial -> TrialResult Trial msg
 updateTime settings currTime trial =
     let
         trans =
@@ -53,13 +49,13 @@ updateTime settings currTime trial =
                 Continuing trial
 
 
-updateIndication : Time -> Direction -> Trial -> TrialResult Reason Trial msg
+updateIndication : Time -> Direction -> Trial -> TrialResult Trial msg
 updateIndication currTime direction trial =
     if trial.stage == Probe then
         if trial.probePosition == direction then
-            Complete (Just (CorrectIndication currTime))
+            Complete (Just (GoSuccess currTime))
         else
-            Complete (Just (IncorrectIndication currTime))
+            Complete (Just (WrongIndication currTime))
     else
         Continuing trial
 

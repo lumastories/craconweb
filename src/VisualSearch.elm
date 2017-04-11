@@ -1,6 +1,12 @@
 module VisualSearch exposing (..)
 
-import GenGame exposing (TrialResult(Continuing, Complete), checkTransition, updateReason)
+import GenGame
+    exposing
+        ( TrialResult(Continuing, Complete)
+        , Reason(GoSuccess, WrongIndication, IndicationTimeout)
+        , checkTransition
+        , updateReason
+        )
 import Html exposing (Html, div, img, text)
 import Html.Attributes exposing (src)
 import Html.Events exposing (onClick)
@@ -23,12 +29,6 @@ type Stage
     | FailureAnimation
 
 
-type Reason
-    = CorrectSelection Int Time
-    | IncorrectSelection Int Int Time
-    | Timeout
-
-
 type alias Settings =
     { fixationCross : Time
     , selectionGrid : Time
@@ -36,7 +36,7 @@ type alias Settings =
     }
 
 
-updateTime : Settings -> Time -> Trial -> TrialResult Reason Trial msg
+updateTime : Settings -> Time -> Trial -> TrialResult Trial msg
 updateTime settings currTime trial =
     let
         trans =
@@ -52,7 +52,7 @@ updateTime settings currTime trial =
                     (Continuing
                         { trial
                             | stage = FailureAnimation
-                            , reason = updateReason Timeout trial.reason
+                            , reason = updateReason IndicationTimeout trial.reason
                         }
                     )
 
@@ -65,14 +65,14 @@ updateTime settings currTime trial =
                     (Complete trial.reason)
 
 
-updateIndication : Time -> Int -> Trial -> TrialResult Reason Trial msg
+updateIndication : Time -> Int -> Trial -> TrialResult Trial msg
 updateIndication currTime selection trial =
     if trial.stage == SelectionGrid then
         if selection == trial.correctPosition then
             Continuing
                 { trial
                     | stage = SuccessAnimation
-                    , reason = updateReason (CorrectSelection selection currTime) trial.reason
+                    , reason = updateReason (GoSuccess currTime) trial.reason
                 }
         else
             Continuing
@@ -80,7 +80,7 @@ updateIndication currTime selection trial =
                     | stage = FailureAnimation
                     , reason =
                         updateReason
-                            (IncorrectSelection selection trial.correctPosition currTime)
+                            (WrongIndication currTime)
                             trial.reason
                 }
     else

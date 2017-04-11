@@ -1,12 +1,25 @@
 module GenGame
     exposing
-        ( Direction(Left, Right)
-        , TrialResult(Complete, Continuing, ContinuingWithEvent)
+        ( Direction(..)
+        , TrialResult(..)
+        , Reason(..)
         , checkTransition
         , updateReason
+        , take
+        , generatorToTask
         )
 
+import Random exposing (Generator)
+import Task exposing (Task)
 import Time exposing (Time)
+
+
+type Reason
+    = GoSuccess Time
+    | NoGoSuccess
+    | IndicationTimeout
+    | WrongIndication Time
+    | IndicatedOnNoGo Time
 
 
 type Direction
@@ -14,24 +27,35 @@ type Direction
     | Right
 
 
-type TrialResult reason trial msg
-    = Complete (Maybe reason)
+type TrialResult trial msg
+    = Complete (Maybe Reason)
     | Continuing trial
     | ContinuingWithEvent trial (Cmd msg)
 
 
+
+-- TODO make this not horrible (fix the problem with uninitialized time)
+
+
 checkTransition :
-    trial
+    { trial | lastTransition : Time }
     -> Time
     -> Time
     -> Time
-    -> TrialResult reason trial msg
-    -> TrialResult reason trial msg
+    -> TrialResult { trial | lastTransition : Time } msg
+    -> TrialResult { trial | lastTransition : Time } msg
 checkTransition trial currTime lastTransition duration expired =
-    if currTime - lastTransition >= duration then
-        expired
-    else
-        Continuing trial
+    let
+        lastT =
+            if lastTransition < 1 then
+                currTime
+            else
+                lastTransition
+    in
+        if currTime - lastT >= duration then
+            expired
+        else
+            Continuing { trial | lastTransition = lastT }
 
 
 updateReason : a -> Maybe a -> Maybe a
@@ -42,3 +66,21 @@ updateReason new old =
 
         Just _ ->
             old
+
+
+take : String -> Int -> List a -> Result String (List a)
+take message n xs =
+    let
+        ys =
+            List.take n xs
+    in
+        if List.length ys == n then
+            Ok ys
+        else
+            Err message
+
+
+generatorToTask : Generator a -> Task x a
+generatorToTask generator =
+    Time.now
+        |> Task.map (round >> Random.initialSeed >> Random.step generator >> Tuple.first)
