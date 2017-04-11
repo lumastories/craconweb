@@ -38,12 +38,12 @@ type TrialResult trial msg
 
 
 checkTransition :
-    { trial | lastTransition : Time }
+    trial
     -> Time
     -> Time
     -> Time
-    -> TrialResult { trial | lastTransition : Time } msg
-    -> TrialResult { trial | lastTransition : Time } msg
+    -> TrialResult trial msg
+    -> TrialResult trial msg
 checkTransition trial currTime lastTransition duration expired =
     let
         lastT =
@@ -55,7 +55,7 @@ checkTransition trial currTime lastTransition duration expired =
         if currTime - lastT >= duration then
             expired
         else
-            Continuing { trial | lastTransition = lastT }
+            Continuing trial
 
 
 updateReason : a -> Maybe a -> Maybe a

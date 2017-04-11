@@ -20,15 +20,15 @@ type alias Trial =
     { imageUrl : String
     , kind : Kind
     , stage : Stage
-    , lastTransition : Time
     , reason : Maybe Reason
     }
 
 
 type Stage
-    = PictureNoBorder
-    | PictureBorder
-    | RedCross
+    = NotStarted
+    | PictureNoBorder Time
+    | PictureBorder Time
+    | RedCross Time
 
 
 type Kind
@@ -84,8 +84,7 @@ initTrial : Kind -> String -> Trial
 initTrial kind imageUrl =
     { imageUrl = imageUrl
     , kind = kind
-    , stage = PictureNoBorder
-    , lastTransition = 0
+    , stage = NotStarted
     , reason = Nothing
     }
 
@@ -104,51 +103,68 @@ updateTime : Settings -> Time -> Trial -> TrialResult Trial msg
 updateTime settings currTime trial =
     let
         trans =
-            checkTransition trial currTime trial.lastTransition
+            checkTransition trial currTime
     in
         case trial.stage of
-            PictureNoBorder ->
-                trans settings.pictureNoBorder
-                    (Continuing { trial | stage = PictureBorder })
+            NotStarted ->
+                Continuing { trial | stage = PictureNoBorder currTime }
 
-            PictureBorder ->
+            PictureNoBorder timeSince ->
+                trans timeSince
+                    settings.pictureNoBorder
+                    (Continuing { trial | stage = PictureBorder currTime })
+
+            PictureBorder timeSince ->
                 if isGo trial.kind then
-                    trans settings.pictureBorder
+                    trans timeSince
+                        settings.pictureBorder
                         (Continuing
                             { trial
-                                | stage = RedCross
+                                | stage = RedCross currTime
                                 , reason = updateReason IndicationTimeout trial.reason
                             }
                         )
                 else
                     Complete (Just NoGoSuccess)
 
-            RedCross ->
-                trans settings.redCross
+            RedCross timeSince ->
+                trans timeSince
+                    settings.redCross
                     (Complete trial.reason)
 
 
 updateIndication : Time -> Trial -> TrialResult Trial msg
 updateIndication currTime trial =
-    if trial.stage == PictureBorder then
-        if isGo trial.kind then
-            Continuing { trial | reason = updateReason (GoSuccess currTime) trial.reason }
-        else
-            Continuing { trial | reason = updateReason (IndicatedOnNoGo currTime) trial.reason }
-    else
-        Continuing trial
+    case trial.stage of
+        PictureBorder timeSince ->
+            if isGo trial.kind then
+                Continuing
+                    { trial
+                        | reason = updateReason (GoSuccess (currTime - timeSince)) trial.reason
+                    }
+            else
+                Continuing
+                    { trial
+                        | reason = updateReason (IndicatedOnNoGo (currTime - timeSince)) trial.reason
+                    }
+
+        _ ->
+            Continuing trial
 
 
 view : Trial -> Html msg
 view trial =
     case trial.stage of
-        PictureNoBorder ->
+        NotStarted ->
             img [ src trial.imageUrl ] []
 
-        PictureBorder ->
+        PictureNoBorder _ ->
+            img [ src trial.imageUrl ] []
+
+        PictureBorder _ ->
             border trial.kind [ img [ src trial.imageUrl ] [] ]
 
-        RedCross ->
+        RedCross _ ->
             img [ src "redCrossUrl" ] []
 
 
