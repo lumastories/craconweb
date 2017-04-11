@@ -34,6 +34,10 @@ fetchAll httpsrv jwt token =
             Cmd.batch <| userData httpsrv token jwt.sub
 
 
+
+-- user, admin staff data, common
+
+
 adminData : String -> String -> List (Cmd M.Msg)
 adminData httpsrv token =
     [ Task.attempt M.UsersResp (fetchUsers_ httpsrv token)
@@ -52,6 +56,8 @@ userData httpsrv token sub =
     , Task.attempt M.GameResp (fetchGame httpsrv token "visualsearch")
     , Task.attempt M.UserResp (fetchUser httpsrv token sub)
     , Task.attempt M.FillerResp (fetchFiller httpsrv token sub)
+    , Task.attempt M.ValidResp (fetchValid httpsrv token sub)
+    , Task.attempt M.InvalidResp (fetchInvalid httpsrv token sub)
     ]
 
 
@@ -96,15 +102,30 @@ fetchUsers_ httpsrv token =
         |> Task.andThen (fetchUsersInRole httpsrv token << .id)
 
 
-fetchFiller : String -> String -> String -> Task M.ValuationsError Entity.Ugimages
+fetchFiller : String -> String -> String -> Task M.ValuationsError (List Entity.Ugimage)
 fetchFiller httpsrv token sub =
+    fetchImages httpsrv token sub "40" "filler"
+
+
+fetchValid : String -> String -> String -> Task M.ValuationsError (List Entity.Ugimage)
+fetchValid httpsrv token sub =
+    fetchImages httpsrv token sub "80" "valid"
+
+
+fetchInvalid : String -> String -> String -> Task M.ValuationsError (List Entity.Ugimage)
+fetchInvalid httpsrv token sub =
+    fetchImages httpsrv token sub "80" "invalid"
+
+
+fetchImages : String -> String -> String -> String -> String -> Task M.ValuationsError (List Entity.Ugimage)
+fetchImages httpsrv token sub count kind =
     fetchUgimgsets httpsrv token sub
         |> Task.mapError M.ReqFail
         |> Task.andThen
             (\ugimgsets ->
                 case ugimsetsToString ugimgsets of
                     Just id ->
-                        fetchUgimages httpsrv token "40" "filler" id
+                        fetchUgimages httpsrv token count kind id
                             |> Task.mapError M.ReqFail
 
                     Nothing ->
@@ -119,7 +140,7 @@ ugimsetsToString ugimgset =
         |> Maybe.map .id
 
 
-fetchUgimages : String -> String -> String -> String -> String -> Task Http.Error Entity.Ugimages
+fetchUgimages : String -> String -> String -> String -> String -> Task Http.Error (List Entity.Ugimage)
 fetchUgimages httpsrv token limit gimgtypeSlug ugimgsetId =
     getRequest token
         (httpsrv
@@ -130,7 +151,7 @@ fetchUgimages httpsrv token limit gimgtypeSlug ugimgsetId =
             ++ "&valEach=true&gimgtypeSlug="
             ++ gimgtypeSlug
         )
-        Entity.ugimagesDecoder
+        M.ugimageDecoder
 
 
 fetchUgimgsets : String -> String -> String -> Task Http.Error (List Entity.Ugimgset)

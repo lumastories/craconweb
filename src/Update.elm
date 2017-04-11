@@ -275,19 +275,19 @@ update msg model =
             ( { model | fillerImages = Just ugimages }, Cmd.none )
 
         ValidResp (Ok ugimages) ->
-            ( { model | validImages = ugimages }, Cmd.none )
+            ( { model | validImages = Just ugimages }, Cmd.none )
 
         InvalidResp (Ok ugimages) ->
-            ( { model | invalidImages = ugimages }, Cmd.none )
+            ( { model | invalidImages = Just ugimages }, Cmd.none )
 
         FillerResp (Err err) ->
             (valuationsErrState model err)
 
         ValidResp (Err err) ->
-            (httpErrorState model err)
+            (valuationsErrState model err)
 
         InvalidResp (Err err) ->
-            (httpErrorState model err)
+            (valuationsErrState model err)
 
         AuthResp (Err err) ->
             (httpErrorState model err)

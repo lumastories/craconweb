@@ -24,9 +24,9 @@ type alias Model =
     , currentTimeDelta : Time.Time
     , user : Entity.User
     , authRecord : Entity.AuthRecord
-    , validImages : List Entity.Ugimage
-    , invalidImages : List Entity.Ugimage
-    , fillerImages : Maybe Entity.Ugimages
+    , validImages : Maybe (List Entity.Ugimage)
+    , invalidImages : Maybe (List Entity.Ugimage)
+    , fillerImages : Maybe (List Entity.Ugimage)
     , userGroupId : Maybe String
     , loading : Maybe String
     , glitching : Maybe String
@@ -133,9 +133,9 @@ type
     | RegisterUserResp (Result Http.Error Entity.User)
     | GroupResp (Result Http.Error Entity.Group)
     | RoleResp (Result Http.Error Entity.Role)
-    | FillerResp (Result ValuationsError Entity.Ugimages)
-    | ValidResp (Result Http.Error (List Entity.Ugimage))
-    | InvalidResp (Result Http.Error (List Entity.Ugimage))
+    | FillerResp (Result ValuationsError (List Entity.Ugimage))
+    | ValidResp (Result ValuationsError (List Entity.Ugimage))
+    | InvalidResp (Result ValuationsError (List Entity.Ugimage))
       -- ADMIN
     | TryRegisterUser
     | SetRegistration String String
@@ -158,6 +158,13 @@ type
 ugimgsetsDecoder : JD.Decoder (List Entity.Ugimgset)
 ugimgsetsDecoder =
     JD.field "ugimgsets" (JD.list Entity.ugimgsetDecoder)
+        |> JD.maybe
+        |> JD.map (Maybe.withDefault [])
+
+
+ugimageDecoder : JD.Decoder (List Entity.Ugimage)
+ugimageDecoder =
+    JD.field "ugimages" (JD.list Entity.ugimageDecoder)
 
 
 type alias ErrorCode =
