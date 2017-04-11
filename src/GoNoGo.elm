@@ -18,15 +18,14 @@ type alias Trial =
     , imageUrl : String
     , kind : Kind
     , stage : Stage
-    , lastTransition : Time
     , reason : Maybe Reason
     }
 
 
 type Stage
-    = Picture
-    | RedCross
-    | Pause
+    = NotStarted
+    | Picture Time
+    | RedCross Time
 
 
 type Kind
@@ -55,49 +54,54 @@ updateTime : Settings -> Time -> Trial -> TrialResult Trial msg
 updateTime settings currTime trial =
     let
         trans =
-            checkTransition trial currTime trial.lastTransition
+            checkTransition trial currTime
     in
         case trial.stage of
-            Picture ->
-                let
-                    ( stage, reason ) =
-                        if isGo trial.kind then
-                            ( RedCross, IndicationTimeout )
-                        else
-                            ( Pause, NoGoSuccess )
-                in
-                    trans settings.picture
-                        (Continuing { trial | stage = stage, reason = updateReason reason trial.reason })
+            NotStarted ->
+                Continuing { trial | stage = Picture currTime }
 
-            RedCross ->
-                trans settings.redCross
-                    (Continuing { trial | stage = Pause, lastTransition = currTime })
+            Picture timeSince ->
+                if isGo trial.kind then
+                    trans timeSince
+                        settings.picture
+                        (Continuing
+                            { trial
+                                | stage = RedCross currTime
+                                , reason =
+                                    updateReason IndicationTimeout trial.reason
+                            }
+                        )
+                else
+                    Complete (updateReason IndicationTimeout trial.reason)
 
-            Pause ->
-                trans settings.pause
+            RedCross timeSince ->
+                trans timeSince
+                    settings.redCross
                     (Complete trial.reason)
 
 
 updateIndication : Time -> Direction -> Trial -> TrialResult Trial msg
 updateIndication currTime direction trial =
-    if trial.stage == Picture then
-        if isGo trial.kind then
-            if trial.position == direction then
-                Continuing
-                    { trial
-                        | stage = Pause
-                        , reason = updateReason (GoSuccess currTime) trial.reason
-                    }
+    case trial.stage of
+        Picture timeSince ->
+            if isGo trial.kind then
+                if trial.position == direction then
+                    Complete (updateReason (GoSuccess currTime) trial.reason)
+                else
+                    Continuing
+                        { trial
+                            | stage = RedCross currTime
+                            , reason = updateReason (WrongIndication currTime) trial.reason
+                        }
             else
-                Continuing
-                    { trial
-                        | stage = RedCross
-                        , reason = updateReason (WrongIndication currTime) trial.reason
-                    }
-        else
-            Continuing { trial | reason = updateReason (IndicatedOnNoGo currTime) trial.reason }
-    else
-        Continuing trial
+                Continuing { trial | reason = updateReason (IndicatedOnNoGo currTime) trial.reason }
+
+        _ ->
+            Continuing trial
+
+
+
+-- TODO doesn't handle left/right
 
 
 view : Trial -> Html msg
@@ -108,14 +112,19 @@ view trial =
 content : Stage -> String -> Html msg
 content stage url =
     case stage of
-        Picture ->
-            img [ src url ] []
+        NotStarted ->
+            pictureView url
 
-        RedCross ->
+        Picture _ ->
+            pictureView url
+
+        RedCross _ ->
             img [ src "redCrossUrl" ] []
 
-        Pause ->
-            text ""
+
+pictureView : String -> Html msg
+pictureView url =
+    img [ src url ] []
 
 
 border : Kind -> List (Html msg) -> Html msg

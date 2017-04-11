@@ -17,16 +17,16 @@ type alias Trial =
     { correctPosition : Int
     , imageUrls : List String
     , stage : Stage
-    , lastTransition : Time
     , reason : Maybe Reason
     }
 
 
 type Stage
-    = FixationCross
-    | SelectionGrid
-    | SuccessAnimation
-    | FailureAnimation
+    = NotStarted
+    | FixationCross Time
+    | SelectionGrid Time
+    | SuccessAnimation Time
+    | FailureAnimation Time
 
 
 type alias Settings =
@@ -40,65 +40,77 @@ updateTime : Settings -> Time -> Trial -> TrialResult Trial msg
 updateTime settings currTime trial =
     let
         trans =
-            checkTransition trial currTime trial.lastTransition
+            checkTransition trial currTime
     in
         case trial.stage of
-            FixationCross ->
-                trans settings.fixationCross
-                    (Continuing { trial | stage = SelectionGrid })
+            NotStarted ->
+                Continuing { trial | stage = FixationCross currTime }
 
-            SelectionGrid ->
-                trans settings.selectionGrid
+            FixationCross timeSince ->
+                trans timeSince
+                    settings.fixationCross
+                    (Continuing { trial | stage = SelectionGrid currTime })
+
+            SelectionGrid timeSince ->
+                trans timeSince
+                    settings.selectionGrid
                     (Continuing
                         { trial
-                            | stage = FailureAnimation
+                            | stage = FailureAnimation currTime
                             , reason = updateReason IndicationTimeout trial.reason
                         }
                     )
 
-            SuccessAnimation ->
-                trans settings.animation
+            SuccessAnimation timeSince ->
+                trans timeSince
+                    settings.animation
                     (Complete trial.reason)
 
-            FailureAnimation ->
-                trans settings.animation
+            FailureAnimation timeSince ->
+                trans timeSince
+                    settings.animation
                     (Complete trial.reason)
 
 
 updateIndication : Time -> Int -> Trial -> TrialResult Trial msg
 updateIndication currTime selection trial =
-    if trial.stage == SelectionGrid then
-        if selection == trial.correctPosition then
-            Continuing
-                { trial
-                    | stage = SuccessAnimation
-                    , reason = updateReason (GoSuccess currTime) trial.reason
-                }
-        else
-            Continuing
-                { trial
-                    | stage = FailureAnimation
-                    , reason =
-                        updateReason
-                            (WrongIndication currTime)
-                            trial.reason
-                }
-    else
-        Continuing trial
+    case trial.stage of
+        SelectionGrid _ ->
+            if selection == trial.correctPosition then
+                Continuing
+                    { trial
+                        | stage = SuccessAnimation currTime
+                        , reason = updateReason (GoSuccess currTime) trial.reason
+                    }
+            else
+                Continuing
+                    { trial
+                        | stage = FailureAnimation currTime
+                        , reason =
+                            updateReason
+                                (WrongIndication currTime)
+                                trial.reason
+                    }
+
+        _ ->
+            Continuing trial
 
 
 view : (Int -> msg) -> Trial -> Html msg
 view msgF trial =
     case trial.stage of
-        FixationCross ->
+        NotStarted ->
             img [ src "fixationCrossUrl" ] []
 
-        SelectionGrid ->
+        FixationCross _ ->
+            img [ src "fixationCrossUrl" ] []
+
+        SelectionGrid _ ->
             div []
                 (List.indexedMap (\i url -> img [ src url, onClick (msgF i) ] []) trial.imageUrls)
 
-        SuccessAnimation ->
+        SuccessAnimation _ ->
             text ""
 
-        FailureAnimation ->
+        FailureAnimation _ ->
             text ""

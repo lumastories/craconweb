@@ -16,19 +16,21 @@ type alias Trial =
     , leftImageUrl : String
     , rightImageUrl : String
     , stage : Stage
-    , lastTransition : Time
+    , reason : Maybe Reason
     }
 
 
 type Stage
-    = Pictures
-    | Probe
-    | FixationCross
+    = NotStarted
+    | FixationCross Time
+    | Pictures Time
+    | Probe Time
 
 
 type alias Settings =
     { pictures : Time
     , fixationCross : Time
+    , probe : Time
     }
 
 
@@ -36,38 +38,46 @@ updateTime : Settings -> Time -> Trial -> TrialResult Trial msg
 updateTime settings currTime trial =
     let
         trans =
-            checkTransition trial currTime trial.lastTransition
+            checkTransition trial currTime
     in
         case trial.stage of
-            FixationCross ->
-                trans settings.fixationCross (Continuing { trial | stage = Pictures })
+            NotStarted ->
+                Continuing { trial | stage = FixationCross currTime }
 
-            Pictures ->
-                trans settings.pictures (Continuing { trial | stage = Probe })
+            FixationCross timeSince ->
+                trans settings.fixationCross timeSince (Continuing { trial | stage = Pictures currTime })
 
-            Probe ->
-                Continuing trial
+            Pictures timeSince ->
+                trans settings.pictures timeSince (Continuing { trial | stage = Probe currTime })
+
+            Probe timeSince ->
+                trans settings.probe timeSince (Complete trial.reason)
 
 
 updateIndication : Time -> Direction -> Trial -> TrialResult Trial msg
 updateIndication currTime direction trial =
-    if trial.stage == Probe then
-        if trial.probePosition == direction then
-            Complete (Just (GoSuccess currTime))
-        else
-            Complete (Just (WrongIndication currTime))
-    else
-        Continuing trial
+    case trial.stage of
+        Probe _ ->
+            if trial.probePosition == direction then
+                Complete (Just (GoSuccess currTime))
+            else
+                Complete (Just (WrongIndication currTime))
+
+        _ ->
+            Continuing trial
 
 
 view : Trial -> Html msg
 view trial =
     case trial.stage of
-        FixationCross ->
+        NotStarted ->
             text ""
 
-        Pictures ->
+        FixationCross _ ->
             text ""
 
-        Probe ->
+        Pictures _ ->
+            text ""
+
+        Probe _ ->
             text ""

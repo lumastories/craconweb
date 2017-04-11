@@ -33,10 +33,6 @@ type TrialResult trial msg
     | ContinuingWithEvent trial (Cmd msg)
 
 
-
--- TODO make this not horrible (fix the problem with uninitialized time)
-
-
 checkTransition :
     trial
     -> Time
