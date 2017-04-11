@@ -244,31 +244,20 @@ update msg model =
                     }
 
                 gameSettings blocks currTime =
-                    GM.init
-                        { gameConstructor = GM.StopSignal
-                        , blocks = blocks
-                        , currTime = currTime
-                        , settings = trialSettings
-                        , instructionsView = StopSignal.instructions
-                        , instructionsDuration = 10 * Time.second
-                        , trialRestView = Html.text ""
-                        , trialRestDuration = 500 * Time.millisecond
-                        , blockRestView = StopSignal.blockRestView
-                        , blockRestDuration = 1500 * Time.millisecond
-                        }
+                    { gameConstructor = GM.StopSignal
+                    , blocks = blocks
+                    , currTime = currTime
+                    , settings = trialSettings
+                    , instructionsView = StopSignal.instructions
+                    , instructionsDuration = 10 * Time.second
+                    , trialRestView = Html.text ""
+                    , trialRestDuration = 500 * Time.millisecond
+                    , blockRestView = StopSignal.blockRestView
+                    , blockRestDuration = 1500 * Time.millisecond
+                    }
             in
                 ( model
-                , StopSignal.init trialSettings [] []
-                    |> GenGame.generatorToTask
-                    |> Task.andThen
-                        (\blocks ->
-                            Time.now
-                                |> Task.map
-                                    (\currTime ->
-                                        gameSettings blocks currTime
-                                    )
-                        )
-                    |> Task.perform PlayGame
+                , handleGameInit (StopSignal.init trialSettings [] []) gameSettings
                 )
 
         -- TODO fetch configuration from the model
@@ -282,22 +271,21 @@ update msg model =
                     , redCross = 500
                     }
 
-                settings blocks currTime =
-                    GM.init
-                        { gameConstructor = GM.GoNoGo
-                        , blocks = blocks
-                        , currTime = currTime
-                        , settings = trialSettings
-                        , instructionsView = GoNoGo.instructions
-                        , instructionsDuration = 10 * Time.second
-                        , trialRestView = Html.text ""
-                        , trialRestDuration = 500 * Time.millisecond
-                        , blockRestView = GoNoGo.blockRestView
-                        , blockRestDuration = 1500 * Time.millisecond
-                        }
+                gameSettings blocks currTime =
+                    { gameConstructor = GM.GoNoGo
+                    , blocks = blocks
+                    , currTime = currTime
+                    , settings = trialSettings
+                    , instructionsView = GoNoGo.instructions
+                    , instructionsDuration = 10 * Time.second
+                    , trialRestView = Html.text ""
+                    , trialRestDuration = 500 * Time.millisecond
+                    , blockRestView = GoNoGo.blockRestView
+                    , blockRestDuration = 1500 * Time.millisecond
+                    }
             in
                 ( model
-                , handleGameInit (GoNoGo.init trialSettings [] [] []) settings
+                , handleGameInit (GoNoGo.init trialSettings [] [] []) gameSettings
                 )
 
         GameResp (Ok game) ->
@@ -389,7 +377,10 @@ update msg model =
             (httpErrorState model err)
 
 
-handleGameInit : Generator (List (List task)) -> (List (List task) -> Time -> GM.Game Msg) -> Cmd Msg
+handleGameInit :
+    Generator (List (List trial))
+    -> (List (List trial) -> Time -> GM.InitConfig settings trial Msg)
+    -> Cmd Msg
 handleGameInit blockGenerator gameF =
     blockGenerator
         |> GenGame.generatorToTask
@@ -399,6 +390,7 @@ handleGameInit blockGenerator gameF =
                     |> Task.map
                         (\currTime ->
                             gameF blocks currTime
+                                |> GM.init
                         )
             )
         |> Task.perform PlayGame
