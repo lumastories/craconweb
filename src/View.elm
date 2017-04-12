@@ -865,7 +865,7 @@ editButtons =
             ]
         , button
             ([ class "button is-link" ] ++ (linkAttrs R.adminPath))
-            [ text "Cancel" ]
+            [ text "Go Back" ]
         ]
 
 

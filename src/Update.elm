@@ -283,9 +283,21 @@ update msg model =
                     , blockRestView = GoNoGo.blockRestView
                     , blockRestDuration = 1500 * Time.millisecond
                     }
+
+                v =
+                    Maybe.map (List.filterMap .gimage >> List.map (.path >> (++) model.filesrv)) model.validImages
+                        |> Maybe.withDefault []
+
+                i =
+                    Maybe.map (List.filterMap .gimage >> List.map (.path >> (++) model.filesrv)) model.invalidImages
+                        |> Maybe.withDefault []
+
+                f =
+                    Maybe.map (List.filterMap .gimage >> List.map (.path >> (++) model.filesrv)) model.fillerImages
+                        |> Maybe.withDefault []
             in
                 ( model
-                , handleGameInit (GoNoGo.init trialSettings [] [] []) gameSettings
+                , handleGameInit (GoNoGo.init trialSettings v i f) gameSettings
                 )
 
         GameResp (Ok game) ->

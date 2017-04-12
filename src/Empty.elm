@@ -13,6 +13,7 @@ emptyModel model =
         , presses = []
         , jwtencoded = ""
         , visitor = Model.Anon
+        , users = []
         , isMenuActive = False
         , mainMenuItems = Routing.initMenuItems
         , currentTime = 0
