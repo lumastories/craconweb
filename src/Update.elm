@@ -42,7 +42,7 @@ update msg model =
         SetStatus message ->
             ( { model | informing = Just message }, Cmd.none )
 
-        NewCurrentTime now ->
+        Tick now ->
             {- if playing game, calculate time since game started
                display stims according to Entity.Game rules
                (if now - lastOnset >= 1250, goto next trial)
@@ -431,7 +431,7 @@ update msg model =
             in
                 ( { model | isMenuActive = active }, Cmd.none )
 
-        Tick t ->
+        NewCurrentTime t ->
             handleGameUpdate (GM.updateTime t) { model | currentTime = t }
 
         IntIndication i ->

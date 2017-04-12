@@ -227,7 +227,7 @@ updateHelper gameConstructor updateF currTime data =
 
         durationSwitch duration remaining =
             if currTime - data.prevTime >= duration then
-                reRun { data | remainingBlocks = remaining, currTime = currTime }
+                reRun { data | remainingBlocks = remaining, prevTime = currTime }
             else
                 Running (gameConstructor { data | currTime = currTime }) ! []
     in
