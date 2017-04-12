@@ -2,6 +2,7 @@ module Update exposing (update)
 
 import Api
 import Empty
+import Entity
 import GenGame
 import Html
 import Http
@@ -21,6 +22,7 @@ import Time exposing (Time)
 import GameManager as GM
 import StopSignal
 import GoNoGo
+import DotProbe
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -259,16 +261,7 @@ update msg model =
                 getImages =
                     getFullImagePaths model.filesrv
             in
-                Maybe.map2
-                    (\v i ->
-                        ( model
-                        , handleGameInit (StopSignal.init trialSettings v i) gameSettings
-                        )
-                    )
-                    (getImages model.validImages)
-                    (getImages model.invalidImages)
-                    |> Maybe.withDefault
-                        ( model, Cmd.none )
+                applyImages model gameSettings (\v i _ -> StopSignal.init trialSettings v i)
 
         InitGoNoGo ->
             let
@@ -296,16 +289,31 @@ update msg model =
                 getImages =
                     getFullImagePaths model.filesrv
             in
-                Maybe.map3
-                    (\v i f ->
-                        ( model
-                        , handleGameInit (GoNoGo.init trialSettings v i f) gameSettings
-                        )
-                    )
-                    (getImages model.validImages)
-                    (getImages model.invalidImages)
-                    (getImages model.fillerImages)
-                    |> Maybe.withDefault ( model, Cmd.none )
+                applyImages model gameSettings (GoNoGo.init trialSettings)
+
+        -- TODO fetch configuration from the model
+        InitDotProbe ->
+            let
+                trialSettings =
+                    { blockCount = 10000
+                    , fixationCross = 500 * Time.millisecond
+                    , pictures = 500
+                    }
+
+                gameSettings blocks currTime =
+                    { gameConstructor = GM.DotProbe
+                    , blocks = blocks
+                    , currTime = currTime
+                    , settings = trialSettings
+                    , instructionsView = DotProbe.instructions
+                    , instructionsDuration = 10 * Time.second
+                    , trialRestView = Html.text ""
+                    , trialRestDuration = 0
+                    , blockRestView = DotProbe.blockRestView
+                    , blockRestDuration = 1500 * Time.millisecond
+                    }
+            in
+                applyImages model gameSettings (\v i _ -> DotProbe.init trialSettings v i)
 
         GameResp (Ok game) ->
             case game.slug of
@@ -396,6 +404,27 @@ update msg model =
             (httpErrorState model err)
 
 
+applyImages :
+    Model
+    -> (List (List trial) -> Time -> GM.InitConfig settings trial Msg)
+    -> (List String -> List String -> List String -> Generator (List (List trial)))
+    -> ( Model, Cmd Msg )
+applyImages model gameSettings fun =
+    let
+        getImages =
+            getFullImagePaths model.filesrv
+    in
+        Maybe.map3
+            (\v i f ->
+                ( model, handleGameInit (fun v i f) gameSettings )
+            )
+            (getImages model.validImages)
+            (getImages model.invalidImages)
+            (getImages model.fillerImages)
+            |> Maybe.withDefault ( model, Cmd.none )
+
+
+getFullImagePaths : String -> Maybe (List Entity.Ugimage) -> Maybe (List String)
 getFullImagePaths prefix =
     Maybe.map (List.filterMap .gimage >> List.map (.path >> (++) (prefix ++ "/")))
 
