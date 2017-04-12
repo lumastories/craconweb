@@ -2,12 +2,16 @@ module DotProbe exposing (..)
 
 import GenGame
     exposing
-        ( Direction
+        ( Direction(Left, Right)
         , TrialResult(Continuing, Complete)
         , Reason(GoSuccess, WrongIndication)
         , checkTransition
         )
+import List.Extra
 import Html exposing (Html, text)
+import Random exposing (Generator)
+import Random.Extra
+import Random.List
 import Time exposing (Time)
 
 
@@ -28,10 +32,58 @@ type Stage
 
 
 type alias Settings =
-    { pictures : Time
+    { blockCount : Int
+    , pictures : Time
     , fixationCross : Time
-    , probe : Time
     }
+
+
+init : Settings -> List String -> List String -> Generator (List (List Trial))
+init settings responseUrls nonResponseUrls =
+    Random.Extra.andThen2
+        (\sGo sNoGo ->
+            let
+                directions dLeft dRight ( l, r ) =
+                    nintyTenSplit dLeft dRight
+                        |> Random.map (initTrial l r)
+
+                triple =
+                    List.concat << List.repeat 3
+
+                leftGos =
+                    List.Extra.zip sGo sNoGo
+                        |> triple
+                        |> List.map (directions Left Right)
+
+                rightGos =
+                    List.Extra.zip sNoGo sGo
+                        |> triple
+                        |> List.map (directions Right Left)
+            in
+                Random.Extra.combine (leftGos ++ rightGos)
+                    |> Random.andThen Random.List.shuffle
+                    |> Random.map (List.Extra.greedyGroupsOf settings.blockCount)
+        )
+        (Random.List.shuffle responseUrls)
+        (Random.List.shuffle nonResponseUrls)
+
+
+initTrial : String -> String -> Direction -> Trial
+initTrial left right direction =
+    { probePosition = direction
+    , leftImageUrl = left
+    , rightImageUrl = right
+    , stage = NotStarted
+    , reason = Nothing
+    }
+
+
+nintyTenSplit : a -> a -> Generator a
+nintyTenSplit ninty ten =
+    Random.Extra.frequency
+        [ ( 0.9, Random.Extra.constant ninty )
+        , ( 0.1, Random.Extra.constant ten )
+        ]
 
 
 updateTime : Settings -> Time -> Trial -> TrialResult Trial msg
@@ -51,13 +103,13 @@ updateTime settings currTime trial =
                 trans settings.pictures timeSince (Continuing { trial | stage = Probe currTime })
 
             Probe timeSince ->
-                trans settings.probe timeSince (Complete trial.reason)
+                Continuing trial
 
 
 updateIndication : Time -> Direction -> Trial -> TrialResult Trial msg
 updateIndication currTime direction trial =
     case trial.stage of
-        Probe _ ->
+        Probe timeSince ->
             if trial.probePosition == direction then
                 Complete (Just (GoSuccess currTime))
             else
@@ -81,3 +133,13 @@ view trial =
 
         Probe _ ->
             text ""
+
+
+instructions : Html msg
+instructions =
+    text "Add instructions"
+
+
+blockRestView : List (Maybe Reason) -> Html msg
+blockRestView results =
+    text ""
