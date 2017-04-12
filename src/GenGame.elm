@@ -41,17 +41,10 @@ checkTransition :
     -> TrialResult trial msg
     -> TrialResult trial msg
 checkTransition trial currTime lastTransition duration expired =
-    let
-        lastT =
-            if lastTransition < 1 then
-                currTime
-            else
-                lastTransition
-    in
-        if currTime - lastT >= duration then
-            expired
-        else
-            Continuing trial
+    if currTime - lastTransition >= duration then
+        expired
+    else
+        Continuing trial
 
 
 updateReason : a -> Maybe a -> Maybe a

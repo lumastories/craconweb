@@ -7,7 +7,7 @@ module GameManager
         , updateTime
         , updateIndication
         , updateIntIndication
-        , view
+          -- , view
         )
 
 import Html exposing (Html)
@@ -33,26 +33,30 @@ type GameStatus msg
     | Results (List (Maybe GenGame.Reason))
 
 
-type State
-    = Instructions Time
-    | Trial
-    | TrialRest Time
-    | BlockRest (List (Maybe GenGame.Reason)) Time
+
+-- type State
+--     = Instructions Time
+--     | Trial
+--     | TrialRest Time
+--     | BlockRest (List (Maybe GenGame.Reason)) Time
 
 
 type alias GameData settings trial msg =
-    { remainingBlocks : List (List trial)
+    { remainingBlocks : List (Blocks trial)
     , currTime : Time
+    , prevTime : Time
+    , startTime : Time
     , blockResults : List (Maybe GenGame.Reason)
     , results : List (Maybe GenGame.Reason)
     , settings : settings
-    , state : State
     , instructionsView : Html msg
     , trialRestView : Html msg
     , blockRestView : List (Maybe GenGame.Reason) -> Html msg
+    , reportView : List (Maybe GenGame.Reason) -> Html msg
     , instructionsDuration : Time
     , trialRestDuration : Time
     , blockRestDuration : Time
+    , reportDuration : Time
     }
 
 
@@ -67,25 +71,59 @@ type alias InitConfig settings trial msg =
     , trialRestDuration : Time
     , blockRestView : List (Maybe GenGame.Reason) -> Html msg
     , blockRestDuration : Time
+    , reportView : List (Maybe GenGame.Reason) -> Html msg
+    , reportDuration : Time
     }
+
+
+type Trials trial
+    = TrialRest Time
+    | TrialActive trial
+
+
+type Blocks trial
+    = BlockRest Time
+    | BlockActive (List (Trials trial))
+    | Instructions Time
+    | Report Time
 
 
 init : InitConfig settings trial msg -> Game msg
 init initConfig =
     initConfig.gameConstructor
-        { remainingBlocks = initConfig.blocks
+        { remainingBlocks =
+            padBlocks
+                initConfig.trialRestDuration
+                initConfig.blockRestDuration
+                initConfig.blocks
         , currTime = initConfig.currTime
+        , prevTime = initConfig.currTime
+        , startTime = initConfig.currTime
         , blockResults = []
         , results = []
         , settings = initConfig.settings
-        , state = Instructions initConfig.currTime
         , instructionsView = initConfig.instructionsView
         , trialRestView = initConfig.trialRestView
         , blockRestView = (initConfig.blockRestView)
         , instructionsDuration = initConfig.instructionsDuration
         , trialRestDuration = initConfig.trialRestDuration
         , blockRestDuration = initConfig.blockRestDuration
+        , reportView = initConfig.reportView
+        , reportDuration = initConfig.reportDuration
         }
+
+
+padBlocks : Time -> Time -> List (List trial) -> List (Blocks trial)
+padBlocks trialRest blockRest blocks =
+    blocks
+        |> List.map
+            (\block ->
+                block
+                    |> List.map TrialActive
+                    |> List.intersperse (TrialRest trialRest)
+                    |> BlockActive
+            )
+        |> List.intersperse (BlockRest blockRest)
 
 
 updateTime : Time -> Game msg -> ( GameStatus msg, Cmd msg )
@@ -124,59 +162,72 @@ updateHelper :
     -> GameData settings trial msg
     -> ( GameStatus msg, Cmd msg )
 updateHelper gameConstructor updateF currTime data =
-    case data.remainingBlocks of
-        [] ->
-            Results (List.reverse data.results) ! []
+    let
+        reRun =
+            updateHelper gameConstructor updateF currTime
 
-        [] :: blocks ->
-            Running
-                (gameConstructor
-                    { data
-                        | state = BlockRest (List.reverse data.blockResults) currTime
-                        , blockResults = []
-                        , results = data.blockResults ++ data.results
-                    }
-                )
-                ! []
+        durationSwitch duration remaining =
+            if currTime - data.prevTime >= duration then
+                reRun { data | remainingBlocks = remaining, prevTime = currTime }
+            else
+                Running (gameConstructor { data | currTime = currTime }) ! []
+    in
+        case data.remainingBlocks of
+            [] ->
+                Results (List.reverse data.results) ! []
 
-        (x :: xs) :: blocks ->
-            case updateF x of
-                Complete reason ->
-                    Running
-                        (gameConstructor
-                            { data
-                                | remainingBlocks = xs :: blocks
-                                , results = reason :: data.results
-                                , currTime = currTime
-                                , state =
-                                    -- TODO A bit hacky, need to figure out a better way, but it should be fine.
-                                    if List.isEmpty xs then
-                                        Trial
-                                    else
-                                        TrialRest currTime
-                            }
-                        )
-                        ! []
+            (BlockRest duration) :: blocks ->
+                durationSwitch duration blocks
 
-                Continuing trial ->
-                    Running
-                        (gameConstructor
-                            { data
-                                | remainingBlocks = (trial :: xs) :: blocks
-                                , currTime = currTime
-                            }
-                        )
-                        ! []
+            (Instructions duration) :: blocks ->
+                durationSwitch duration blocks
 
-                ContinuingWithEvent trial event ->
-                    Running
-                        (gameConstructor
-                            { data
-                                | remainingBlocks = (trial :: xs) :: blocks
-                                , currTime = currTime
-                            }
-                        )
-                        ! [ event ]
+            (Report duration) :: blocks ->
+                durationSwitch duration blocks
+
+            -- (x :: xs) :: blocks ->
+            (BlockActive block) :: blocks ->
+                case block of
+                    [] ->
+                        reRun { data | remainingBlocks = blocks }
+
+                    (TrialRest duration) :: trials ->
+                        durationSwitch duration (BlockActive trials :: blocks)
+
+                    (TrialActive trial) :: trials ->
+                        case updateF trial of
+                            Complete reason ->
+                                Running
+                                    (gameConstructor
+                                        { data
+                                            | remainingBlocks = BlockActive trials :: blocks
+                                            , results = reason :: data.results
+                                            , currTime = currTime
+                                        }
+                                    )
+                                    ! []
+
+                            Continuing trial ->
+                                Running
+                                    (gameConstructor
+                                        { data
+                                            | remainingBlocks =
+                                                BlockActive (TrialActive trial :: trials) :: blocks
+                                            , currTime = currTime
+                                        }
+                                    )
+                                    ! []
+
+                            ContinuingWithEvent trial event ->
+                                Running
+                                    (gameConstructor
+                                        { data
+                                            | remainingBlocks =
+                                                BlockActive (TrialActive trial :: trials) :: blocks
+                                            , currTime = currTime
+                                        }
+                                    )
+                                    ! [ event ]
 
 
 updateDirectionIndication : GenGame.Direction -> Game msg -> ( GameStatus msg, Cmd msg )
@@ -258,23 +309,26 @@ view intMsg game =
 
 viewHelper : (trial -> Html msg) -> GameData settings trial msg -> Html msg
 viewHelper viewF data =
-    case data.state of
-        Instructions time ->
+    case data.remainingBlocks of
+        [] ->
+            Html.text ""
+
+        (BlockRest duration) :: blocks ->
+            data.blockRestView data.blockResults
+
+        (Instructions duration) :: blocks ->
             data.instructionsView
 
-        TrialRest time ->
-            data.trialRestView
+        (Report duration) :: blocks ->
+            data.reportView data.results
 
-        BlockRest blockResults time ->
-            data.blockRestView blockResults
-
-        Trial ->
-            case data.remainingBlocks of
+        (BlockActive block) :: blocks ->
+            case block of
                 [] ->
                     Html.text ""
 
-                [] :: _ ->
-                    Html.text ""
+                (TrialRest duration) :: trials ->
+                    data.trialRestView
 
-                (trial :: _) :: _ ->
+                (TrialActive trial) :: trials ->
                     viewF trial
