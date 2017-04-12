@@ -398,7 +398,7 @@ update msg model =
 
 
 getFullImagePaths prefix =
-    Maybe.map (List.filterMap .gimage >> List.map (.path >> (++) prefix))
+    Maybe.map (List.filterMap .gimage >> List.map (.path >> (++) (prefix ++ "/")))
 
 
 handleGameInit :
