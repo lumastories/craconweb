@@ -267,9 +267,10 @@ update msg model =
         InitGoNoGo ->
             let
                 trialSettings =
-                    { blockResponseCount = 20
-                    , blockNonResponseCount = 20
-                    , blockFillerResponseCount = 10
+                    { blockCount = 10000
+                    , responseCount = 40
+                    , nonResponseCount = 40
+                    , fillerCount = 20
                     , picture = 1250 * Time.millisecond
                     , redCross = 500 * Time.millisecond
                     }
