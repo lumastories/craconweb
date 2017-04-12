@@ -89,6 +89,7 @@ type Msg
     | InitGoNoGo
     | InitDotProbe
     | InitRespondSignal
+    | InitVisualSearch
     | PlayGame (GameManager.Game Msg)
     | StopGame
     | AuthResp (Result Http.Error Entity.Auth)
