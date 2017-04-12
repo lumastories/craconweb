@@ -397,6 +397,10 @@ update msg model =
             (httpErrorState model err)
 
 
+
+--comment
+
+
 getFullImagePaths prefix =
     Maybe.map (List.filterMap .gimage >> List.map (.path >> (++) (prefix ++ "/repo/")))
 
