@@ -10,6 +10,10 @@ import GenGame
 import Html exposing (Html, div, img, text)
 import Html.Attributes exposing (src)
 import Html.Events exposing (onClick)
+import List.Extra
+import Random exposing (Generator)
+import Random.Extra
+import Random.List
 import Time exposing (Time)
 
 
@@ -30,9 +34,45 @@ type Stage
 
 
 type alias Settings =
-    { fixationCross : Time
+    { picturesPerTrial : Int
+    , blockTrialCount : Int
+    , fixationCross : Time
     , selectionGrid : Time
     , animation : Time
+    }
+
+
+init : Settings -> List String -> List String -> Generator (List (List Trial))
+init settings responseUrls nonResponseUrls =
+    Random.List.shuffle responseUrls
+        |> Random.andThen
+            (\sGo ->
+                List.map
+                    (\rUrl ->
+                        Random.map2
+                            (\i nRUrls ->
+                                nRUrls
+                                    |> List.take (settings.picturesPerTrial - 2)
+                                    |> List.Extra.splitAt i
+                                    |> (\( heads, tail ) ->
+                                            initTrial i (heads ++ (rUrl :: tail))
+                                       )
+                            )
+                            (Random.int 0 (settings.picturesPerTrial - 1))
+                            (Random.List.shuffle nonResponseUrls)
+                    )
+                    sGo
+                    |> Random.Extra.combine
+                    |> Random.map (List.Extra.greedyGroupsOf settings.blockTrialCount)
+            )
+
+
+initTrial : Int -> List String -> Trial
+initTrial i urls =
+    { correctPosition = i
+    , imageUrls = urls
+    , stage = NotStarted
+    , reason = Nothing
     }
 
 
@@ -114,3 +154,13 @@ view msgF trial =
 
         FailureAnimation _ ->
             text ""
+
+
+instructions : Html msg
+instructions =
+    text "Visual Search instructions here"
+
+
+blockRestView : List (Maybe Reason) -> Html msg
+blockRestView results =
+    text "Inter-block resting period."

@@ -39,9 +39,10 @@ type Kind
 
 
 type alias Settings =
-    { blockResponseCount : Int
-    , blockNonResponseCount : Int
-    , blockFillerResponseCount : Int
+    { blockCount : Int
+    , responseCount : Int
+    , nonResponseCount : Int
+    , fillerCount : Int
     , picture : Time
     , redCross : Time
     }
@@ -54,42 +55,39 @@ init :
     -> List String
     -> Generator (List (List Trial))
 init settings responseUrls nonResponseUrls fillerUrls =
-    Random.map3
+    Random.Extra.andThen3
         (\sGo sNoGo ( sGoFill, sNoGoFill ) ->
             let
                 go =
                     sGo
+                        |> List.take settings.responseCount
                         |> List.map (initTrial Go)
-                        |> List.Extra.groupsOf settings.blockResponseCount
 
                 noGo =
                     sNoGo
+                        |> List.take settings.nonResponseCount
                         |> List.map (initTrial NoGo)
-                        |> List.Extra.groupsOf settings.blockNonResponseCount
 
                 goFill =
                     sGoFill
+                        |> List.take ((settings.fillerCount + 1) // 2)
                         |> List.map (initTrial Go)
-                        |> List.Extra.groupsOf ((settings.blockFillerResponseCount + 1) // 2)
 
                 noGoFill =
                     sNoGoFill
+                        |> List.take (settings.fillerCount // 2)
                         |> List.map (initTrial NoGo)
-                        |> List.Extra.groupsOf (settings.blockFillerResponseCount // 2)
             in
-                List.Extra.zip4 go noGo goFill noGoFill
-                    |> List.map
-                        (\( a, b, c, d ) ->
-                            List.concat [ a, b, c, d ]
-                                |> Random.List.shuffle
-                                |> Random.andThen directionalize
-                        )
-                    |> Random.Extra.combine
+                List.concat [ go, noGo, goFill, noGoFill ]
+                    |> List.repeat 2
+                    |> List.concat
+                    |> directionalize
+                    |> Random.andThen Random.List.shuffle
+                    |> Random.map (List.Extra.greedyGroupsOf settings.blockCount)
         )
         (Random.List.shuffle responseUrls)
         (Random.List.shuffle nonResponseUrls)
         (Random.List.shuffle fillerUrls |> Random.map halve)
-        |> Random.andThen identity
 
 
 halve : List a -> ( List a, List a )

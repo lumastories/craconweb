@@ -2,6 +2,7 @@ module Update exposing (update)
 
 import Api
 import Empty
+import Entity
 import GenGame
 import Html
 import Http
@@ -21,6 +22,9 @@ import Time exposing (Time)
 import GameManager as GM
 import StopSignal
 import GoNoGo
+import DotProbe
+import RespondSignal
+import VisualSearch
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -248,35 +252,30 @@ update msg model =
                     , blocks = blocks
                     , currTime = currTime
                     , settings = trialSettings
-                    , instructionsView = StopSignal.instructions
                     , instructionsDuration = 10 * Time.second
+                    , instructionsView = Html.text "Implement an instructions view."
                     , trialRestView = Html.text ""
                     , trialRestDuration = 500 * Time.millisecond
-                    , blockRestView = StopSignal.blockRestView
+                    , trialRestJitter = 0
+                    , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
+                    , reportView = always (Html.text "Implement a report view.")
+                    , reportDuration = 10 * Time.second
                     }
 
                 getImages =
                     getFullImagePaths model.filesrv
             in
-                Maybe.map2
-                    (\v i ->
-                        ( model
-                        , handleGameInit (StopSignal.init trialSettings v i) gameSettings
-                        )
-                    )
-                    (getImages model.validImages)
-                    (getImages model.invalidImages)
-                    |> Maybe.withDefault
-                        ( model, Cmd.none )
+                applyImages model gameSettings (\v i _ -> StopSignal.init trialSettings v i)
 
         -- TODO fetch configuration from the model
         InitGoNoGo ->
             let
                 trialSettings =
-                    { blockResponseCount = 20
-                    , blockNonResponseCount = 20
-                    , blockFillerResponseCount = 10
+                    { blockCount = 10000
+                    , responseCount = 40
+                    , nonResponseCount = 40
+                    , fillerCount = 20
                     , picture = 1250 * Time.millisecond
                     , redCross = 500 * Time.millisecond
                     }
@@ -286,27 +285,111 @@ update msg model =
                     , blocks = blocks
                     , currTime = currTime
                     , settings = trialSettings
-                    , instructionsView = GoNoGo.instructions
                     , instructionsDuration = 10 * Time.second
+                    , instructionsView = Html.text "Implement an instructions view."
                     , trialRestView = Html.text ""
                     , trialRestDuration = 500 * Time.millisecond
-                    , blockRestView = GoNoGo.blockRestView
+                    , trialRestJitter = 0
+                    , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
+                    , reportView = always (Html.text "Implement a report view.")
+                    , reportDuration = 10 * Time.second
                     }
 
                 getImages =
                     getFullImagePaths model.filesrv
             in
-                Maybe.map3
-                    (\v i f ->
-                        ( model
-                        , handleGameInit (GoNoGo.init trialSettings v i f) gameSettings
-                        )
-                    )
-                    (getImages model.validImages)
-                    (getImages model.invalidImages)
-                    (getImages model.fillerImages)
-                    |> Maybe.withDefault ( model, Cmd.none )
+                applyImages model gameSettings (GoNoGo.init trialSettings)
+
+        -- TODO fetch configuration from the model
+        InitDotProbe ->
+            let
+                trialSettings =
+                    { blockCount = 10000
+                    , fixationCross = 500 * Time.millisecond
+                    , pictures = 500
+                    }
+
+                gameSettings blocks currTime =
+                    { gameConstructor = GM.DotProbe
+                    , blocks = blocks
+                    , currTime = currTime
+                    , settings = trialSettings
+                    , instructionsDuration = 10 * Time.second
+                    , instructionsView = Html.text "Implement an instructions view."
+                    , trialRestView = Html.text ""
+                    , trialRestDuration = 0
+                    , trialRestJitter = 0
+                    , blockRestView = always (Html.text "Implement a block rest view.")
+                    , blockRestDuration = 1500 * Time.millisecond
+                    , reportView = always (Html.text "Implement a report view.")
+                    , reportDuration = 10 * Time.second
+                    }
+            in
+                applyImages model gameSettings (\v i _ -> DotProbe.init trialSettings v i)
+
+        -- TODO fetch configuration from the model
+        InitRespondSignal ->
+            let
+                trialSettings =
+                    { totalPictureTime = 100 * Time.millisecond
+                    , feedback = 500
+                    , delayMin = 200
+                    , delayMax = 400
+                    , blockTrialCount = 44
+                    , responseCount = 80
+                    , nonResponseCount = 80
+                    , fillerCount = 32
+                    , audioEvent =
+                        Cmd.none
+                        -- TODO use audio signal port
+                    }
+
+                gameSettings blocks currTime =
+                    { gameConstructor = GM.RespondSignal
+                    , blocks = blocks
+                    , currTime = currTime
+                    , settings = trialSettings
+                    , instructionsView = Html.text "Implement an instructions view."
+                    , instructionsDuration = 10 * Time.second
+                    , trialRestView = Html.text ""
+                    , trialRestDuration = 0
+                    , trialRestJitter = 0
+                    , blockRestView = always (Html.text "Implement a block rest view.")
+                    , blockRestDuration = 1500 * Time.millisecond
+                    , reportView = always (Html.text "Implement a report view.")
+                    , reportDuration = 10 * Time.second
+                    }
+            in
+                applyImages model gameSettings (RespondSignal.init trialSettings)
+
+        InitVisualSearch ->
+            let
+                trialSettings =
+                    { picturesPerTrial = 16
+                    , blockTrialCount = 10000
+                    , fixationCross = 500
+                    , selectionGrid = 3000
+                    , animation = 1000
+                    }
+
+                gameSettings blocks currTime =
+                    { gameConstructor = GM.VisualSearch
+                    , blocks = blocks
+                    , currTime = currTime
+                    , settings = trialSettings
+                    , instructionsView = Html.text "Implement an instructions view."
+                    , instructionsDuration = 10 * Time.second
+                    , trialRestView = Html.text ""
+                    , trialRestDuration = 0
+                    , trialRestJitter = 0
+                    , blockRestView = always (Html.text "Implement a block rest view.")
+                    , blockRestDuration = 1500 * Time.millisecond
+                    , reportView = always (Html.text "Implement a report view.")
+                    , reportDuration = 10 * Time.second
+                    }
+            in
+                applyImages model gameSettings (\v i _ -> VisualSearch.init trialSettings v i)
 
         GameResp (Ok game) ->
             case game.slug of
@@ -397,6 +480,27 @@ update msg model =
             (httpErrorState model err)
 
 
+applyImages :
+    Model
+    -> (List (List trial) -> Time -> GM.InitConfig settings trial Msg)
+    -> (List String -> List String -> List String -> Generator (List (List trial)))
+    -> ( Model, Cmd Msg )
+applyImages model gameSettings fun =
+    let
+        getImages =
+            getFullImagePaths model.filesrv
+    in
+        Maybe.map3
+            (\v i f ->
+                ( model, handleGameInit (fun v i f) gameSettings )
+            )
+            (getImages model.validImages)
+            (getImages model.invalidImages)
+            (getImages model.fillerImages)
+            |> Maybe.withDefault ( model, Cmd.none )
+
+
+getFullImagePaths : String -> Maybe (List Entity.Ugimage) -> Maybe (List String)
 getFullImagePaths prefix =
     Maybe.map (List.filterMap .gimage >> List.map (.path >> (++) (prefix ++ "/repo/")))
 
@@ -406,17 +510,15 @@ handleGameInit :
     -> (List (List trial) -> Time -> GM.InitConfig settings trial Msg)
     -> Cmd Msg
 handleGameInit blockGenerator gameF =
-    blockGenerator
-        |> GenGame.generatorToTask
-        |> Task.andThen
-            (\blocks ->
-                Time.now
-                    |> Task.map
-                        (\currTime ->
-                            gameF blocks currTime
-                                |> GM.init
-                        )
-            )
+    Task.map2
+        (\blocks currTime ->
+            gameF blocks currTime
+                |> GM.init
+                |> GenGame.generatorToTask
+        )
+        (GenGame.generatorToTask blockGenerator)
+        Time.now
+        |> Task.andThen identity
         |> Task.perform PlayGame
 
 
