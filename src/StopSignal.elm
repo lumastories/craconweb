@@ -52,10 +52,10 @@ init settings responseUrls nonResponseUrls =
         (\sGo sNoGo ->
             let
                 go =
-                    List.Extra.groupsOf settings.blockResponseCount sGo
+                    List.Extra.greedyGroupsOf settings.blockResponseCount sGo
 
                 noGo =
-                    List.Extra.groupsOf settings.blockNonResponseCount sNoGo
+                    List.Extra.greedyGroupsOf settings.blockNonResponseCount sNoGo
             in
                 List.Extra.zip go noGo
                     |> List.map (\( a, b ) -> Random.List.shuffle (a ++ b))
