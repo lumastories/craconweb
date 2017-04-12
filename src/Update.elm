@@ -2,15 +2,25 @@ module Update exposing (update)
 
 import Api
 import Empty
+import GenGame
+import Html
 import Http
 import Model exposing (..)
 import Navigation
 import Navigation
 import Port
 import Process
+import Random exposing (Generator)
 import Routing as R
 import Task exposing (Task)
-import Time
+import Time exposing (Time)
+
+
+-- Game Modules
+
+import GameManager as GM
+import StopSignal
+import GoNoGo
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -216,14 +226,67 @@ update msg model =
             , Cmd.none
             )
 
-        PlayGame cmd ->
-            ( model, cmd )
+        PlayGame game ->
+            ( { model | playingGame = Just game }, Cmd.none )
 
         StopGame ->
             ( { model | playingGame = Nothing }, Cmd.none )
 
-        InitGame playingGame ->
-            ( { model | playingGame = Just playingGame }, Cmd.none )
+        -- TODO fetch configuration from the model
+        InitStopSignal ->
+            let
+                trialSettings =
+                    { blockResponseCount = 20
+                    , blockNonResponseCount = 20
+                    , pictureNoBorder = 100 * Time.millisecond
+                    , pictureBorder = 900 * Time.millisecond
+                    , redCross = 500 * Time.millisecond
+                    }
+
+                gameSettings blocks currTime =
+                    { gameConstructor = GM.StopSignal
+                    , blocks = blocks
+                    , currTime = currTime
+                    , settings = trialSettings
+                    , instructionsView = StopSignal.instructions
+                    , instructionsDuration = 10 * Time.second
+                    , trialRestView = Html.text ""
+                    , trialRestDuration = 500 * Time.millisecond
+                    , blockRestView = StopSignal.blockRestView
+                    , blockRestDuration = 1500 * Time.millisecond
+                    }
+            in
+                ( model
+                , handleGameInit (StopSignal.init trialSettings [] []) gameSettings
+                )
+
+        -- TODO fetch configuration from the model
+        InitGoNoGo ->
+            let
+                trialSettings =
+                    { blockResponseCount = 20
+                    , blockNonResponseCount = 20
+                    , blockFillerResponseCount = 10
+                    , picture = 1250
+                    , redCross = 500
+                    }
+
+                gameSettings blocks currTime =
+                    { gameConstructor = GM.GoNoGo
+                    , blocks = blocks
+                    , currTime = currTime
+                    , settings = trialSettings
+                    , instructionsView = GoNoGo.instructions
+                    , instructionsDuration = 10 * Time.second
+                    , trialRestView = Html.text ""
+                    , trialRestDuration = 500 * Time.millisecond
+                    , blockRestView = GoNoGo.blockRestView
+                    , blockRestDuration = 1500 * Time.millisecond
+                    }
+            in
+                ( model
+                , handleGameInit (GoNoGo.init trialSettings [] [] []) gameSettings
+                )
 
         GameResp (Ok game) ->
             case game.slug of
@@ -259,7 +322,10 @@ update msg model =
                 ( { model | isMenuActive = active }, Cmd.none )
 
         Tick t ->
-            ( { model | currentTime = t }, Cmd.none )
+            handleGameUpdate (GM.updateTime t) { model | currentTime = t }
+
+        IntIndication i ->
+            handleGameUpdate (GM.updateIntIndication i) model
 
         StartGameWith time ->
             ( { model
@@ -309,6 +375,40 @@ update msg model =
 
         RoleResp (Err err) ->
             (httpErrorState model err)
+
+
+handleGameInit :
+    Generator (List (List trial))
+    -> (List (List trial) -> Time -> GM.InitConfig settings trial Msg)
+    -> Cmd Msg
+handleGameInit blockGenerator gameF =
+    blockGenerator
+        |> GenGame.generatorToTask
+        |> Task.andThen
+            (\blocks ->
+                Time.now
+                    |> Task.map
+                        (\currTime ->
+                            gameF blocks currTime
+                                |> GM.init
+                        )
+            )
+        |> Task.perform PlayGame
+
+
+handleGameUpdate : (GM.Game Msg -> ( GM.GameStatus Msg, Cmd Msg )) -> Model -> ( Model, Cmd Msg )
+handleGameUpdate f model =
+    case model.playingGame of
+        Nothing ->
+            ( model, Cmd.none )
+
+        Just game ->
+            case f game of
+                ( GM.Running newGame, cmd ) ->
+                    ( { model | playingGame = Just newGame }, cmd )
+
+                ( GM.Results newGame, cmd ) ->
+                    ( { model | playingGame = Nothing }, cmd )
 
 
 isAdmin : Visitor -> Bool

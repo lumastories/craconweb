@@ -1,5 +1,6 @@
 module View exposing (view)
 
+import GameManager
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -7,7 +8,6 @@ import Model exposing (..)
 import Routing as R
 import Entity
 import Access as A
-import Task
 
 
 -- LOGIN PAGE
@@ -428,36 +428,27 @@ goNoGoGame model =
 -- TODO pass in custom game images
 
 
-initGoNoGo : Cmd Msg
-initGoNoGo =
-    Task.succeed (GoNoGo [])
-        |> Task.perform InitGame
-
-
-gameView : Maybe PlayingGame -> Html Msg
+gameView : Maybe (GameManager.Game Msg) -> Html Msg
 gameView playingGame =
     case playingGame of
-        Just (GoNoGo trials) ->
+        Just game ->
             div []
                 [ a
                     [ class "button is-danger  is-block"
                     , onClick StopGame
                     ]
                     [ text "Stop Game" ]
-                , p [] [ text <| toString trials ]
+                , p [] [ text <| toString game ]
                 ]
 
         Nothing ->
             div []
                 [ a
                     [ class "button is-info is-large"
-                    , onClick (PlayGame initGoNoGo)
+                    , onClick (InitStopSignal)
                     ]
                     [ text "Start Game" ]
                 ]
-
-        _ ->
-            div [] [ text "i don't know how to play this game yet!" ]
 
 
 dotProbeGame : Model -> Html Msg

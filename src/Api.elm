@@ -27,19 +27,28 @@ fetchAll httpsrv jwt token =
     case isAdmin jwt of
         True ->
             Cmd.batch <|
-                (userData httpsrv token jwt.sub)
-                    ++ (adminData httpsrv token)
+                (adminOnly httpsrv token)
+                    ++ (shared httpsrv token jwt.sub)
 
         False ->
-            Cmd.batch <| userData httpsrv token jwt.sub
+            Cmd.batch <|
+                (userOnly httpsrv token jwt.sub)
+                    ++ (shared httpsrv token jwt.sub)
 
 
+shared : String -> String -> String -> List (Cmd M.Msg)
+shared httpsrv token sub =
+    [ Task.attempt M.GameResp (fetchGame httpsrv token "gonogo")
+    , Task.attempt M.GameResp (fetchGame httpsrv token "dotprobe")
+    , Task.attempt M.GameResp (fetchGame httpsrv token "stopsignal")
+    , Task.attempt M.GameResp (fetchGame httpsrv token "respondsignal")
+    , Task.attempt M.GameResp (fetchGame httpsrv token "visualsearch")
+    , Task.attempt M.UserResp (fetchUser httpsrv token sub)
+    ]
 
--- user, admin staff data, common
 
-
-adminData : String -> String -> List (Cmd M.Msg)
-adminData httpsrv token =
+adminOnly : String -> String -> List (Cmd M.Msg)
+adminOnly httpsrv token =
     [ Task.attempt M.UsersResp (fetchUsers_ httpsrv token)
     , Task.attempt M.RoleResp (fetchRole httpsrv token "user")
     , Task.attempt M.GroupResp (fetchGroup httpsrv token "control_a")
@@ -47,15 +56,9 @@ adminData httpsrv token =
     ]
 
 
-userData : String -> String -> String -> List (Cmd M.Msg)
-userData httpsrv token sub =
-    [ Task.attempt M.GameResp (fetchGame httpsrv token "gonogo")
-    , Task.attempt M.GameResp (fetchGame httpsrv token "dotprobe")
-    , Task.attempt M.GameResp (fetchGame httpsrv token "stopsignal")
-    , Task.attempt M.GameResp (fetchGame httpsrv token "respondsignal")
-    , Task.attempt M.GameResp (fetchGame httpsrv token "visualsearch")
-    , Task.attempt M.UserResp (fetchUser httpsrv token sub)
-    , Task.attempt M.FillerResp (fetchFiller httpsrv token sub)
+userOnly : String -> String -> String -> List (Cmd M.Msg)
+userOnly httpsrv token sub =
+    [ Task.attempt M.FillerResp (fetchFiller httpsrv token sub)
     , Task.attempt M.ValidResp (fetchValid httpsrv token sub)
     , Task.attempt M.InvalidResp (fetchInvalid httpsrv token sub)
     ]
