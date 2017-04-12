@@ -117,7 +117,10 @@ padBlocks instructions blockRest trialRest trialJitter report blocks =
             (\block ->
                 block
                     |> List.map (Random.Extra.constant << TrialActive)
-                    |> List.intersperse (Random.map TrialRest (Random.float trialRest trialJitter))
+                    |> List.intersperse
+                        (Random.map TrialRest
+                            (Random.float trialRest (trialRest + trialJitter))
+                        )
                     |> Random.Extra.combine
                     |> Random.map BlockActive
             )
