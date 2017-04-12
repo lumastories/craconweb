@@ -11,7 +11,13 @@ module GameManager
         )
 
 import Html exposing (Html)
+import Random exposing (Generator)
+import Random.Extra
 import Time exposing (Time)
+
+
+-- games
+
 import GenGame exposing (TrialResult(Complete, Continuing, ContinuingWithEvent))
 import StopSignal
 import GoNoGo
@@ -45,10 +51,6 @@ type alias GameData settings trial msg =
     , trialRestView : Html msg
     , blockRestView : List (Maybe GenGame.Reason) -> Html msg
     , reportView : List (Maybe GenGame.Reason) -> Html msg
-    , instructionsDuration : Time
-    , trialRestDuration : Time
-    , blockRestDuration : Time
-    , reportDuration : Time
     }
 
 
@@ -61,6 +63,7 @@ type alias InitConfig settings trial msg =
     , instructionsDuration : Time
     , trialRestView : Html msg
     , trialRestDuration : Time
+    , trialRestJitter : Time
     , blockRestView : List (Maybe GenGame.Reason) -> Html msg
     , blockRestDuration : Time
     , reportView : List (Maybe GenGame.Reason) -> Html msg
@@ -80,42 +83,52 @@ type Blocks trial
     | Report Time
 
 
-init : InitConfig settings trial msg -> Game msg
+init : InitConfig settings trial msg -> Generator (Game msg)
 init initConfig =
-    initConfig.gameConstructor
-        { remainingBlocks =
-            padBlocks
-                initConfig.trialRestDuration
-                initConfig.blockRestDuration
-                initConfig.blocks
-        , currTime = initConfig.currTime
-        , prevTime = initConfig.currTime
-        , startTime = initConfig.currTime
-        , blockResults = []
-        , results = []
-        , settings = initConfig.settings
-        , instructionsView = initConfig.instructionsView
-        , trialRestView = initConfig.trialRestView
-        , blockRestView = (initConfig.blockRestView)
-        , instructionsDuration = initConfig.instructionsDuration
-        , trialRestDuration = initConfig.trialRestDuration
-        , blockRestDuration = initConfig.blockRestDuration
-        , reportView = initConfig.reportView
-        , reportDuration = initConfig.reportDuration
-        }
+    padBlocks
+        initConfig.instructionsDuration
+        initConfig.blockRestDuration
+        initConfig.trialRestDuration
+        initConfig.trialRestJitter
+        initConfig.reportDuration
+        initConfig.blocks
+        |> Random.map
+            (\blocks ->
+                initConfig.gameConstructor
+                    { remainingBlocks = blocks
+                    , currTime = initConfig.currTime
+                    , prevTime = initConfig.currTime
+                    , startTime = initConfig.currTime
+                    , blockResults = []
+                    , results = []
+                    , settings = initConfig.settings
+                    , instructionsView = initConfig.instructionsView
+                    , trialRestView = initConfig.trialRestView
+                    , blockRestView = (initConfig.blockRestView)
+                    , reportView = initConfig.reportView
+                    }
+            )
 
 
-padBlocks : Time -> Time -> List (List trial) -> List (Blocks trial)
-padBlocks trialRest blockRest blocks =
+padBlocks : Time -> Time -> Time -> Time -> Time -> List (List trial) -> Generator (List (Blocks trial))
+padBlocks instructions blockRest trialRest trialJitter report blocks =
     blocks
         |> List.map
             (\block ->
                 block
-                    |> List.map TrialActive
-                    |> List.intersperse (TrialRest trialRest)
-                    |> BlockActive
+                    |> List.map (Random.Extra.constant << TrialActive)
+                    |> List.intersperse (Random.map TrialRest (Random.float trialRest trialJitter))
+                    |> Random.Extra.combine
+                    |> Random.map BlockActive
             )
-        |> List.intersperse (BlockRest blockRest)
+        |> Random.Extra.combine
+        |> Random.map
+            (\blocks ->
+                blocks
+                    |> (\l -> l ++ [ Report report ])
+                    |> List.intersperse (BlockRest blockRest)
+                    |> (::) (Instructions instructions)
+            )
 
 
 updateTime : Time -> Game msg -> ( GameStatus msg, Cmd msg )

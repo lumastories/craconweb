@@ -255,6 +255,7 @@ update msg model =
                     , instructionsView = Html.text "Implement an instructions view."
                     , trialRestView = Html.text ""
                     , trialRestDuration = 500 * Time.millisecond
+                    , trialRestJitter = 0
                     , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
                     , reportView = always (Html.text "Implement a report view.")
@@ -296,6 +297,7 @@ update msg model =
                     , instructionsView = Html.text "Implement an instructions view."
                     , trialRestView = Html.text ""
                     , trialRestDuration = 500 * Time.millisecond
+                    , trialRestJitter = 0
                     , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
                     , reportView = always (Html.text "Implement a report view.")
@@ -325,6 +327,7 @@ update msg model =
                     , instructionsView = Html.text "Implement an instructions view."
                     , trialRestView = Html.text ""
                     , trialRestDuration = 0
+                    , trialRestJitter = 0
                     , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
                     , reportView = always (Html.text "Implement a report view.")
@@ -359,6 +362,7 @@ update msg model =
                     , instructionsDuration = 10 * Time.second
                     , trialRestView = Html.text ""
                     , trialRestDuration = 0
+                    , trialRestJitter = 0
                     , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
                     , reportView = always (Html.text "Implement a report view.")
@@ -386,6 +390,7 @@ update msg model =
                     , instructionsDuration = 10 * Time.second
                     , trialRestView = Html.text ""
                     , trialRestDuration = 0
+                    , trialRestJitter = 0
                     , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
                     , reportView = always (Html.text "Implement a report view.")
@@ -517,17 +522,15 @@ handleGameInit :
     -> (List (List trial) -> Time -> GM.InitConfig settings trial Msg)
     -> Cmd Msg
 handleGameInit blockGenerator gameF =
-    blockGenerator
-        |> GenGame.generatorToTask
-        |> Task.andThen
-            (\blocks ->
-                Time.now
-                    |> Task.map
-                        (\currTime ->
-                            gameF blocks currTime
-                                |> GM.init
-                        )
-            )
+    Task.map2
+        (\blocks currTime ->
+            gameF blocks currTime
+                |> GM.init
+                |> GenGame.generatorToTask
+        )
+        (GenGame.generatorToTask blockGenerator)
+        Time.now
+        |> Task.andThen identity
         |> Task.perform PlayGame
 
 
