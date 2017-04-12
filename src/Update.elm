@@ -252,12 +252,14 @@ update msg model =
                     , blocks = blocks
                     , currTime = currTime
                     , settings = trialSettings
-                    , instructionsView = StopSignal.instructions
                     , instructionsDuration = 10 * Time.second
+                    , instructionsView = Html.text "Implement an instructions view."
                     , trialRestView = Html.text ""
                     , trialRestDuration = 500 * Time.millisecond
-                    , blockRestView = StopSignal.blockRestView
+                    , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
+                    , reportView = always (Html.text "Implement a report view.")
+                    , reportDuration = 10 * Time.second
                     }
 
                 getImages =
@@ -282,12 +284,14 @@ update msg model =
                     , blocks = blocks
                     , currTime = currTime
                     , settings = trialSettings
-                    , instructionsView = GoNoGo.instructions
                     , instructionsDuration = 10 * Time.second
+                    , instructionsView = Html.text "Implement an instructions view."
                     , trialRestView = Html.text ""
                     , trialRestDuration = 500 * Time.millisecond
-                    , blockRestView = GoNoGo.blockRestView
+                    , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
+                    , reportView = always (Html.text "Implement a report view.")
+                    , reportDuration = 10 * Time.second
                     }
 
                 getImages =
@@ -309,12 +313,14 @@ update msg model =
                     , blocks = blocks
                     , currTime = currTime
                     , settings = trialSettings
-                    , instructionsView = DotProbe.instructions
                     , instructionsDuration = 10 * Time.second
+                    , instructionsView = Html.text "Implement an instructions view."
                     , trialRestView = Html.text ""
                     , trialRestDuration = 0
-                    , blockRestView = DotProbe.blockRestView
+                    , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
+                    , reportView = always (Html.text "Implement a report view.")
+                    , reportDuration = 10 * Time.second
                     }
             in
                 applyImages model gameSettings (\v i _ -> DotProbe.init trialSettings v i)
@@ -341,12 +347,14 @@ update msg model =
                     , blocks = blocks
                     , currTime = currTime
                     , settings = trialSettings
-                    , instructionsView = RespondSignal.instructions
+                    , instructionsView = Html.text "Implement an instructions view."
                     , instructionsDuration = 10 * Time.second
                     , trialRestView = Html.text ""
                     , trialRestDuration = 0
-                    , blockRestView = RespondSignal.blockRestView
+                    , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
+                    , reportView = always (Html.text "Implement a report view.")
+                    , reportDuration = 10 * Time.second
                     }
             in
                 applyImages model gameSettings (RespondSignal.init trialSettings)
@@ -366,12 +374,14 @@ update msg model =
                     , blocks = blocks
                     , currTime = currTime
                     , settings = trialSettings
-                    , instructionsView = VisualSearch.instructions
+                    , instructionsView = Html.text "Implement an instructions view."
                     , instructionsDuration = 10 * Time.second
                     , trialRestView = Html.text ""
                     , trialRestDuration = 0
-                    , blockRestView = VisualSearch.blockRestView
+                    , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
+                    , reportView = always (Html.text "Implement a report view.")
+                    , reportDuration = 10 * Time.second
                     }
             in
                 applyImages model gameSettings (\v i _ -> VisualSearch.init trialSettings v i)
