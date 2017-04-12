@@ -77,7 +77,7 @@ update msg model =
                     model.tmpUserRecord
 
                 tmpUserRecord_old =
-                    { tmpUserRecord_old_ | roles = [ model.userRole.id ] }
+                    { tmpUserRecord_old_ | roles = [ model.userRole.id ], groupID = Maybe.withDefault "" model.groupIdCon }
 
                 tmpUserRecord_ =
                     case key of
@@ -95,6 +95,12 @@ update msg model =
 
                         "lastName" ->
                             { tmpUserRecord_old | lastName = value }
+
+                        "exp" ->
+                            { tmpUserRecord_old | groupID = value }
+
+                        "con" ->
+                            { tmpUserRecord_old | groupID = value }
 
                         _ ->
                             tmpUserRecord_old
@@ -146,6 +152,7 @@ update msg model =
             ( { model
                 | activeRoute = R.parseLocation location
                 , isMenuActive = False
+                , playingGame = Nothing
               }
             , Cmd.none
             )

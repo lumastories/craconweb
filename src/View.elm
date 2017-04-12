@@ -373,36 +373,40 @@ settingsPage model =
         ]
 
 
-gamePage : Model -> Html Msg
-gamePage model =
+game : Model -> String -> Msg -> Html Msg
+game model title msg =
     basicPage model
         [ div
             [ class "container" ]
-            [ h1 [ class "title is-1" ] [ text "A Game is coming soon" ]
+            [ h1 [ class "title is-1" ] [ text title ]
+            , gameView model.playingGame msg
             ]
         ]
 
 
 visualSearchGame : Model -> Html Msg
 visualSearchGame model =
-    basicPage model
-        [ div
-            [ class "container" ]
-            [ h1 [ class "title is-1" ] [ text "Visual Search" ]
-            , div [] [ text "game goes here" ]
-            ]
-        ]
+    game model "Visual Search" InitVisualSearch
+
+
+dotProbeGame : Model -> Html Msg
+dotProbeGame model =
+    game model "Dot Probe" InitDotProbe
 
 
 goNoGoGame : Model -> Html Msg
 goNoGoGame model =
-    basicPage model
-        [ div
-            [ class "container" ]
-            [ h1 [ class "title is-1" ] [ text model.gonogoGame.name ]
-            , gameView model.playingGame InitGoNoGo
-            ]
-        ]
+    game model "Go/No Go" InitGoNoGo
+
+
+stopSignalGame : Model -> Html Msg
+stopSignalGame model =
+    game model "Stop Signal" InitStopSignal
+
+
+respSignalGame : Model -> Html Msg
+respSignalGame model =
+    game model "Respond Signal" InitRespondSignal
 
 
 gameView : Maybe (GameManager.Game Msg) -> Msg -> Html Msg
@@ -410,12 +414,13 @@ gameView playingGame msg =
     case playingGame of
         Just game ->
             div []
-                [ a
+                [ GameManager.view IntIndication game
+                , br [] []
+                , a
                     [ class "button is-danger  is-block"
                     , onClick StopGame
                     ]
                     [ text "Stop Game" ]
-                , GameManager.view IntIndication game
                 ]
 
         Nothing ->
@@ -426,27 +431,6 @@ gameView playingGame msg =
                     ]
                     [ text "Start Game" ]
                 ]
-
-
-dotProbeGame : Model -> Html Msg
-dotProbeGame model =
-    basicPage model
-        [ div
-            [ class "container" ]
-            [ h1 [ class "title is-1" ]
-                [ text "Dot Probe" ]
-            , h3 [ class "subtitle is-3" ]
-                [ text "work in progress" ]
-            ]
-        ]
-
-
-instBlock : String -> String -> Html Msg
-instBlock title content =
-    div [ class "column" ]
-        [ p [ class "title" ] [ text title ]
-        , p [] [ text content ]
-        ]
 
 
 instructionsPage : Model -> Html Msg
@@ -501,6 +485,14 @@ marginS =
 style_ : String -> Attribute msg
 style_ rawStyles =
     style (toStyle rawStyles)
+
+
+instBlock : String -> String -> Html Msg
+instBlock title content =
+    div [ class "column" ]
+        [ p [ class "title" ] [ text title ]
+        , p [] [ text content ]
+        ]
 
 
 toStyle : String -> List ( String, String )
@@ -592,18 +584,21 @@ userEmailPassReg =
         ]
 
 
+toGroup groupIdCon_ groupIdExp_ bool =
+    if bool then
+        SetRegistration "exp" groupIdExp_
+    else
+        SetRegistration "con" groupIdCon_
+
+
 groupDropDown : Maybe String -> Maybe String -> Html Msg
 groupDropDown groupIdExp groupIdCon =
     case ( groupIdExp, groupIdCon ) of
         ( Just groupIdExp_, Just groupIdCon_ ) ->
             p [ class "control" ]
-                [ span [ class "select" ]
-                    [ select []
-                        [ option [ value groupIdExp_ ]
-                            [ text "Experimental" ]
-                        , option [ value groupIdCon_ ]
-                            [ text "Control" ]
-                        ]
+                [ label []
+                    [ input [ type_ "checkbox", value groupIdExp_, onCheck (toGroup groupIdCon_ groupIdExp_) ] []
+                    , text "Experimental"
                     ]
                 ]
 
@@ -914,10 +909,10 @@ view model =
                     goNoGoGame model
 
                 R.GameRouteSs ->
-                    gamePage model
+                    stopSignalGame model
 
                 R.GameRouteRs ->
-                    gamePage model
+                    respSignalGame model
 
                 R.EditUserRoute userid ->
                     editUserPage model userid
