@@ -21,6 +21,8 @@ import Time exposing (Time)
 import GameManager as GM
 import StopSignal
 import GoNoGo
+import DotProbe
+import RespondSignal
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -309,6 +311,38 @@ update msg model =
                     (getImages model.fillerImages)
                     |> Maybe.withDefault ( model, Cmd.none )
 
+        -- TODO fetch configuration from the model
+        InitRespondSignal ->
+            let
+                trialSettings =
+                    { totalPictureTime = 100 * Time.millisecond
+                    , feedback = 500
+                    , delayMin = 200
+                    , delayMax = 400
+                    , blockTrialCount = 44
+                    , responseCount = 80
+                    , nonResponseCount = 80
+                    , fillerCount = 32
+                    , audioEvent =
+                        Cmd.none
+                        -- TODO use audio signal port
+                    }
+
+                gameSettings blocks currTime =
+                    { gameConstructor = GM.RespondSignal
+                    , blocks = blocks
+                    , currTime = currTime
+                    , settings = trialSettings
+                    , instructionsView = RespondSignal.instructions
+                    , instructionsDuration = 10 * Time.second
+                    , trialRestView = Html.text ""
+                    , trialRestDuration = 0
+                    , blockRestView = RespondSignal.blockRestView
+                    , blockRestDuration = 1500 * Time.millisecond
+                    }
+            in
+                applyImages model gameSettings (RespondSignal.init trialSettings)
+
         GameResp (Ok game) ->
             case game.slug of
                 "gonogo" ->
@@ -396,10 +430,6 @@ update msg model =
 
         RoleResp (Err err) ->
             (httpErrorState model err)
-
-
-
---comment
 
 
 getFullImagePaths prefix =

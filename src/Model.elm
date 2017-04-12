@@ -87,6 +87,8 @@ type Msg
     | IntIndication Int
     | InitStopSignal
     | InitGoNoGo
+    | InitDotProbe
+    | InitRespondSignal
     | PlayGame (GameManager.Game Msg)
     | StopGame
     | AuthResp (Result Http.Error Entity.Auth)
