@@ -117,7 +117,7 @@ servers hostname =
             )
 
         _ ->
-            ( "https://httpsrv.cravecontrol.org"
-            , "https://tasksrv.cravecontrol.org"
-            , "https://filesrv.cravecontrol.org"
+            ( "https://api.cravecontrol.org"
+            , "https://task.cravecontrol.org"
+            , "https://file.cravecontrol.org"
             )
