@@ -23,6 +23,7 @@ import StopSignal
 import GoNoGo
 import DotProbe
 import RespondSignal
+import VisualSearch
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -311,37 +312,30 @@ update msg model =
                     (getImages model.fillerImages)
                     |> Maybe.withDefault ( model, Cmd.none )
 
-        -- TODO fetch configuration from the model
-        InitRespondSignal ->
+        InitVisualSearch ->
             let
                 trialSettings =
-                    { totalPictureTime = 100 * Time.millisecond
-                    , feedback = 500
-                    , delayMin = 200
-                    , delayMax = 400
-                    , blockTrialCount = 44
-                    , responseCount = 80
-                    , nonResponseCount = 80
-                    , fillerCount = 32
-                    , audioEvent =
-                        Cmd.none
-                        -- TODO use audio signal port
+                    { picturesPerTrial = 16
+                    , blockTrialCount = 10000
+                    , fixationCross = 500
+                    , selectionGrid = 3000
+                    , animation = 1000
                     }
 
                 gameSettings blocks currTime =
-                    { gameConstructor = GM.RespondSignal
+                    { gameConstructor = GM.VisualSearch
                     , blocks = blocks
                     , currTime = currTime
                     , settings = trialSettings
-                    , instructionsView = RespondSignal.instructions
+                    , instructionsView = VisualSearch.instructions
                     , instructionsDuration = 10 * Time.second
                     , trialRestView = Html.text ""
                     , trialRestDuration = 0
-                    , blockRestView = RespondSignal.blockRestView
+                    , blockRestView = VisualSearch.blockRestView
                     , blockRestDuration = 1500 * Time.millisecond
                     }
             in
-                applyImages model gameSettings (RespondSignal.init trialSettings)
+                applyImages model gameSettings (\v i _ -> VisualSearch.init trialSettings v i)
 
         GameResp (Ok game) ->
             case game.slug of
@@ -432,6 +426,31 @@ update msg model =
             (httpErrorState model err)
 
 
+
+--comment
+
+
+applyImages :
+    Model
+    -> (List (List trial) -> Time -> GM.InitConfig settings trial Msg)
+    -> (List String -> List String -> List String -> Generator (List (List trial)))
+    -> ( Model, Cmd Msg )
+applyImages model gameSettings fun =
+    let
+        getImages =
+            getFullImagePaths model.filesrv
+    in
+        Maybe.map3
+            (\v i f ->
+                ( model, handleGameInit (fun v i f) gameSettings )
+            )
+            (getImages model.validImages)
+            (getImages model.invalidImages)
+            (getImages model.fillerImages)
+            |> Maybe.withDefault ( model, Cmd.none )
+
+
+getFullImagePaths : String -> Maybe (List Entity.Ugimage) -> Maybe (List String)
 getFullImagePaths prefix =
     Maybe.map (List.filterMap .gimage >> List.map (.path >> (++) (prefix ++ "/repo/")))
 
