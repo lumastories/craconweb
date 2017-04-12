@@ -423,7 +423,7 @@ gameView playingGame msg =
                     , onClick StopGame
                     ]
                     [ text "Stop Game" ]
-                , p [] [ text <| toString game ]
+                , GameManager.view IntIndication game
                 ]
 
         Nothing ->
@@ -447,14 +447,6 @@ dotProbeGame model =
                 [ text "work in progress" ]
             ]
         ]
-
-
-
---listOfStims : List Entity.Gimage -> List (Html Msg)
---listOfStims gimages =
---    gimages
---        |> List.map .path
---        |> List.map (li [] [ img [ src src_ ] [] ])
 
 
 instBlock : String -> String -> Html Msg
