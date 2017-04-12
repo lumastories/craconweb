@@ -46,12 +46,8 @@ type alias Model =
     , responseTimes : List Time.Time
     , startTime : Time.Time
     , playingGame : Maybe (GameManager.Game Msg)
+    , ugimgsets : Maybe (List Entity.Ugimgset)
     }
-
-
-type PlayingGame
-    = GoNoGo (List GNGTrial)
-    | OtherStupidGame
 
 
 type ValuationsError
@@ -74,43 +70,9 @@ type alias JwtPayload =
     }
 
 
-type alias GNGTrial =
-    { side : Side
-    , border : Border
-    , trialType : TrialType
-    , imgUrl : String
-    , stage : Stage
-    }
-
-
-type Side
-    = Left
-    | Right
-
-
-type Border
-    = Solid
-    | Dashed
-
-
-type TrialType
-    = Filler
-    | Valid
-    | Invalid
-
-
-type Stage
-    = Display
-    | Blank
-    | RedCross
-
-
-type
-    Msg
-    -- SHARED
+type Msg
     = UpdateLocation String
     | OnUpdateLocation Navigation.Location
-      -- Subscription handling
     | SetStatus String
     | UpdateEmail String
     | UpdatePassword String
@@ -118,7 +80,6 @@ type
     | Logout
     | ResetNotifications
     | MainMenuToggle
-      -- GAMES
     | NewCurrentTime Time.Time
     | Presses Char
     | StartGameWith Time.Time
@@ -128,8 +89,6 @@ type
     | InitGoNoGo
     | PlayGame (GameManager.Game Msg)
     | StopGame
-      -- | InitGame PlayingGame
-      -- HTTP
     | AuthResp (Result Http.Error Entity.Auth)
     | UserResp (Result Http.Error Entity.User)
     | GameResp (Result Http.Error Entity.Game)
@@ -140,23 +99,10 @@ type
     | FillerResp (Result ValuationsError (List Entity.Ugimage))
     | ValidResp (Result ValuationsError (List Entity.Ugimage))
     | InvalidResp (Result ValuationsError (List Entity.Ugimage))
-      -- ADMIN
     | TryRegisterUser
     | SetRegistration String String
     | TryUpdateUser
     | EditUserAccount String String
-
-
-
--- {
--- "ugimgsets":[
---     {"id":"4485078910382159179"
---     ,"ref":"382132079195309178_2017-04-09T13-39"
---     ,"userId":"382132079195309178"
---     ,"created":"2017-04-09T20:39:42.000Z"
---     ,"updated":"2017-04-09T20:39:42.000Z"}
---     ]
--- }
 
 
 ugimgsetsDecoder : JD.Decoder (List Entity.Ugimgset)

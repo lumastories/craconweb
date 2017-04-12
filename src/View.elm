@@ -84,17 +84,9 @@ loginPageBoxForm model =
         ]
 
 
-
--- ROUTING HELPERS
-
-
 linkAttrs : String -> List (Attribute Msg)
 linkAttrs path =
     [ href <| path, R.onLinkClick <| UpdateLocation path ]
-
-
-
--- NAV BAR
 
 
 navBar : Model -> Html Msg
@@ -467,7 +459,6 @@ instructionsPage model =
             , hr [] []
             , div
                 [ class "columns" ]
-                -- TODO fetch instructions from API
                 [ instBlock "Stop Signal" """You will see pictures presented
                      in either a dark blue or light gray border. Press the space
                       bar as quickly as you can. BUT only if you see a blue border
@@ -491,7 +482,6 @@ instructionsPage model =
                     on the left side of the screen or “m” when the dot is on the
                     right side of the screen. Go as fast as you can, but don’t
                     sacrifice accuracy for speed."""
-                  -- TODO case switch on whther user is in the control group
                 , instBlock "Visual search" """Food response training:
                         You will see a grid of 16 images of food. It is your job
                         to swipe on the image of the healthy food as quickly as
@@ -515,7 +505,6 @@ style_ rawStyles =
 
 toStyle : String -> List ( String, String )
 toStyle styles =
-    -- "a:b;c:d;" >>> [("a", "b"), ("c","d")]
     let
         toTuple list =
             case list of
@@ -741,14 +730,6 @@ iconButton text_ path icon mods =
         ]
 
 
-
--- lastLogin
--- created
--- groupID
--- roles
--- link to edit
-
-
 usersTable : Model -> Html Msg
 usersTable model =
     table [ class "table is-bordered is-striped is-narrow" ]
@@ -820,6 +801,7 @@ editUserForm tasksrv user =
             , value user.id
             ]
             []
+        , editButtons
         ]
 
 
@@ -842,12 +824,12 @@ editButtons =
             ]
         , button
             ([ class "button is-link" ] ++ (linkAttrs R.adminPath))
-            [ text "Go Back" ]
+            [ text "Go back" ]
         ]
 
 
-editUser : Maybe String -> String -> Entity.User -> Html Msg
-editUser informing tasksrv user =
+editUser : Maybe String -> String -> Entity.User -> Maybe (List Entity.Ugimgset) -> Html Msg
+editUser informing tasksrv user ugimgsets =
     basicAdminPage Nothing
         [ divColumns
             [ div [ class "column is-half is-offset-one-quarter" ]
@@ -859,12 +841,15 @@ editUser informing tasksrv user =
                 , br [] []
                 , notification informing "is-warning"
                 , editUserForm tasksrv user
-                , br []
-                    []
-                , editButtons
+                , prevUgimgsets ugimgsets
                 ]
             ]
         ]
+
+
+prevUgimgsets : Maybe (List Entity.Ugimgset) -> Html Msg
+prevUgimgsets ugimgsets =
+    div [ class "box" ] [ text "Previous uploads" ]
 
 
 editUser404 : Html Msg
@@ -881,7 +866,7 @@ editUserPage : Model -> String -> Html Msg
 editUserPage model userid =
     case (A.userName model.users userid) of
         Just user ->
-            editUser model.informing model.tasksrv user
+            editUser model.informing model.tasksrv user model.ugimgsets
 
         Nothing ->
             editUser404

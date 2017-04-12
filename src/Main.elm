@@ -95,6 +95,7 @@ init flags location =
             , responseTimes = []
             , startTime = 0
             , playingGame = Nothing
+            , ugimgsets = Nothing
             }
     in
         ( baseModel, commands_ )
