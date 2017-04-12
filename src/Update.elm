@@ -2,6 +2,7 @@ module Update exposing (update)
 
 import Api
 import Empty
+import Entity
 import GenGame
 import Html
 import Http
@@ -265,16 +266,7 @@ update msg model =
                 getImages =
                     getFullImagePaths model.filesrv
             in
-                Maybe.map2
-                    (\v i ->
-                        ( model
-                        , handleGameInit (StopSignal.init trialSettings v i) gameSettings
-                        )
-                    )
-                    (getImages model.validImages)
-                    (getImages model.invalidImages)
-                    |> Maybe.withDefault
-                        ( model, Cmd.none )
+                applyImages model gameSettings (\v i _ -> StopSignal.init trialSettings v i)
 
         -- TODO fetch configuration from the model
         InitGoNoGo ->
@@ -486,10 +478,6 @@ update msg model =
 
         RoleResp (Err err) ->
             (httpErrorState model err)
-
-
-
---comment
 
 
 applyImages :
