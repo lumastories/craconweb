@@ -125,6 +125,7 @@ type
     | Tick Time.Time
     | IntIndication Int
     | InitStopSignal
+    | InitDotProbe
     | InitGoNoGo
     | PlayGame (GameManager.Game Msg)
     | StopGame
