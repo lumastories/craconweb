@@ -95,8 +95,15 @@ createAuthRecord httpsrv authRecord =
         |> Http.toTask
 
 
-
--- get Role id then fetch users
+fetchAllUgimgsets : String -> String -> String -> Task Http.Error (List Entity.Ugimgset)
+fetchAllUgimgsets httpsrv token sub =
+    getRequest token
+        (httpsrv
+            ++ "/user/"
+            ++ sub
+            ++ "/ugimgsets?createdDesc=true&createdEach=true"
+        )
+        M.ugimgsetsDecoder
 
 
 fetchUsers_ : String -> String -> Task Http.Error (List Entity.User)
@@ -251,17 +258,6 @@ okyToky now token =
 
         _ ->
             Err "Decoding problem"
-
-
-
--- to humanize or not to?
---type JwtError
---    = HttpError Http.Error
---    | Unauthorized
---    | TokenExpired
---    | TokenNotExpired
---    | TokenProcessingError String
---    | TokenDecodeError String
 
 
 jwtDecoded : String -> Result Jwt.JwtError M.JwtPayload
