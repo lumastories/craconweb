@@ -263,6 +263,7 @@ update msg model =
             in
                 applyImages model gameSettings (\v i _ -> StopSignal.init trialSettings v i)
 
+        -- TODO fetch configuration from the model
         InitGoNoGo ->
             let
                 trialSettings =
@@ -426,7 +427,7 @@ applyImages model gameSettings fun =
 
 getFullImagePaths : String -> Maybe (List Entity.Ugimage) -> Maybe (List String)
 getFullImagePaths prefix =
-    Maybe.map (List.filterMap .gimage >> List.map (.path >> (++) (prefix ++ "/")))
+    Maybe.map (List.filterMap .gimage >> List.map (.path >> (++) (prefix ++ "/repo")))
 
 
 handleGameInit :
