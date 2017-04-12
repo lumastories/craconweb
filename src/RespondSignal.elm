@@ -10,17 +10,19 @@ import GenGame
         )
 import Html exposing (Html, img, text)
 import Html.Attributes exposing (class, src)
+import List.Extra
+import Random exposing (Generator)
+import Random.Extra
+import Random.List
 import Time exposing (Time)
 
 
 type alias Trial =
-    { position : Direction
-    , imageUrl : String
+    { imageUrl : String
     , kind : Kind
     , stage : Stage
-    , audioDelay : Maybe Time
-    , postAudioDuration : Time
     , reason : Maybe Reason
+    , audioDelay : Time
     }
 
 
@@ -37,10 +39,71 @@ type Kind
 
 
 type alias Settings msg =
-    { fixationCross : Time
+    { totalPictureTime : Time
+    , delayMin : Time
+    , delayMax : Time
+    , blockTrialCount : Int
+    , responseCount : Int
+    , nonResponseCount : Int
+    , fillerCount : Int
     , feedback : Time
     , audioEvent : Cmd msg
     }
+
+
+init : Settings msg -> List String -> List String -> List String -> Generator (List (List Trial))
+init settings responseUrls nonResponseUrls fillerUrls =
+    Random.Extra.andThen3
+        (\sGo sNoGo sFill ->
+            let
+                go =
+                    List.take settings.responseCount sGo
+
+                noGo =
+                    List.take settings.nonResponseCount sNoGo
+
+                fill =
+                    List.take settings.fillerCount sFill
+
+                goFillLen =
+                    (List.length fill + 1) // 2
+
+                goFill =
+                    List.take goFillLen fill
+
+                noGoFill =
+                    List.drop goFillLen fill
+
+                allGo =
+                    List.map (initTrial Go) (goFill ++ go ++ go)
+
+                allNoGo =
+                    List.map (initTrial NoGo) (noGoFill ++ noGo ++ noGo)
+            in
+                (allGo ++ allNoGo)
+                    |> Random.List.shuffle
+                    |> Random.andThen (addDelay settings.delayMin settings.delayMax)
+                    |> Random.map (List.Extra.greedyGroupsOf settings.blockTrialCount)
+        )
+        (Random.List.shuffle responseUrls)
+        (Random.List.shuffle nonResponseUrls)
+        (Random.List.shuffle fillerUrls)
+
+
+initTrial : Kind -> String -> Time -> Trial
+initTrial kind url delay =
+    { audioDelay = delay
+    , imageUrl = url
+    , kind = kind
+    , stage = NotStarted
+    , reason = Nothing
+    }
+
+
+addDelay : Time -> Time -> List (Time -> Trial) -> Generator (List Trial)
+addDelay low high fs =
+    List.map (\f -> Random.float low high |> Random.map ((<|) f)) fs
+        |> Random.Extra.combine
 
 
 isGo : Kind -> Bool
@@ -61,21 +124,21 @@ updateTime settings currTime trial =
     in
         case trial.stage of
             NotStarted ->
-                Continuing ({ trial | stage = PicturePreAudio currTime })
+                case trial.kind of
+                    Go ->
+                        Continuing ({ trial | stage = PicturePreAudio currTime })
+
+                    NoGo ->
+                        Continuing ({ trial | stage = PicturePostAudio currTime })
 
             PicturePreAudio timeSince ->
-                case trial.audioDelay of
-                    Nothing ->
-                        Continuing { trial | stage = PicturePostAudio currTime }
-
-                    Just audioDelay ->
-                        trans
-                            timeSince
-                            audioDelay
-                            (ContinuingWithEvent
-                                { trial | stage = PicturePostAudio currTime }
-                                settings.audioEvent
-                            )
+                trans
+                    timeSince
+                    trial.audioDelay
+                    (ContinuingWithEvent
+                        { trial | stage = PicturePostAudio currTime }
+                        settings.audioEvent
+                    )
 
             PicturePostAudio timeSince ->
                 let
@@ -87,7 +150,7 @@ updateTime settings currTime trial =
                 in
                     trans
                         timeSince
-                        trial.postAudioDuration
+                        (settings.totalPictureTime - trial.audioDelay)
                         (Continuing { trial | stage = Feedback currTime, reason = Just reason })
 
             Feedback timeSince ->
@@ -128,3 +191,13 @@ view trial =
 pictureView : String -> Html msg
 pictureView url =
     img [ src url ] []
+
+
+instructions : Html msg
+instructions =
+    text "Configure RespondSignal instructions."
+
+
+blockRestView : List (Maybe Reason) -> Html msg
+blockRestView results =
+    text "Put Fixation Cross Here"
