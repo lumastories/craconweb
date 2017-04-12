@@ -7,7 +7,7 @@ module GameManager
         , updateTime
         , updateIndication
         , updateIntIndication
-          -- , view
+        , view
         )
 
 import Html exposing (Html)
@@ -31,14 +31,6 @@ type Game msg
 type GameStatus msg
     = Running (Game msg)
     | Results (List (Maybe GenGame.Reason))
-
-
-
--- type State
---     = Instructions Time
---     | Trial
---     | TrialRest Time
---     | BlockRest (List (Maybe GenGame.Reason)) Time
 
 
 type alias GameData settings trial msg =
@@ -185,7 +177,6 @@ updateHelper gameConstructor updateF currTime data =
             (Report duration) :: blocks ->
                 durationSwitch duration blocks
 
-            -- (x :: xs) :: blocks ->
             (BlockActive block) :: blocks ->
                 case block of
                     [] ->
