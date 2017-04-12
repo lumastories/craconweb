@@ -255,10 +255,20 @@ update msg model =
                     , blockRestView = StopSignal.blockRestView
                     , blockRestDuration = 1500 * Time.millisecond
                     }
+
+                getImages =
+                    getFullImagePaths model.filesrv
             in
-                ( model
-                , handleGameInit (StopSignal.init trialSettings [] []) gameSettings
-                )
+                Maybe.map2
+                    (\v i ->
+                        ( model
+                        , handleGameInit (StopSignal.init trialSettings v i) gameSettings
+                        )
+                    )
+                    (getImages model.validImages)
+                    (getImages model.invalidImages)
+                    |> Maybe.withDefault
+                        ( model, Cmd.none )
 
         -- TODO fetch configuration from the model
         InitGoNoGo ->
@@ -284,21 +294,19 @@ update msg model =
                     , blockRestDuration = 1500 * Time.millisecond
                     }
 
-                v =
-                    Maybe.map (List.filterMap .gimage >> List.map (.path >> (++) model.filesrv)) model.validImages
-                        |> Maybe.withDefault []
-
-                i =
-                    Maybe.map (List.filterMap .gimage >> List.map (.path >> (++) model.filesrv)) model.invalidImages
-                        |> Maybe.withDefault []
-
-                f =
-                    Maybe.map (List.filterMap .gimage >> List.map (.path >> (++) model.filesrv)) model.fillerImages
-                        |> Maybe.withDefault []
+                getImages =
+                    getFullImagePaths model.filesrv
             in
-                ( model
-                , handleGameInit (GoNoGo.init trialSettings v i f) gameSettings
-                )
+                Maybe.map3
+                    (\v i f ->
+                        ( model
+                        , handleGameInit (GoNoGo.init trialSettings v i f) gameSettings
+                        )
+                    )
+                    (getImages model.validImages)
+                    (getImages model.invalidImages)
+                    (getImages model.fillerImages)
+                    |> Maybe.withDefault ( model, Cmd.none )
 
         GameResp (Ok game) ->
             case game.slug of
@@ -387,6 +395,10 @@ update msg model =
 
         RoleResp (Err err) ->
             (httpErrorState model err)
+
+
+getFullImagePaths prefix =
+    Maybe.map (List.filterMap .gimage >> List.map (.path >> (++) prefix))
 
 
 handleGameInit :
