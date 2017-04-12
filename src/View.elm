@@ -10,9 +10,6 @@ import Entity
 import Access as A
 
 
--- LOGIN PAGE
-
-
 bigLogo : String -> Html Msg
 bigLogo filesrv =
     p [ style [ ( "text-align", "center" ) ] ]
@@ -188,10 +185,6 @@ isActive active =
         ""
 
 
-
--- HOME PAGE
-
-
 homePage : Model -> Html Msg
 homePage model =
     div []
@@ -277,10 +270,6 @@ homePageGameCard gameSlug src_ title about =
                 ]
             ]
         ]
-
-
-
--- The parent of basic pages.
 
 
 notification : Maybe String -> String -> Html Msg
@@ -419,17 +408,13 @@ goNoGoGame model =
         [ div
             [ class "container" ]
             [ h1 [ class "title is-1" ] [ text model.gonogoGame.name ]
-            , gameView model.playingGame
+            , gameView model.playingGame InitGoNoGo
             ]
         ]
 
 
-
--- TODO pass in custom game images
-
-
-gameView : Maybe (GameManager.Game Msg) -> Html Msg
-gameView playingGame =
+gameView : Maybe (GameManager.Game Msg) -> Msg -> Html Msg
+gameView playingGame msg =
     case playingGame of
         Just game ->
             div []
@@ -445,7 +430,7 @@ gameView playingGame =
             div []
                 [ a
                     [ class "button is-info is-large"
-                    , onClick (InitStopSignal)
+                    , onClick msg
                     ]
                     [ text "Start Game" ]
                 ]
