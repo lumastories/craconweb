@@ -147,6 +147,60 @@ updateTimeHelper gameConstructor updateF currTime data =
     updateHelper gameConstructor (updateF data.settings currTime) currTime data
 
 
+updateDirectionIndication : GenGame.Direction -> Game msg -> ( GameStatus msg, Cmd msg )
+updateDirectionIndication indication game =
+    case game of
+        GoNoGo data ->
+            updateIndicationHelper GoNoGo GoNoGo.updateIndication indication data
+
+        DotProbe data ->
+            updateIndicationHelper DotProbe DotProbe.updateIndication indication data
+
+        _ ->
+            Running game ! []
+
+
+updateIndication : Game msg -> ( GameStatus msg, Cmd msg )
+updateIndication game =
+    case game of
+        StopSignal data ->
+            updateHelper
+                StopSignal
+                (StopSignal.updateIndication data.currTime)
+                data.currTime
+                data
+
+        RespondSignal data ->
+            updateHelper
+                RespondSignal
+                (RespondSignal.updateIndication data.currTime)
+                data.currTime
+                data
+
+        _ ->
+            Running game ! []
+
+
+updateIntIndication : Int -> Game msg -> ( GameStatus msg, Cmd msg )
+updateIntIndication indication game =
+    case game of
+        VisualSearch data ->
+            updateIndicationHelper VisualSearch VisualSearch.updateIndication indication data
+
+        _ ->
+            Running game ! []
+
+
+updateIndicationHelper :
+    (GameData settings trial msg -> Game msg)
+    -> (Time -> indication -> trial -> TrialResult trial msg)
+    -> indication
+    -> GameData settings trial msg
+    -> ( GameStatus msg, Cmd msg )
+updateIndicationHelper gameConstructor updateF indication data =
+    updateHelper gameConstructor (updateF data.currTime indication) data.currTime data
+
+
 updateHelper :
     (GameData settings trial msg -> Game msg)
     -> (trial -> TrialResult trial msg)
@@ -219,60 +273,6 @@ updateHelper gameConstructor updateF currTime data =
                                         }
                                     )
                                     ! [ event ]
-
-
-updateDirectionIndication : GenGame.Direction -> Game msg -> ( GameStatus msg, Cmd msg )
-updateDirectionIndication indication game =
-    case game of
-        GoNoGo data ->
-            updateIndicationHelper GoNoGo GoNoGo.updateIndication indication data
-
-        DotProbe data ->
-            updateIndicationHelper DotProbe DotProbe.updateIndication indication data
-
-        _ ->
-            Running game ! []
-
-
-updateIndication : Game msg -> ( GameStatus msg, Cmd msg )
-updateIndication game =
-    case game of
-        StopSignal data ->
-            updateHelper
-                StopSignal
-                (StopSignal.updateIndication data.currTime)
-                data.currTime
-                data
-
-        RespondSignal data ->
-            updateHelper
-                RespondSignal
-                (RespondSignal.updateIndication data.currTime)
-                data.currTime
-                data
-
-        _ ->
-            Running game ! []
-
-
-updateIntIndication : Int -> Game msg -> ( GameStatus msg, Cmd msg )
-updateIntIndication indication game =
-    case game of
-        VisualSearch data ->
-            updateIndicationHelper VisualSearch VisualSearch.updateIndication indication data
-
-        _ ->
-            Running game ! []
-
-
-updateIndicationHelper :
-    (GameData settings trial msg -> Game msg)
-    -> (Time -> indication -> trial -> TrialResult trial msg)
-    -> indication
-    -> GameData settings trial msg
-    -> ( GameStatus msg, Cmd msg )
-updateIndicationHelper gameConstructor updateF indication data =
-    updateHelper gameConstructor (updateF data.currTime indication) data.currTime data
 
 
 
