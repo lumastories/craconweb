@@ -270,6 +270,7 @@ update msg model =
                     |> Maybe.withDefault
                         ( model, Cmd.none )
 
+        -- TODO fetch configuration from the model
         InitGoNoGo ->
             let
                 trialSettings =
@@ -394,6 +395,10 @@ update msg model =
 
         RoleResp (Err err) ->
             (httpErrorState model err)
+
+
+
+--comment
 
 
 getFullImagePaths prefix =
