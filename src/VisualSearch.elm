@@ -154,13 +154,3 @@ view msgF trial =
 
         FailureAnimation _ ->
             text ""
-
-
-instructions : Html msg
-instructions =
-    text "Visual Search instructions here"
-
-
-blockRestView : List (Maybe Reason) -> Html msg
-blockRestView results =
-    text "Inter-block resting period."

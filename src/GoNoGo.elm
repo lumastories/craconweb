@@ -213,13 +213,3 @@ border kind =
         div [ class "solidBorder" ]
     else
         div [ class "dashedBorder" ]
-
-
-instructions : Html msg
-instructions =
-    text ""
-
-
-blockRestView : List (Maybe Reason) -> Html msg
-blockRestView reasons =
-    text ""

@@ -133,13 +133,3 @@ view trial =
 
         Probe _ ->
             text ""
-
-
-instructions : Html msg
-instructions =
-    text "Add instructions"
-
-
-blockRestView : List (Maybe Reason) -> Html msg
-blockRestView results =
-    text ""

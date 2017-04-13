@@ -191,13 +191,3 @@ view trial =
 pictureView : String -> Html msg
 pictureView url =
     img [ src url ] []
-
-
-instructions : Html msg
-instructions =
-    text "Configure RespondSignal instructions."
-
-
-blockRestView : List (Maybe Reason) -> Html msg
-blockRestView results =
-    text "Put Fixation Cross Here"

@@ -160,13 +160,3 @@ border kind =
         div [ class "solidBorder" ]
     else
         div [ class "dashedBorder" ]
-
-
-instructions : Html msg
-instructions =
-    text "StopSignal instructions missing."
-
-
-blockRestView : List (Maybe Reason) -> Html msg
-blockRestView reasons =
-    text "Calculate block score and display."
