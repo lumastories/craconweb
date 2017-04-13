@@ -289,15 +289,13 @@ updateHelper gameConstructor updateF currTime data =
                     (TrialActive trial) :: trials ->
                         case updateF trial of
                             Complete reason ->
-                                Running
-                                    (gameConstructor
-                                        { data
-                                            | remainingBlocks = BlockActive trials :: blocks
-                                            , results = reason :: data.results
-                                            , currTime = currTime
-                                        }
-                                    )
-                                    ! []
+                                reRun
+                                    { data
+                                        | remainingBlocks = BlockActive trials :: blocks
+                                        , results = reason :: data.results
+                                        , currTime = currTime
+                                        , prevTime = currTime
+                                    }
 
                             Continuing trial ->
                                 Running
