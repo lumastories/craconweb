@@ -20,15 +20,11 @@ type alias Model =
     , presses : List Char
     , visitor : Visitor
     , isMenuActive : Bool
-    , mainMenuItems : List Routing.MenuItem
-    , currentTime : Time.Time
-    , currentTimeDelta : Time.Time
     , user : Maybe Entity.User
     , authRecord : Entity.AuthRecord
-    , validImages : Maybe (List Entity.Ugimage)
-    , invalidImages : Maybe (List Entity.Ugimage)
-    , fillerImages : Maybe (List Entity.Ugimage)
-    , userGroupId : Maybe String
+    , ugimages_v : Maybe (List Entity.Ugimage)
+    , ugimages_i : Maybe (List Entity.Ugimage)
+    , ugimages_f : Maybe (List Entity.Ugimage)
     , loading : Maybe String
     , glitching : Maybe String
     , informing : Maybe String
@@ -43,8 +39,6 @@ type alias Model =
     , stopsignalGame : Maybe Entity.Game
     , respondsignalGame : Maybe Entity.Game
     , visualsearchGame : Maybe Entity.Game
-    , responseTimes : List Time.Time
-    , startTime : Time.Time
     , playingGame : Maybe (GameManager.Game Msg)
     , ugimgsets : Maybe (List Entity.Ugimgset)
     }
@@ -82,8 +76,6 @@ type Msg
     | MainMenuToggle
     | NewCurrentTime Time.Time
     | Presses Int
-    | StartGameWith Time.Time
-    | Tick Time.Time
     | IntIndication Int
     | InitStopSignal
     | InitGoNoGo
