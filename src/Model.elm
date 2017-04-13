@@ -23,7 +23,7 @@ type alias Model =
     , mainMenuItems : List Routing.MenuItem
     , currentTime : Time.Time
     , currentTimeDelta : Time.Time
-    , user : Entity.User
+    , user : Maybe Entity.User
     , authRecord : Entity.AuthRecord
     , validImages : Maybe (List Entity.Ugimage)
     , invalidImages : Maybe (List Entity.Ugimage)
@@ -38,11 +38,11 @@ type alias Model =
     , groupIdExp : Maybe String
     , groupIdCon : Maybe String
     , httpErr : String
-    , gonogoGame : Entity.Game
-    , dotprobeGame : Entity.Game
-    , stopsignalGame : Entity.Game
-    , respondsignalGame : Entity.Game
-    , visualsearchGame : Entity.Game
+    , gonogoGame : Maybe Entity.Game
+    , dotprobeGame : Maybe Entity.Game
+    , stopsignalGame : Maybe Entity.Game
+    , respondsignalGame : Maybe Entity.Game
+    , visualsearchGame : Maybe Entity.Game
     , responseTimes : List Time.Time
     , startTime : Time.Time
     , playingGame : Maybe (GameManager.Game Msg)
