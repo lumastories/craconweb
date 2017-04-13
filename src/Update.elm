@@ -245,8 +245,7 @@ update msg model =
                     }
 
                 gameSettings blocks currTime =
-                    { gameConstructor = GM.StopSignal
-                    , blocks = blocks
+                    { blocks = blocks
                     , currTime = currTime
                     , maxDuration = 5 * Time.minute
                     , settings = trialSettings
@@ -257,12 +256,13 @@ update msg model =
                     , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
                     , reportView = always (Html.text "Implement a report view.")
+                    , trialFuns = StopSignal.trialFuns
                     }
 
                 getImages =
                     getFullImagePaths model.filesrv
             in
-                applyImages model gameSettings (\v i _ -> StopSignal.init trialSettings v i)
+                applyImages StopSignal model gameSettings (\v i _ -> StopSignal.init trialSettings v i)
 
         -- TODO fetch configuration from the model
         InitGoNoGo ->
@@ -278,8 +278,7 @@ update msg model =
 
                 --<| Maybe.withDefault "" <| Maybe.map .instruct model.gonogoGame
                 gameSettings blocks currTime =
-                    { gameConstructor = GM.GoNoGo
-                    , blocks = blocks
+                    { blocks = blocks
                     , currTime = currTime
                     , maxDuration = 5 * Time.minute
                     , settings = trialSettings
@@ -290,12 +289,13 @@ update msg model =
                     , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
                     , reportView = always (Html.text "Implement a report view.")
+                    , trialFuns = GoNoGo.trialFuns
                     }
 
                 getImages =
                     getFullImagePaths model.filesrv
             in
-                applyImages model gameSettings (GoNoGo.init trialSettings)
+                applyImages GoNoGo model gameSettings (GoNoGo.init trialSettings)
 
         -- TODO fetch configuration from the model
         InitDotProbe ->
@@ -307,8 +307,7 @@ update msg model =
                     }
 
                 gameSettings blocks currTime =
-                    { gameConstructor = GM.DotProbe
-                    , blocks = blocks
+                    { blocks = blocks
                     , currTime = currTime
                     , maxDuration = 5 * Time.minute
                     , settings = trialSettings
@@ -319,9 +318,10 @@ update msg model =
                     , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
                     , reportView = always (Html.text "Implement a report view.")
+                    , trialFuns = DotProbe.trialFuns
                     }
             in
-                applyImages model gameSettings (\v i _ -> DotProbe.init trialSettings v i)
+                applyImages DotProbe model gameSettings (\v i _ -> DotProbe.init trialSettings v i)
 
         -- TODO fetch configuration from the model
         InitRespondSignal ->
@@ -339,8 +339,7 @@ update msg model =
                     }
 
                 gameSettings blocks currTime =
-                    { gameConstructor = GM.RespondSignal
-                    , blocks = blocks
+                    { blocks = blocks
                     , currTime = currTime
                     , maxDuration = 5 * Time.minute
                     , settings = trialSettings
@@ -351,9 +350,10 @@ update msg model =
                     , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 0
                     , reportView = always (Html.text "Implement a report view.")
+                    , trialFuns = RespondSignal.trialFuns
                     }
             in
-                applyImages model gameSettings (RespondSignal.init trialSettings)
+                applyImages RespondSignal model gameSettings (RespondSignal.init trialSettings)
 
         InitVisualSearch ->
             let
@@ -366,8 +366,7 @@ update msg model =
                     }
 
                 gameSettings blocks currTime =
-                    { gameConstructor = GM.VisualSearch
-                    , blocks = blocks
+                    { blocks = blocks
                     , currTime = currTime
                     , maxDuration = 5 * Time.minute
                     , settings = trialSettings
@@ -378,9 +377,10 @@ update msg model =
                     , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
                     , reportView = always (Html.text "Implement a report view.")
+                    , trialFuns = VisualSearch.trialFuns IntIndication
                     }
             in
-                applyImages model gameSettings (\v i _ -> VisualSearch.init trialSettings v i)
+                applyImages VisualSearch model gameSettings (\v i _ -> VisualSearch.init trialSettings v i)
 
         GameResp (Ok game) ->
             case game.slug of
@@ -405,23 +405,23 @@ update msg model =
         Presses keyCode ->
             let
                 ( indModel, indCmd ) =
-                    handleGameUpdate (GM.updateIndication) model
+                    handleIndicationUpdate model
 
                 ( keyModel, keyCmd ) =
                     case keyCode of
                         99 ->
-                            handleGameUpdate (GM.updateDirectionIndication GenGame.Left) indModel
+                            handleDirectionIndicationUpdate GenGame.Left indModel
 
                         109 ->
-                            handleGameUpdate (GM.updateDirectionIndication GenGame.Right) indModel
+                            handleDirectionIndicationUpdate GenGame.Right indModel
 
                         _ ->
                             ( indModel, Cmd.none )
             in
                 ( keyModel, Cmd.batch [ indCmd, keyCmd ] )
 
-        IntIndication i ->
-            handleGameUpdate (GM.updateIntIndication i) model
+        IntIndication n ->
+            handleIntIndicationUpdate n model
 
         MainMenuToggle ->
             let
@@ -434,7 +434,7 @@ update msg model =
                 ( { model | isMenuActive = active }, Cmd.none )
 
         NewCurrentTime t ->
-            handleGameUpdate (GM.updateTime t) model
+            handleTimeUpdate t model
 
         RoleResp (Ok role) ->
             ( { model | userRole = role }, Cmd.none )
@@ -486,18 +486,19 @@ update msg model =
 
 
 applyImages :
-    Model
+    (GM.GameData settings trial Msg -> Game)
+    -> Model
     -> (List (List trial) -> Time -> GM.InitConfig settings trial Msg)
     -> (List String -> List String -> List String -> Generator (List (List trial)))
     -> ( Model, Cmd Msg )
-applyImages model gameSettings fun =
+applyImages gameConstructor model gameSettings fun =
     let
         getImages =
             getFullImagePaths model.filesrv
     in
         Maybe.map3
             (\v i f ->
-                ( model, handleGameInit (fun v i f) gameSettings )
+                ( model, handleGameInit gameConstructor (fun v i f) gameSettings )
             )
             (getImages model.ugimages_v)
             (getImages model.ugimages_i)
@@ -518,10 +519,11 @@ preloadUgImages prefix images =
 
 
 handleGameInit :
-    Generator (List (List trial))
+    (GM.GameData settings trial Msg -> Game)
+    -> Generator (List (List trial))
     -> (List (List trial) -> Time -> GM.InitConfig settings trial Msg)
     -> Cmd Msg
-handleGameInit blockGenerator gameF =
+handleGameInit gameConstructor blockGenerator gameF =
     Task.map2
         (\blocks currTime ->
             gameF blocks currTime
@@ -531,22 +533,131 @@ handleGameInit blockGenerator gameF =
         (GenGame.generatorToTask blockGenerator)
         Time.now
         |> Task.andThen identity
-        |> Task.perform PlayGame
+        |> Task.perform (PlayGame << gameConstructor)
 
 
-handleGameUpdate : (GM.Game Msg -> ( GM.GameStatus Msg, Cmd Msg )) -> Model -> ( Model, Cmd Msg )
-handleGameUpdate f model =
-    case model.playingGame of
-        Nothing ->
-            ( model, Cmd.none )
+handleTimeUpdate : Time -> Model -> ( Model, Cmd Msg )
+handleTimeUpdate time model =
+    let
+        updateData gameConstructor data =
+            case GM.updateTime time data of
+                ( GM.Running newData, cmd ) ->
+                    ( { model | playingGame = Just (gameConstructor newData) }, cmd )
 
-        Just game ->
-            case f game of
-                ( GM.Running newGame, cmd ) ->
-                    ( { model | playingGame = Just newGame }, cmd )
-
-                ( GM.Results newGame, cmd ) ->
+                ( GM.Results newData, cmd ) ->
                     ( { model | playingGame = Nothing }, cmd )
+    in
+        case model.playingGame of
+            Nothing ->
+                ( model, Cmd.none )
+
+            Just (StopSignal data) ->
+                updateData StopSignal data
+
+            Just (GoNoGo data) ->
+                updateData GoNoGo data
+
+            Just (DotProbe data) ->
+                updateData DotProbe data
+
+            Just (RespondSignal data) ->
+                updateData RespondSignal data
+
+            Just (VisualSearch data) ->
+                updateData VisualSearch data
+
+
+handleIndicationUpdate : Model -> ( Model, Cmd Msg )
+handleIndicationUpdate model =
+    let
+        updateData gameConstructor data =
+            case GM.updateIndication data of
+                ( GM.Running newData, cmd ) ->
+                    ( { model | playingGame = Just (gameConstructor newData) }, cmd )
+
+                ( GM.Results newData, cmd ) ->
+                    ( { model | playingGame = Nothing }, cmd )
+    in
+        case model.playingGame of
+            Nothing ->
+                ( model, Cmd.none )
+
+            Just (StopSignal data) ->
+                updateData StopSignal data
+
+            Just (GoNoGo data) ->
+                updateData GoNoGo data
+
+            Just (DotProbe data) ->
+                updateData DotProbe data
+
+            Just (RespondSignal data) ->
+                updateData RespondSignal data
+
+            Just (VisualSearch data) ->
+                updateData VisualSearch data
+
+
+handleIntIndicationUpdate : Int -> Model -> ( Model, Cmd Msg )
+handleIntIndicationUpdate n model =
+    let
+        updateData gameConstructor data =
+            case GM.updateIntIndication n data of
+                ( GM.Running newData, cmd ) ->
+                    ( { model | playingGame = Just (gameConstructor newData) }, cmd )
+
+                ( GM.Results newData, cmd ) ->
+                    ( { model | playingGame = Nothing }, cmd )
+    in
+        case model.playingGame of
+            Nothing ->
+                ( model, Cmd.none )
+
+            Just (StopSignal data) ->
+                updateData StopSignal data
+
+            Just (GoNoGo data) ->
+                updateData GoNoGo data
+
+            Just (DotProbe data) ->
+                updateData DotProbe data
+
+            Just (RespondSignal data) ->
+                updateData RespondSignal data
+
+            Just (VisualSearch data) ->
+                updateData VisualSearch data
+
+
+handleDirectionIndicationUpdate : GenGame.Direction -> Model -> ( Model, Cmd Msg )
+handleDirectionIndicationUpdate n model =
+    let
+        updateData gameConstructor data =
+            case GM.updateDirectionIndication n data of
+                ( GM.Running newData, cmd ) ->
+                    ( { model | playingGame = Just (gameConstructor newData) }, cmd )
+
+                ( GM.Results newData, cmd ) ->
+                    ( { model | playingGame = Nothing }, cmd )
+    in
+        case model.playingGame of
+            Nothing ->
+                ( model, Cmd.none )
+
+            Just (StopSignal data) ->
+                updateData StopSignal data
+
+            Just (GoNoGo data) ->
+                updateData GoNoGo data
+
+            Just (DotProbe data) ->
+                updateData DotProbe data
+
+            Just (RespondSignal data) ->
+                updateData RespondSignal data
+
+            Just (VisualSearch data) ->
+                updateData VisualSearch data
 
 
 isAdmin : Visitor -> Bool

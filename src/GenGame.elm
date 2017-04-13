@@ -3,6 +3,7 @@ module GenGame
         ( Direction(..)
         , TrialResult(..)
         , Reason(..)
+        , TrialFuns
         , checkTransition
         , updateReason
         , take
@@ -10,6 +11,8 @@ module GenGame
         , redCross
         , blackDot
         , fixationCross
+        , defaultUpdateIndication
+        , defaultUpdateWithIndication
         )
 
 import Html exposing (Html, div, text)
@@ -35,6 +38,30 @@ type TrialResult trial msg
     = Complete (Maybe Reason)
     | Continuing trial
     | ContinuingWithEvent trial (Cmd msg)
+
+
+type alias TrialFuns settings trial msg =
+    { getTrialImages : trial -> List String
+    , updateTime : settings -> Time -> trial -> ( TrialResult trial msg, settings )
+    , updateIndication :
+        settings
+        -> Time
+        -> trial
+        -> ( TrialResult trial msg, settings )
+    , updateDirectionIndication :
+        settings
+        -> Time
+        -> Direction
+        -> trial
+        -> ( TrialResult trial msg, settings )
+    , updateIntIndication :
+        settings
+        -> Time
+        -> Int
+        -> trial
+        -> ( TrialResult trial msg, settings )
+    , view : trial -> Html msg
+    }
 
 
 checkTransition :
@@ -92,3 +119,13 @@ blackDot =
 fixationCross : Html msg
 fixationCross =
     text "+"
+
+
+defaultUpdateIndication : settings -> time -> trial -> ( TrialResult trial msg, settings )
+defaultUpdateIndication settings _ trial =
+    ( Continuing trial, settings )
+
+
+defaultUpdateWithIndication : settings -> time -> indication -> trial -> ( TrialResult trial msg, settings )
+defaultUpdateWithIndication settings _ _ trial =
+    ( Continuing trial, settings )

@@ -1,6 +1,6 @@
 module GameManager
     exposing
-        ( Game(..)
+        ( GameData
         , GameStatus(..)
         , InitConfig
         , init
@@ -12,6 +12,7 @@ module GameManager
         )
 
 import Html exposing (Html)
+import GenGame exposing (TrialFuns)
 import Random exposing (Generator)
 import Random.Extra
 import Time exposing (Time)
@@ -20,23 +21,10 @@ import Time exposing (Time)
 -- games
 
 import GenGame exposing (TrialResult(Complete, Continuing, ContinuingWithEvent))
-import StopSignal
-import GoNoGo
-import DotProbe
-import RespondSignal
-import VisualSearch
 
 
-type Game msg
-    = StopSignal (GameData StopSignal.Settings StopSignal.Trial msg)
-    | GoNoGo (GameData GoNoGo.Settings GoNoGo.Trial msg)
-    | DotProbe (GameData DotProbe.Settings DotProbe.Trial msg)
-    | RespondSignal (GameData (RespondSignal.Settings msg) RespondSignal.Trial msg)
-    | VisualSearch (GameData VisualSearch.Settings VisualSearch.Trial msg)
-
-
-type GameStatus msg
-    = Running (Game msg)
+type GameStatus settings trial msg
+    = Running (GameData settings trial msg)
     | Results (List (Maybe GenGame.Reason))
 
 
@@ -53,12 +41,12 @@ type alias GameData settings trial msg =
     , trialRestView : Html msg
     , blockRestView : List (Maybe GenGame.Reason) -> Html msg
     , reportView : List (Maybe GenGame.Reason) -> Html msg
+    , trialFuns : TrialFuns settings trial msg
     }
 
 
 type alias InitConfig settings trial msg =
-    { gameConstructor : GameData settings trial msg -> Game msg
-    , blocks : List (List trial)
+    { blocks : List (List trial)
     , currTime : Time
     , maxDuration : Time
     , settings : settings
@@ -69,6 +57,7 @@ type alias InitConfig settings trial msg =
     , blockRestView : List (Maybe GenGame.Reason) -> Html msg
     , blockRestDuration : Time
     , reportView : List (Maybe GenGame.Reason) -> Html msg
+    , trialFuns : TrialFuns settings trial msg
     }
 
 
@@ -84,7 +73,7 @@ type Blocks trial
     | Report
 
 
-init : InitConfig settings trial msg -> Generator (Game msg)
+init : InitConfig settings trial msg -> Generator (GameData settings trial msg)
 init initConfig =
     padBlocks
         initConfig.blockRestDuration
@@ -93,20 +82,20 @@ init initConfig =
         initConfig.blocks
         |> Random.map
             (\blocks ->
-                initConfig.gameConstructor
-                    { remainingBlocks = blocks
-                    , currTime = initConfig.currTime
-                    , prevTime = initConfig.currTime
-                    , maxDuration = initConfig.maxDuration
-                    , startTime = initConfig.currTime
-                    , blockResults = []
-                    , results = []
-                    , settings = initConfig.settings
-                    , instructionsView = initConfig.instructionsView
-                    , trialRestView = initConfig.trialRestView
-                    , blockRestView = (initConfig.blockRestView)
-                    , reportView = initConfig.reportView
-                    }
+                { remainingBlocks = blocks
+                , currTime = initConfig.currTime
+                , prevTime = initConfig.currTime
+                , maxDuration = initConfig.maxDuration
+                , startTime = initConfig.currTime
+                , blockResults = []
+                , results = []
+                , settings = initConfig.settings
+                , instructionsView = initConfig.instructionsView
+                , trialRestView = initConfig.trialRestView
+                , blockRestView = (initConfig.blockRestView)
+                , reportView = initConfig.reportView
+                , trialFuns = initConfig.trialFuns
+                }
             )
 
 
@@ -134,130 +123,72 @@ padBlocks blockRest trialRest trialJitter blocks =
             )
 
 
-updateTime : Time -> Game msg -> ( GameStatus msg, Cmd msg )
-updateTime currTime game =
-    case game of
-        StopSignal data ->
-            updateTimeHelper StopSignal StopSignal.updateTime currTime data
-
-        GoNoGo data ->
-            updateTimeHelper GoNoGo GoNoGo.updateTime currTime data
-
-        DotProbe data ->
-            updateTimeHelper DotProbe DotProbe.updateTime currTime data
-
-        RespondSignal data ->
-            updateTimeHelper RespondSignal RespondSignal.updateTime currTime data
-
-        VisualSearch data ->
-            updateTimeHelper VisualSearch VisualSearch.updateTime currTime data
+updateTime : Time -> GameData settings trial msg -> ( GameStatus settings trial msg, Cmd msg )
+updateTime currTime data =
+    updateTimeHelper data.trialFuns.updateTime currTime data
 
 
 updateTimeHelper :
-    (GameData settings trial msg -> Game msg)
-    -> (settings -> Time -> trial -> ( TrialResult trial msg, settings ))
+    (settings -> Time -> trial -> ( TrialResult trial msg, settings ))
     -> Time
     -> GameData settings trial msg
-    -> ( GameStatus msg, Cmd msg )
-updateTimeHelper gameConstructor updateF currTime data =
-    updateHelper gameConstructor (updateF data.settings currTime) currTime data
+    -> ( GameStatus settings trial msg, Cmd msg )
+updateTimeHelper updateF currTime data =
+    updateHelper (updateF data.settings currTime) currTime data
 
 
-updateDirectionIndication : GenGame.Direction -> Game msg -> ( GameStatus msg, Cmd msg )
-updateDirectionIndication indication game =
-    case game of
-        GoNoGo data ->
-            updateIndicationHelper GoNoGo GoNoGo.updateIndication indication data
-
-        DotProbe data ->
-            updateIndicationHelper DotProbe DotProbe.updateIndication indication data
-
-        _ ->
-            Running game ! []
+updateDirectionIndication :
+    GenGame.Direction
+    -> GameData settings trial msg
+    -> ( GameStatus settings trial msg, Cmd msg )
+updateDirectionIndication indication data =
+    updateIndicationHelper data.trialFuns.updateDirectionIndication indication data
 
 
-updateIndication : Game msg -> ( GameStatus msg, Cmd msg )
-updateIndication game =
-    case dismissInfo game of
-        StopSignal data ->
-            updateHelper
-                StopSignal
-                (StopSignal.updateIndication data.settings data.currTime)
-                data.currTime
-                data
-
-        RespondSignal data ->
-            updateHelper
-                RespondSignal
-                (RespondSignal.updateIndication data.settings data.currTime)
-                data.currTime
-                data
-
-        newGame ->
-            Running newGame ! []
+updateIndication : GameData settings trial msg -> ( GameStatus settings trial msg, Cmd msg )
+updateIndication data =
+    updateHelper
+        (data.trialFuns.updateIndication data.settings data.currTime)
+        data.currTime
+        (dismissInfo data)
 
 
-dismissInfo : Game msg -> Game msg
-dismissInfo game =
-    let
-        proceed gameConstructor data =
-            case data.remainingBlocks of
-                Instructions :: blocks ->
-                    gameConstructor { data | remainingBlocks = blocks, startTime = data.currTime }
+dismissInfo : GameData settings trial msg -> GameData settings trial msg
+dismissInfo data =
+    case data.remainingBlocks of
+        Instructions :: blocks ->
+            { data | remainingBlocks = blocks, startTime = data.currTime }
 
-                Report :: blocks ->
-                    gameConstructor { data | remainingBlocks = blocks }
-
-                _ ->
-                    game
-    in
-        case game of
-            StopSignal data ->
-                proceed StopSignal data
-
-            GoNoGo data ->
-                proceed GoNoGo data
-
-            DotProbe data ->
-                proceed DotProbe data
-
-            RespondSignal data ->
-                proceed RespondSignal data
-
-            VisualSearch data ->
-                proceed VisualSearch data
-
-
-updateIntIndication : Int -> Game msg -> ( GameStatus msg, Cmd msg )
-updateIntIndication indication game =
-    case game of
-        VisualSearch data ->
-            updateIndicationHelper VisualSearch VisualSearch.updateIndication indication data
+        Report :: blocks ->
+            { data | remainingBlocks = blocks }
 
         _ ->
-            Running game ! []
+            data
+
+
+updateIntIndication : Int -> GameData settings trial msg -> ( GameStatus settings trial msg, Cmd msg )
+updateIntIndication indication data =
+    updateIndicationHelper data.trialFuns.updateIntIndication indication data
 
 
 updateIndicationHelper :
-    (GameData settings trial msg -> Game msg)
-    -> (settings -> Time -> indication -> trial -> ( TrialResult trial msg, settings ))
+    (settings -> Time -> indication -> trial -> ( TrialResult trial msg, settings ))
     -> indication
     -> GameData settings trial msg
-    -> ( GameStatus msg, Cmd msg )
-updateIndicationHelper gameConstructor updateF indication data =
-    updateHelper gameConstructor (updateF data.settings data.currTime indication) data.currTime data
+    -> ( GameStatus settings trial msg, Cmd msg )
+updateIndicationHelper updateF indication data =
+    updateHelper (updateF data.settings data.currTime indication) data.currTime data
 
 
 updateHelper :
-    (GameData settings trial msg -> Game msg)
-    -> (trial -> ( TrialResult trial msg, settings ))
+    (trial -> ( TrialResult trial msg, settings ))
     -> Time
     -> GameData settings trial msg
-    -> ( GameStatus msg, Cmd msg )
-updateHelper gameConstructor updateF currTime data =
+    -> ( GameStatus settings trial msg, Cmd msg )
+updateHelper updateF currTime data =
     let
         reRunF =
-            updateHelper gameConstructor updateF currTime
+            updateHelper updateF currTime
 
         reRun newData =
             if currTime - newData.startTime >= newData.maxDuration then
@@ -266,7 +197,7 @@ updateHelper gameConstructor updateF currTime data =
                 reRunF newData
 
         noOp =
-            Running (gameConstructor { data | currTime = currTime }) ! []
+            Running { data | currTime = currTime } ! []
 
         durationSwitch duration remaining =
             if currTime - data.prevTime >= duration then
@@ -307,54 +238,27 @@ updateHelper gameConstructor updateF currTime data =
 
                     ( Continuing trial, settings ) ->
                         Running
-                            (gameConstructor
-                                { data
-                                    | remainingBlocks =
-                                        BlockActive (TrialActive trial :: trials) :: blocks
-                                    , currTime = currTime
-                                    , settings = settings
-                                }
-                            )
+                            { data
+                                | remainingBlocks =
+                                    BlockActive (TrialActive trial :: trials) :: blocks
+                                , currTime = currTime
+                                , settings = settings
+                            }
                             ! []
 
                     ( ContinuingWithEvent trial event, settings ) ->
                         Running
-                            (gameConstructor
-                                { data
-                                    | remainingBlocks =
-                                        BlockActive (TrialActive trial :: trials) :: blocks
-                                    , currTime = currTime
-                                    , settings = settings
-                                }
-                            )
+                            { data
+                                | remainingBlocks =
+                                    BlockActive (TrialActive trial :: trials) :: blocks
+                                , currTime = currTime
+                                , settings = settings
+                            }
                             ! [ event ]
 
 
-
--- TODO Needing this (Int -> msg) like this is smelly.
-
-
-view : (Int -> msg) -> Game msg -> Html msg
-view intMsg game =
-    case game of
-        StopSignal data ->
-            viewHelper StopSignal.view data
-
-        GoNoGo data ->
-            viewHelper GoNoGo.view data
-
-        DotProbe data ->
-            viewHelper DotProbe.view data
-
-        RespondSignal data ->
-            viewHelper RespondSignal.view data
-
-        VisualSearch data ->
-            viewHelper (VisualSearch.view intMsg) data
-
-
-viewHelper : (trial -> Html msg) -> GameData settings trial msg -> Html msg
-viewHelper viewF data =
+view : GameData settings trial msg -> Html msg
+view data =
     case data.remainingBlocks of
         [] ->
             Html.text ""
@@ -377,4 +281,4 @@ viewHelper viewF data =
                     data.trialRestView
 
                 (TrialActive trial) :: trials ->
-                    viewF trial
+                    data.trialFuns.view trial

@@ -459,13 +459,28 @@ respSignalGame model =
     game model "Respond Signal" InitRespondSignal
 
 
-gameView : Maybe (GameManager.Game Msg) -> Msg -> Html Msg
+gameView : Maybe Model.Game -> Msg -> Html Msg
 gameView playingGame msg =
     case playingGame of
-        Just game ->
+        Just (StopSignal data) ->
             div []
-                [ GameManager.view IntIndication game
-                ]
+                [ GameManager.view data ]
+
+        Just (GoNoGo data) ->
+            div []
+                [ GameManager.view data ]
+
+        Just (DotProbe data) ->
+            div []
+                [ GameManager.view data ]
+
+        Just (RespondSignal data) ->
+            div []
+                [ GameManager.view data ]
+
+        Just (VisualSearch data) ->
+            div []
+                [ GameManager.view data ]
 
         Nothing ->
             div []

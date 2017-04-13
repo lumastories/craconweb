@@ -5,6 +5,7 @@ import GenGame
         ( Direction(Left, Right)
         , TrialResult(Continuing, Complete)
         , Reason(GoSuccess, WrongIndication)
+        , TrialFuns
         , checkTransition
         )
 import List.Extra
@@ -75,6 +76,17 @@ initTrial left right direction =
     , rightImageUrl = right
     , stage = NotStarted
     , reason = Nothing
+    }
+
+
+trialFuns : TrialFuns Settings Trial msg
+trialFuns =
+    { getTrialImages = always []
+    , updateTime = updateTime
+    , updateIndication = GenGame.defaultUpdateIndication
+    , updateDirectionIndication = updateIndication
+    , updateIntIndication = GenGame.defaultUpdateWithIndication
+    , view = view
     }
 
 

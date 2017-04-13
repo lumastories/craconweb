@@ -4,6 +4,7 @@ import GenGame
     exposing
         ( TrialResult(Continuing, Complete)
         , Reason(GoSuccess, WrongIndication, IndicationTimeout)
+        , TrialFuns
         , checkTransition
         , updateReason
         )
@@ -71,6 +72,17 @@ initTrial i urls =
     , imageUrls = urls
     , stage = NotStarted
     , reason = Nothing
+    }
+
+
+trialFuns : (Int -> msg) -> TrialFuns Settings Trial msg
+trialFuns intMsg =
+    { getTrialImages = always []
+    , updateTime = updateTime
+    , updateIndication = GenGame.defaultUpdateIndication
+    , updateDirectionIndication = GenGame.defaultUpdateWithIndication
+    , updateIntIndication = updateIndication
+    , view = view intMsg
     }
 
 

@@ -5,6 +5,7 @@ import GenGame
         ( Direction
         , TrialResult(Continuing, ContinuingWithEvent, Complete)
         , Reason(GoSuccess, NoGoSuccess, IndicationTimeout, WrongIndication, IndicatedOnNoGo)
+        , TrialFuns
         , checkTransition
         , updateReason
         )
@@ -97,6 +98,17 @@ initTrial kind url delay =
     , kind = kind
     , stage = NotStarted
     , reason = Nothing
+    }
+
+
+trialFuns : TrialFuns (Settings msg) Trial msg
+trialFuns =
+    { getTrialImages = always []
+    , updateTime = updateTime
+    , updateIndication = updateIndication
+    , updateDirectionIndication = GenGame.defaultUpdateWithIndication
+    , updateIntIndication = GenGame.defaultUpdateWithIndication
+    , view = view
     }
 
 
