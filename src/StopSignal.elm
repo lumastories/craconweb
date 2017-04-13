@@ -85,8 +85,13 @@ isGo kind =
             False
 
 
-updateTime : Settings -> Time -> Trial -> TrialResult Trial msg
+updateTime : Settings -> Time -> Trial -> ( TrialResult Trial msg, Settings )
 updateTime settings currTime trial =
+    ( updateTimeHelper settings currTime trial, settings )
+
+
+updateTimeHelper : Settings -> Time -> Trial -> TrialResult Trial msg
+updateTimeHelper settings currTime trial =
     let
         trans =
             checkTransition trial currTime
@@ -119,8 +124,13 @@ updateTime settings currTime trial =
                     (Complete trial.reason)
 
 
-updateIndication : Time -> Trial -> TrialResult Trial msg
-updateIndication currTime trial =
+updateIndication : Settings -> Time -> Trial -> ( TrialResult Trial msg, Settings )
+updateIndication settings currTime trial =
+    ( updateIndicationHelper currTime trial, settings )
+
+
+updateIndicationHelper : Time -> Trial -> TrialResult Trial msg
+updateIndicationHelper currTime trial =
     case trial.stage of
         PictureBorder timeSince ->
             if isGo trial.kind then

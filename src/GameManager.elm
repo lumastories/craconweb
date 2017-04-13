@@ -152,7 +152,7 @@ updateTime currTime game =
 
 updateTimeHelper :
     (GameData settings trial msg -> Game msg)
-    -> (settings -> Time -> trial -> TrialResult trial msg)
+    -> (settings -> Time -> trial -> ( TrialResult trial msg, settings ))
     -> Time
     -> GameData settings trial msg
     -> ( GameStatus msg, Cmd msg )
@@ -179,14 +179,14 @@ updateIndication game =
         StopSignal data ->
             updateHelper
                 StopSignal
-                (StopSignal.updateIndication data.currTime)
+                (StopSignal.updateIndication data.settings data.currTime)
                 data.currTime
                 data
 
         RespondSignal data ->
             updateHelper
                 RespondSignal
-                (RespondSignal.updateIndication data.currTime)
+                (RespondSignal.updateIndication data.settings data.currTime)
                 data.currTime
                 data
 
@@ -237,17 +237,17 @@ updateIntIndication indication game =
 
 updateIndicationHelper :
     (GameData settings trial msg -> Game msg)
-    -> (Time -> indication -> trial -> TrialResult trial msg)
+    -> (settings -> Time -> indication -> trial -> ( TrialResult trial msg, settings ))
     -> indication
     -> GameData settings trial msg
     -> ( GameStatus msg, Cmd msg )
 updateIndicationHelper gameConstructor updateF indication data =
-    updateHelper gameConstructor (updateF data.currTime indication) data.currTime data
+    updateHelper gameConstructor (updateF data.settings data.currTime indication) data.currTime data
 
 
 updateHelper :
     (GameData settings trial msg -> Game msg)
-    -> (trial -> TrialResult trial msg)
+    -> (trial -> ( TrialResult trial msg, settings ))
     -> Time
     -> GameData settings trial msg
     -> ( GameStatus msg, Cmd msg )
@@ -288,33 +288,36 @@ updateHelper gameConstructor updateF currTime data =
 
                     (TrialActive trial) :: trials ->
                         case updateF trial of
-                            Complete reason ->
+                            ( Complete reason, settings ) ->
                                 reRun
                                     { data
                                         | remainingBlocks = BlockActive trials :: blocks
                                         , results = reason :: data.results
                                         , currTime = currTime
                                         , prevTime = currTime
+                                        , settings = settings
                                     }
 
-                            Continuing trial ->
+                            ( Continuing trial, settings ) ->
                                 Running
                                     (gameConstructor
                                         { data
                                             | remainingBlocks =
                                                 BlockActive (TrialActive trial :: trials) :: blocks
                                             , currTime = currTime
+                                            , settings = settings
                                         }
                                     )
                                     ! []
 
-                            ContinuingWithEvent trial event ->
+                            ( ContinuingWithEvent trial event, settings ) ->
                                 Running
                                     (gameConstructor
                                         { data
                                             | remainingBlocks =
                                                 BlockActive (TrialActive trial :: trials) :: blocks
                                             , currTime = currTime
+                                            , settings = settings
                                         }
                                     )
                                     ! [ event ]

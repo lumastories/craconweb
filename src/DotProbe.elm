@@ -86,8 +86,13 @@ nintyTenSplit ninty ten =
         ]
 
 
-updateTime : Settings -> Time -> Trial -> TrialResult Trial msg
+updateTime : Settings -> Time -> Trial -> ( TrialResult Trial msg, Settings )
 updateTime settings currTime trial =
+    ( updateTimeHelper settings currTime trial, settings )
+
+
+updateTimeHelper : Settings -> Time -> Trial -> TrialResult Trial msg
+updateTimeHelper settings currTime trial =
     let
         trans =
             checkTransition trial currTime
@@ -106,8 +111,13 @@ updateTime settings currTime trial =
                 Continuing trial
 
 
-updateIndication : Time -> Direction -> Trial -> TrialResult Trial msg
-updateIndication currTime direction trial =
+updateIndication : Settings -> Time -> Direction -> Trial -> ( TrialResult Trial msg, Settings )
+updateIndication settings currTime direction trial =
+    ( updateIndicationHelper currTime direction trial, settings )
+
+
+updateIndicationHelper : Time -> Direction -> Trial -> TrialResult Trial msg
+updateIndicationHelper currTime direction trial =
     case trial.stage of
         Probe timeSince ->
             if trial.probePosition == direction then

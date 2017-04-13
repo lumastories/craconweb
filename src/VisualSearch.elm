@@ -76,8 +76,13 @@ initTrial i urls =
     }
 
 
-updateTime : Settings -> Time -> Trial -> TrialResult Trial msg
+updateTime : Settings -> Time -> Trial -> ( TrialResult Trial msg, Settings )
 updateTime settings currTime trial =
+    ( updateTimeHelper settings currTime trial, settings )
+
+
+updateTimeHelper : Settings -> Time -> Trial -> TrialResult Trial msg
+updateTimeHelper settings currTime trial =
     let
         trans =
             checkTransition trial currTime
@@ -112,8 +117,13 @@ updateTime settings currTime trial =
                     (Complete trial.reason)
 
 
-updateIndication : Time -> Int -> Trial -> TrialResult Trial msg
-updateIndication currTime selection trial =
+updateIndication : Settings -> Time -> Int -> Trial -> ( TrialResult Trial msg, Settings )
+updateIndication settings currTime selection trial =
+    ( updateIndicationHelper currTime selection trial, settings )
+
+
+updateIndicationHelper : Time -> Int -> Trial -> TrialResult Trial msg
+updateIndicationHelper currTime selection trial =
     case trial.stage of
         SelectionGrid _ ->
             if selection == trial.correctPosition then
