@@ -198,10 +198,6 @@ updateIndicationHelper currTime direction trial =
             Continuing trial
 
 
-
--- TODO doesn't handle left/right
-
-
 view : Trial -> Html msg
 view trial =
     border trial.kind [ content trial.stage trial.imageUrl trial.redCrossUrl trial.position ]
