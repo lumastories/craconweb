@@ -469,12 +469,6 @@ gameView playingGame msg =
         Just game ->
             div []
                 [ GameManager.view IntIndication game
-                , br [] []
-                , a
-                    [ class "button is-danger  is-block"
-                    , onClick StopGame
-                    ]
-                    [ text "Stop Game" ]
                 ]
 
         Nothing ->

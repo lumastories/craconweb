@@ -213,26 +213,24 @@ content stage url redCrossUrl position =
             pictureView url position
 
         RedCross _ ->
-            let
-                l =
-                    Debug.log "redx" redCrossUrl
-            in
-                img [ src redCrossUrl ] []
+            div [ class "container has-text-centered" ]
+                [ img [ class "redX", src redCrossUrl ] []
+                ]
 
 
 pictureView : String -> Direction -> Html msg
 pictureView url position =
     case position of
         Left ->
-            img [ class "leftSide", src url ] []
+            img [ class "leftSide squeezed", src url ] []
 
         Right ->
-            img [ class "rightSide", src url ] []
+            img [ class "rightSide squeezed", src url ] []
 
 
 border : Kind -> List (Html msg) -> Html msg
 border kind =
     if isGo kind then
-        div [ class "solidBorder" ]
+        div [ class "solidBorder sized" ]
     else
-        div [ class "dashedBorder" ]
+        div [ class "dashedBorder sized" ]
