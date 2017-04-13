@@ -152,7 +152,9 @@ updateTime settings currTime trial =
                             }
                         )
                 else
-                    Complete (updateReason IndicationTimeout trial.reason)
+                    trans timeSince
+                        settings.picture
+                        (Complete (updateReason IndicationTimeout trial.reason))
 
             RedCross timeSince ->
                 trans timeSince
