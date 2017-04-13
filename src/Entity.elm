@@ -180,7 +180,7 @@ type alias User =
     , avatar :
         String
         -- 6
-    , groupID :
+    , groupId :
         String
         -- 7
     , roles :
@@ -215,7 +215,7 @@ userDecoder =
                 |> required "firstName" JD.string ""
                 |> required "lastName" JD.string ""
                 |> required "avatar" JD.string ""
-                |> required "groupID" JD.string ""
+                |> required "groupId" JD.string ""
                 |> repeated "roles" roleDecoder
                 |> optional "lastLogin" timestampDecoder
                 |> optional "blocked" timestampDecoder
@@ -234,7 +234,7 @@ userEncoder v =
             , (requiredFieldEncoder "firstName" JE.string "" v.firstName)
             , (requiredFieldEncoder "lastName" JE.string "" v.lastName)
             , (requiredFieldEncoder "avatar" JE.string "" v.avatar)
-            , (requiredFieldEncoder "groupID" JE.string "" v.groupID)
+            , (requiredFieldEncoder "groupId" JE.string "" v.groupId)
             , (repeatedFieldEncoder "roles" roleEncoder v.roles)
             , (optionalEncoder "lastLogin" timestampEncoder v.lastLogin)
             , (optionalEncoder "blocked" timestampEncoder v.blocked)
@@ -260,7 +260,7 @@ type alias UserRecord =
     , avatar :
         String
         -- 5
-    , groupID :
+    , groupId :
         String
         -- 6
     , roles :
@@ -282,7 +282,7 @@ userRecordDecoder =
                 |> required "firstName" JD.string ""
                 |> required "lastName" JD.string ""
                 |> required "avatar" JD.string ""
-                |> required "groupID" JD.string ""
+                |> required "groupId" JD.string ""
                 |> repeated "roles" JD.string
                 |> required "password" JD.string ""
 
@@ -296,9 +296,37 @@ userRecordEncoder v =
             , (requiredFieldEncoder "firstName" JE.string "" v.firstName)
             , (requiredFieldEncoder "lastName" JE.string "" v.lastName)
             , (requiredFieldEncoder "avatar" JE.string "" v.avatar)
-            , (requiredFieldEncoder "groupID" JE.string "" v.groupID)
+            , (requiredFieldEncoder "groupId" JE.string "" v.groupId)
             , (repeatedFieldEncoder "roles" JE.string v.roles)
             , (requiredFieldEncoder "password" JE.string "" v.password)
+            ]
+
+
+type alias UserRecorder =
+    { userId :
+        String
+        -- 1
+    , userRecord :
+        Maybe UserRecord
+        -- 2
+    }
+
+
+userRecorderDecoder : JD.Decoder UserRecorder
+userRecorderDecoder =
+    JD.lazy <|
+        \_ ->
+            decode UserRecorder
+                |> required "userId" JD.string ""
+                |> optional "userRecord" userRecordDecoder
+
+
+userRecorderEncoder : UserRecorder -> JE.Value
+userRecorderEncoder v =
+    JE.object <|
+        List.filterMap identity <|
+            [ (requiredFieldEncoder "userId" JE.string "" v.userId)
+            , (optionalEncoder "userRecord" userRecordEncoder v.userRecord)
             ]
 
 
@@ -399,45 +427,31 @@ usersRecordEncoder v =
             ]
 
 
-type alias UsersRequest =
-    { userIds :
-        List String
-        -- 1
-    }
-
-
-usersRequestDecoder : JD.Decoder UsersRequest
-usersRequestDecoder =
-    JD.lazy <|
-        \_ ->
-            decode UsersRequest
-                |> repeated "userIds" JD.string
-
-
-usersRequestEncoder : UsersRequest -> JE.Value
-usersRequestEncoder v =
-    JE.object <|
-        List.filterMap identity <|
-            [ (repeatedFieldEncoder "userIds" JE.string v.userIds)
-            ]
-
-
 type alias UsersReferral =
-    { idFirst :
+    { groupId :
         String
         -- 1
-    , idFinal :
+    , roleId :
         String
         -- 2
-    , idDesc :
-        Bool
+    , createdFirst :
+        Maybe Timestamp
         -- 3
+    , createdFinal :
+        Maybe Timestamp
+        -- 4
+    , createdEach :
+        Bool
+        -- 5
+    , createdDesc :
+        Bool
+        -- 6
     , limit :
         Int
-        -- 4
+        -- 7
     , skip :
         Int
-        -- 5
+        -- 8
     }
 
 
@@ -446,9 +460,12 @@ usersReferralDecoder =
     JD.lazy <|
         \_ ->
             decode UsersReferral
-                |> required "idFirst" JD.string ""
-                |> required "idFinal" JD.string ""
-                |> required "idDesc" JD.bool False
+                |> required "groupId" JD.string ""
+                |> required "roleId" JD.string ""
+                |> optional "createdFirst" timestampDecoder
+                |> optional "createdFinal" timestampDecoder
+                |> required "createdEach" JD.bool False
+                |> required "createdDesc" JD.bool False
                 |> required "limit" JD.int 0
                 |> required "skip" JD.int 0
 
@@ -457,11 +474,37 @@ usersReferralEncoder : UsersReferral -> JE.Value
 usersReferralEncoder v =
     JE.object <|
         List.filterMap identity <|
-            [ (requiredFieldEncoder "idFirst" JE.string "" v.idFirst)
-            , (requiredFieldEncoder "idFinal" JE.string "" v.idFinal)
-            , (requiredFieldEncoder "idDesc" JE.bool False v.idDesc)
+            [ (requiredFieldEncoder "groupId" JE.string "" v.groupId)
+            , (requiredFieldEncoder "roleId" JE.string "" v.roleId)
+            , (optionalEncoder "createdFirst" timestampEncoder v.createdFirst)
+            , (optionalEncoder "createdFinal" timestampEncoder v.createdFinal)
+            , (requiredFieldEncoder "createdEach" JE.bool False v.createdEach)
+            , (requiredFieldEncoder "createdDesc" JE.bool False v.createdDesc)
             , (requiredFieldEncoder "limit" JE.int 0 v.limit)
             , (requiredFieldEncoder "skip" JE.int 0 v.skip)
+            ]
+
+
+type alias UserRedactor =
+    { userId :
+        String
+        -- 1
+    }
+
+
+userRedactorDecoder : JD.Decoder UserRedactor
+userRedactorDecoder =
+    JD.lazy <|
+        \_ ->
+            decode UserRedactor
+                |> required "userId" JD.string ""
+
+
+userRedactorEncoder : UserRedactor -> JE.Value
+userRedactorEncoder v =
+    JE.object <|
+        List.filterMap identity <|
+            [ (requiredFieldEncoder "userId" JE.string "" v.userId)
             ]
 
 
@@ -552,51 +595,54 @@ type alias Game =
     , dscript :
         String
         -- 4
-    , icon :
+    , instruct :
         String
         -- 5
+    , icon :
+        String
+        -- 6
     , reactDur :
         Int
-        -- 6
+        -- 7
     , sessDur :
         Int
-        -- 7
+        -- 8
     , trialDur :
         Int
-        -- 8
+        -- 9
     , offsetDur :
         Int
-        -- 9
+        -- 10
     , fixDur :
         Int
-        -- 10
+        -- 11
     , fixImg :
         String
-        -- 11
+        -- 12
     , durInc :
         Int
-        -- 12
+        -- 13
     , durDec :
         Int
-        -- 13
+        -- 14
     , incTrigger :
         Int
-        -- 14
+        -- 15
     , decTrigger :
         Int
-        -- 15
+        -- 16
     , blocked :
         Maybe Timestamp
-        -- 16
+        -- 17
     , created :
         Maybe Timestamp
-        -- 17
+        -- 18
     , updated :
         Maybe Timestamp
-        -- 18
+        -- 19
     , deleted :
         Maybe Timestamp
-        -- 19
+        -- 20
     }
 
 
@@ -609,6 +655,7 @@ gameDecoder =
                 |> required "name" JD.string ""
                 |> required "slug" JD.string ""
                 |> required "dscript" JD.string ""
+                |> required "instruct" JD.string ""
                 |> required "icon" JD.string ""
                 |> required "reactDur" JD.int 0
                 |> required "sessDur" JD.int 0
@@ -634,6 +681,7 @@ gameEncoder v =
             , (requiredFieldEncoder "name" JE.string "" v.name)
             , (requiredFieldEncoder "slug" JE.string "" v.slug)
             , (requiredFieldEncoder "dscript" JE.string "" v.dscript)
+            , (requiredFieldEncoder "instruct" JE.string "" v.instruct)
             , (requiredFieldEncoder "icon" JE.string "" v.icon)
             , (requiredFieldEncoder "reactDur" JE.int 0 v.reactDur)
             , (requiredFieldEncoder "sessDur" JE.int 0 v.sessDur)
@@ -672,6 +720,138 @@ gameRequestEncoder v =
     JE.object <|
         List.filterMap identity <|
             [ (requiredFieldEncoder "gameSlug" JE.string "" v.gameSlug)
+            ]
+
+
+type alias Ginstruct =
+    { id :
+        String
+        -- 1
+    , gameId :
+        String
+        -- 2
+    , groupId :
+        String
+        -- 3
+    , instruct :
+        String
+        -- 4
+    , created :
+        Maybe Timestamp
+        -- 5
+    , updated :
+        Maybe Timestamp
+        -- 6
+    }
+
+
+ginstructDecoder : JD.Decoder Ginstruct
+ginstructDecoder =
+    JD.lazy <|
+        \_ ->
+            decode Ginstruct
+                |> required "id" JD.string ""
+                |> required "gameId" JD.string ""
+                |> required "groupId" JD.string ""
+                |> required "instruct" JD.string ""
+                |> optional "created" timestampDecoder
+                |> optional "updated" timestampDecoder
+
+
+ginstructEncoder : Ginstruct -> JE.Value
+ginstructEncoder v =
+    JE.object <|
+        List.filterMap identity <|
+            [ (requiredFieldEncoder "id" JE.string "" v.id)
+            , (requiredFieldEncoder "gameId" JE.string "" v.gameId)
+            , (requiredFieldEncoder "groupId" JE.string "" v.groupId)
+            , (requiredFieldEncoder "instruct" JE.string "" v.instruct)
+            , (optionalEncoder "created" timestampEncoder v.created)
+            , (optionalEncoder "updated" timestampEncoder v.updated)
+            ]
+
+
+type alias Ginstructs =
+    { ginstructs :
+        List Ginstruct
+        -- 1
+    }
+
+
+ginstructsDecoder : JD.Decoder Ginstructs
+ginstructsDecoder =
+    JD.lazy <|
+        \_ ->
+            decode Ginstructs
+                |> repeated "ginstructs" ginstructDecoder
+
+
+ginstructsEncoder : Ginstructs -> JE.Value
+ginstructsEncoder v =
+    JE.object <|
+        List.filterMap identity <|
+            [ (repeatedFieldEncoder "ginstructs" ginstructEncoder v.ginstructs)
+            ]
+
+
+type alias GameGroupGinstructRecord =
+    { gameId :
+        String
+        -- 1
+    , groupId :
+        String
+        -- 2
+    , instruct :
+        String
+        -- 3
+    }
+
+
+gameGroupGinstructRecordDecoder : JD.Decoder GameGroupGinstructRecord
+gameGroupGinstructRecordDecoder =
+    JD.lazy <|
+        \_ ->
+            decode GameGroupGinstructRecord
+                |> required "gameId" JD.string ""
+                |> required "groupId" JD.string ""
+                |> required "instruct" JD.string ""
+
+
+gameGroupGinstructRecordEncoder : GameGroupGinstructRecord -> JE.Value
+gameGroupGinstructRecordEncoder v =
+    JE.object <|
+        List.filterMap identity <|
+            [ (requiredFieldEncoder "gameId" JE.string "" v.gameId)
+            , (requiredFieldEncoder "groupId" JE.string "" v.groupId)
+            , (requiredFieldEncoder "instruct" JE.string "" v.instruct)
+            ]
+
+
+type alias GameGroupGinstructsReferral =
+    { gameId :
+        String
+        -- 1
+    , groupId :
+        String
+        -- 2
+    }
+
+
+gameGroupGinstructsReferralDecoder : JD.Decoder GameGroupGinstructsReferral
+gameGroupGinstructsReferralDecoder =
+    JD.lazy <|
+        \_ ->
+            decode GameGroupGinstructsReferral
+                |> required "gameId" JD.string ""
+                |> required "groupId" JD.string ""
+
+
+gameGroupGinstructsReferralEncoder : GameGroupGinstructsReferral -> JE.Value
+gameGroupGinstructsReferralEncoder v =
+    JE.object <|
+        List.filterMap identity <|
+            [ (requiredFieldEncoder "gameId" JE.string "" v.gameId)
+            , (requiredFieldEncoder "groupId" JE.string "" v.groupId)
             ]
 
 
@@ -820,26 +1000,26 @@ gimgtypesEncoder v =
             ]
 
 
-type alias GimgtypesRequest =
-    { gimgtypeIds :
-        List String
+type alias GimgtypeRequest =
+    { gimgtypeSlug :
+        String
         -- 1
     }
 
 
-gimgtypesRequestDecoder : JD.Decoder GimgtypesRequest
-gimgtypesRequestDecoder =
+gimgtypeRequestDecoder : JD.Decoder GimgtypeRequest
+gimgtypeRequestDecoder =
     JD.lazy <|
         \_ ->
-            decode GimgtypesRequest
-                |> repeated "gimgtypeIds" JD.string
+            decode GimgtypeRequest
+                |> required "gimgtypeSlug" JD.string ""
 
 
-gimgtypesRequestEncoder : GimgtypesRequest -> JE.Value
-gimgtypesRequestEncoder v =
+gimgtypeRequestEncoder : GimgtypeRequest -> JE.Value
+gimgtypeRequestEncoder v =
     JE.object <|
         List.filterMap identity <|
-            [ (repeatedFieldEncoder "gimgtypeIds" JE.string v.gimgtypeIds)
+            [ (requiredFieldEncoder "gimgtypeSlug" JE.string "" v.gimgtypeSlug)
             ]
 
 
@@ -926,6 +1106,29 @@ gimageRecordEncoder v =
             [ (requiredFieldEncoder "name" JE.string "" v.name)
             , (requiredFieldEncoder "path" JE.string "" v.path)
             , (requiredFieldEncoder "gimgtypeId" JE.string "" v.gimgtypeId)
+            ]
+
+
+type alias GimageRequest =
+    { gimageName :
+        String
+        -- 1
+    }
+
+
+gimageRequestDecoder : JD.Decoder GimageRequest
+gimageRequestDecoder =
+    JD.lazy <|
+        \_ ->
+            decode GimageRequest
+                |> required "gimageName" JD.string ""
+
+
+gimageRequestEncoder : GimageRequest -> JE.Value
+gimageRequestEncoder v =
+    JE.object <|
+        List.filterMap identity <|
+            [ (requiredFieldEncoder "gimageName" JE.string "" v.gimageName)
             ]
 
 
@@ -1061,15 +1264,18 @@ type alias UserUgimgsetsReferral =
     , createdFinal :
         Maybe Timestamp
         -- 3
-    , createdDesc :
+    , createdEach :
         Bool
         -- 4
+    , createdDesc :
+        Bool
+        -- 5
     , limit :
         Int
-        -- 5
+        -- 6
     , skip :
         Int
-        -- 6
+        -- 7
     }
 
 
@@ -1081,6 +1287,7 @@ userUgimgsetsReferralDecoder =
                 |> required "userId" JD.string ""
                 |> optional "createdFirst" timestampDecoder
                 |> optional "createdFinal" timestampDecoder
+                |> required "createdEach" JD.bool False
                 |> required "createdDesc" JD.bool False
                 |> required "limit" JD.int 0
                 |> required "skip" JD.int 0
@@ -1093,6 +1300,7 @@ userUgimgsetsReferralEncoder v =
             [ (requiredFieldEncoder "userId" JE.string "" v.userId)
             , (optionalEncoder "createdFirst" timestampEncoder v.createdFirst)
             , (optionalEncoder "createdFinal" timestampEncoder v.createdFinal)
+            , (requiredFieldEncoder "createdEach" JE.bool False v.createdEach)
             , (requiredFieldEncoder "createdDesc" JE.bool False v.createdDesc)
             , (requiredFieldEncoder "limit" JE.int 0 v.limit)
             , (requiredFieldEncoder "skip" JE.int 0 v.skip)
@@ -1206,15 +1414,18 @@ type alias UgimgsetUgimagesReferral =
     , valFinal :
         Int
         -- 4
-    , valDesc :
+    , valEach :
         Bool
         -- 5
+    , valDesc :
+        Bool
+        -- 6
     , limit :
         Int
-        -- 6
+        -- 7
     , skip :
         Int
-        -- 7
+        -- 8
     }
 
 
@@ -1227,6 +1438,7 @@ ugimgsetUgimagesReferralDecoder =
                 |> required "gimgtypeSlug" JD.string ""
                 |> required "valFirst" JD.int 0
                 |> required "valFinal" JD.int 0
+                |> required "valEach" JD.bool False
                 |> required "valDesc" JD.bool False
                 |> required "limit" JD.int 0
                 |> required "skip" JD.int 0
@@ -1240,6 +1452,7 @@ ugimgsetUgimagesReferralEncoder v =
             , (requiredFieldEncoder "gimgtypeSlug" JE.string "" v.gimgtypeSlug)
             , (requiredFieldEncoder "valFirst" JE.int 0 v.valFirst)
             , (requiredFieldEncoder "valFinal" JE.int 0 v.valFinal)
+            , (requiredFieldEncoder "valEach" JE.bool False v.valEach)
             , (requiredFieldEncoder "valDesc" JE.bool False v.valDesc)
             , (requiredFieldEncoder "limit" JE.int 0 v.limit)
             , (requiredFieldEncoder "skip" JE.int 0 v.skip)

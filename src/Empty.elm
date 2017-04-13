@@ -18,31 +18,13 @@ emptyModel model =
         , mainMenuItems = Routing.initMenuItems
         , currentTime = 0
         , currentTimeDelta = 0
-        , user = emptyUser
+        , user = Nothing
         , authRecord = emptyAuthRecord
         , loading = Nothing
         , glitching = Nothing
         , responseTimes = []
         , startTime = 0
         , playingGame = Nothing
-    }
-
-
-emptyUser : Entity.User
-emptyUser =
-    { id = ""
-    , username = ""
-    , email = ""
-    , firstName = ""
-    , lastName = ""
-    , avatar = ""
-    , groupID = ""
-    , roles = []
-    , lastLogin = Nothing
-    , blocked = Nothing
-    , created = Nothing
-    , updated = Nothing
-    , deleted = Nothing
     }
 
 
@@ -53,7 +35,7 @@ emptyUserRecord =
     , firstName = ""
     , lastName = ""
     , avatar = ""
-    , groupID = ""
+    , groupId = ""
     , roles = []
     , password = ""
     }
@@ -87,28 +69,4 @@ emptyRole =
     { id = ""
     , name = "user"
     , weight = 0
-    }
-
-
-emptyGame : Entity.Game
-emptyGame =
-    { id = ""
-    , name = ""
-    , slug = ""
-    , dscript = ""
-    , icon = ""
-    , reactDur = 0
-    , sessDur = 0
-    , trialDur = 0
-    , offsetDur = 0
-    , fixDur = 0
-    , fixImg = ""
-    , durInc = 0
-    , durDec = 0
-    , incTrigger = 0
-    , decTrigger = 0
-    , blocked = Nothing
-    , created = Nothing
-    , updated = Nothing
-    , deleted = Nothing
     }

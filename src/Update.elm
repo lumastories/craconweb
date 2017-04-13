@@ -77,7 +77,7 @@ update msg model =
                     model.tmpUserRecord
 
                 tmpUserRecord_old =
-                    { tmpUserRecord_old_ | roles = [ model.userRole.id ], groupID = Maybe.withDefault "" model.groupIdCon }
+                    { tmpUserRecord_old_ | roles = [ model.userRole.id ], groupId = Maybe.withDefault "" model.groupIdCon }
 
                 tmpUserRecord_ =
                     case key of
@@ -97,10 +97,10 @@ update msg model =
                             { tmpUserRecord_old | lastName = value }
 
                         "exp" ->
-                            { tmpUserRecord_old | groupID = value }
+                            { tmpUserRecord_old | groupId = value }
 
                         "con" ->
-                            { tmpUserRecord_old | groupID = value }
+                            { tmpUserRecord_old | groupId = value }
 
                         _ ->
                             tmpUserRecord_old
@@ -232,7 +232,7 @@ update msg model =
 
         UserResp (Ok user_) ->
             ( { model
-                | user = user_
+                | user = Just user_
               }
             , Cmd.none
             )
@@ -391,19 +391,19 @@ update msg model =
         GameResp (Ok game) ->
             case game.slug of
                 "gonogo" ->
-                    ( { model | gonogoGame = game }, Cmd.none )
+                    ( { model | gonogoGame = Just game }, Cmd.none )
 
                 "dotprobe" ->
-                    ( { model | dotprobeGame = game }, Cmd.none )
+                    ( { model | dotprobeGame = Just game }, Cmd.none )
 
                 "stopsignal" ->
-                    ( { model | stopsignalGame = game }, Cmd.none )
+                    ( { model | stopsignalGame = Just game }, Cmd.none )
 
                 "respondsignal" ->
-                    ( { model | respondsignalGame = game }, Cmd.none )
+                    ( { model | respondsignalGame = Just game }, Cmd.none )
 
                 "visualsearch" ->
-                    ( { model | visualsearchGame = game }, Cmd.none )
+                    ( { model | visualsearchGame = Just game }, Cmd.none )
 
                 _ ->
                     model ! []

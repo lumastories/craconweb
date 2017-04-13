@@ -194,11 +194,21 @@ homePageBody model =
             [ class "hero-body" ]
             [ div
                 [ class "container" ]
-                [ h1 [ class "title is-1" ] [ text <| "Welcome, " ++ model.user.firstName ]
+                [ h1 [ class "title is-1" ] [ (welcome model.user) ]
                 , homePageGrid model
                 ]
             ]
         ]
+
+
+welcome : Maybe Entity.User -> Html msg
+welcome user =
+    case user of
+        Just u ->
+            (text <| "Welcome," ++ u.username)
+
+        Nothing ->
+            (text "")
 
 
 homePageGrid : Model -> Html Msg
@@ -210,9 +220,14 @@ homePageGrid model =
 homePageGameCards : Model -> List (Html Msg)
 homePageGameCards model =
     let
-        toCard g =
-            div [ class "column" ]
-                [ homePageGameCard g.slug (model.filesrv ++ "/repo/" ++ g.icon) g.name g.dscript ]
+        toCard game =
+            case game of
+                Just g ->
+                    div [ class "column" ]
+                        [ homePageGameCard g.slug (model.filesrv ++ "/repo/" ++ g.icon) g.name g.dscript ]
+
+                Nothing ->
+                    div [] []
     in
         List.map toCard
             [ model.gonogoGame
@@ -354,10 +369,49 @@ badgesPage model =
         [ div
             [ class "container" ]
             [ h1 [ class "title is-1" ] [ text "Badges" ]
-            , h3 [] [ text "Select a badge below to see how to unlock it" ]
-            , badge "1"
-            , badge "2"
-            , badge "3"
+            , div []
+                [ div [ class "columns" ]
+                    [ div [ class "column" ]
+                        [ div [ class "box" ]
+                            [ h1 [ class "title is-1" ] [ text "Log in ", i [ class "fa fa-unlock" ] [] ]
+                            , p [] [ text "You did it! Congrats" ]
+                            ]
+                        ]
+                    , div [ class "column" ]
+                        [ div [ class "box" ]
+                            [ h1 [ class "title is-1" ] [ text "90% Accuracy ", i [ class "fa fa-lock" ] [] ]
+                            , p [] [ text "Reach 90% accuracy to unlock this badge!" ]
+                            ]
+                        ]
+                    , div [ class "column" ]
+                        [ div [ class "box" ]
+                            [ h1 [ class "title is-1" ] [ text "80% accuracy", i [ class "fa fa-lock" ] [] ]
+                            , p [] [ text "Get 80% accuracy in one of the games to earn this badge" ]
+                            ]
+                        ]
+                    ]
+                , div
+                    [ class "columns" ]
+                    [ div [ class "column" ]
+                        [ div [ class "box" ]
+                            [ h1 [ class "title is-1" ] [ text "Try them all", i [ class "fa fa-lock" ] [] ]
+                            , p [] [ text "Try all the games to earn this" ]
+                            ]
+                        ]
+                    , div [ class "column" ]
+                        [ div [ class "box" ]
+                            [ h1 [ class "title is-1" ] [ text "3-day streak ", i [ class "fa fa-lock" ] [] ]
+                            , p [] [ text "Play three days in a row to earn this one." ]
+                            ]
+                        ]
+                    , div [ class "column" ]
+                        [ div [ class "box" ]
+                            [ h1 [ class "title is-1" ] [ text "7-day streak ", i [ class "fa fa-lock" ] [] ]
+                            , p [] [ text "Play a game 7 days in a row to earn this badge!" ]
+                            ]
+                        ]
+                    ]
+                ]
             ]
         ]
 
@@ -584,6 +638,7 @@ userEmailPassReg =
         ]
 
 
+toGroup : String -> String -> Bool -> Msg
 toGroup groupIdCon_ groupIdExp_ bool =
     if bool then
         SetRegistration "exp" groupIdExp_
@@ -660,8 +715,8 @@ registerPage model =
         ]
 
 
-adminTop : String -> Html Msg
-adminTop firstName =
+adminTop : Maybe Entity.User -> Html Msg
+adminTop user =
     div [ class "columns" ]
         [ div [ class "column" ]
             [ h1 [ class "title" ] [ text "Users" ]
@@ -680,7 +735,7 @@ adminTop firstName =
 adminPage : Model -> Html Msg
 adminPage model =
     basicAdminPage model.glitching
-        [ adminTop model.user.firstName
+        [ adminTop model.user
         , usersTable model
         ]
 

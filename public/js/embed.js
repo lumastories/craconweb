@@ -70,5 +70,10 @@ function token(){
     if( localStorage.getItem("token") == null ){
         return "";
     }
-    return JSON.parse(localStorage.getItem("token")).token;
+    try {
+        return JSON.parse(localStorage.getItem("token")).token;
+    }
+    catch(e) {
+        return ""
+    }
 }
