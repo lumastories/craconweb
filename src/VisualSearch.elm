@@ -46,24 +46,22 @@ init : Settings -> List String -> List String -> Generator (List (List Trial))
 init settings responseUrls nonResponseUrls =
     Random.List.shuffle responseUrls
         |> Random.andThen
-            (\sGo ->
-                List.map
-                    (\rUrl ->
-                        Random.map2
-                            (\i nRUrls ->
-                                nRUrls
-                                    |> List.take (settings.picturesPerTrial - 1)
-                                    |> List.Extra.splitAt i
-                                    |> (\( heads, tail ) ->
-                                            initTrial i (heads ++ (rUrl :: tail))
-                                       )
-                            )
-                            (Random.int 0 settings.picturesPerTrial)
-                            (Random.List.shuffle nonResponseUrls)
-                    )
-                    sGo
-                    |> Random.Extra.combine
-                    |> Random.map (List.Extra.greedyGroupsOf settings.blockTrialCount)
+            (List.map
+                (\rUrl ->
+                    Random.map2
+                        (\i nRUrls ->
+                            nRUrls
+                                |> List.take (settings.picturesPerTrial - 1)
+                                |> List.Extra.splitAt i
+                                |> (\( heads, tail ) ->
+                                        initTrial i (heads ++ (rUrl :: tail))
+                                   )
+                        )
+                        (Random.int 0 settings.picturesPerTrial)
+                        (Random.List.shuffle nonResponseUrls)
+                )
+                >> Random.Extra.combine
+                >> Random.map (List.Extra.greedyGroupsOf settings.blockTrialCount)
             )
 
 
