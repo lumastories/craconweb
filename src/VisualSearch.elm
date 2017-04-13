@@ -150,14 +150,16 @@ view : (Int -> msg) -> Trial -> Html msg
 view msgF trial =
     case trial.stage of
         NotStarted ->
-            img [ src "fixationCrossUrl" ] []
+            Html.strong [ Html.Attributes.class "fixationCross  has-text-centered" ] [ text "+" ]
 
         FixationCross _ ->
-            img [ src "fixationCrossUrl" ] []
+            Html.strong [ Html.Attributes.class "fixationCross  has-text-centered" ] [ text "+" ]
 
         SelectionGrid _ ->
-            div []
-                (List.indexedMap (\i url -> img [ src url, onClick (msgF i) ] []) trial.imageUrls)
+            div [ Html.Attributes.class "columns" ]
+                [ div [ Html.Attributes.class "column" ]
+                    (List.indexedMap (\i url -> img [ Html.Attributes.class "vsImg", src url, onClick (msgF i) ] []) trial.imageUrls)
+                ]
 
         SuccessAnimation _ ->
             text ""
