@@ -273,6 +273,7 @@ update msg model =
                     , fillerCount = 20
                     , picture = 1250 * Time.millisecond
                     , redCross = 500 * Time.millisecond
+                    , redCrossUrl = "redCrossUrl"
                     }
 
                 gameSettings blocks currTime =

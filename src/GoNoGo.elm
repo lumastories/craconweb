@@ -24,6 +24,7 @@ type alias Trial =
     , kind : Kind
     , stage : Stage
     , reason : Maybe Reason
+    , redCrossUrl : String
     }
 
 
@@ -45,6 +46,7 @@ type alias Settings =
     , fillerCount : Int
     , picture : Time
     , redCross : Time
+    , redCrossUrl : String
     }
 
 
@@ -58,25 +60,28 @@ init settings responseUrls nonResponseUrls fillerUrls =
     Random.Extra.andThen3
         (\sGo sNoGo ( sGoFill, sNoGoFill ) ->
             let
+                initT =
+                    initTrial settings.redCrossUrl
+
                 go =
                     sGo
                         |> List.take settings.responseCount
-                        |> List.map (initTrial Go)
+                        |> List.map (initT Go)
 
                 noGo =
                     sNoGo
                         |> List.take settings.nonResponseCount
-                        |> List.map (initTrial NoGo)
+                        |> List.map (initT NoGo)
 
                 goFill =
                     sGoFill
                         |> List.take ((settings.fillerCount + 1) // 2)
-                        |> List.map (initTrial Go)
+                        |> List.map (initT Go)
 
                 noGoFill =
                     sNoGoFill
                         |> List.take (settings.fillerCount // 2)
-                        |> List.map (initTrial NoGo)
+                        |> List.map (initT NoGo)
             in
                 List.concat [ go, noGo, goFill, noGoFill ]
                     |> List.repeat 2
@@ -110,13 +115,14 @@ directionalize xs =
         |> Random.Extra.combine
 
 
-initTrial : Kind -> String -> Direction -> Trial
-initTrial kind imageUrl direction =
+initTrial : String -> Kind -> String -> Direction -> Trial
+initTrial redCrossUrl kind imageUrl direction =
     { position = direction
     , imageUrl = imageUrl
     , kind = kind
     , stage = NotStarted
     , reason = Nothing
+    , redCrossUrl = redCrossUrl
     }
 
 
@@ -198,11 +204,11 @@ updateIndicationHelper currTime direction trial =
 
 view : Trial -> Html msg
 view trial =
-    border trial.kind [ content trial.stage trial.imageUrl ]
+    border trial.kind [ content trial.stage trial.redCrossUrl trial.imageUrl ]
 
 
-content : Stage -> String -> Html msg
-content stage url =
+content : Stage -> String -> String -> Html msg
+content stage redCrossUrl url =
     case stage of
         NotStarted ->
             pictureView url
@@ -211,7 +217,7 @@ content stage url =
             pictureView url
 
         RedCross _ ->
-            img [ src "redCrossUrl" ] []
+            img [ src redCrossUrl ] []
 
 
 pictureView : String -> Html msg
