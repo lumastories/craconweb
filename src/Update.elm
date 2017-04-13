@@ -440,13 +440,19 @@ update msg model =
             ( { model | userRole = role }, Cmd.none )
 
         FillerResp (Ok ugimages) ->
-            ( { model | ugimages_f = Just ugimages }, Cmd.none )
+            ( { model | ugimages_f = Just ugimages }
+            , preloadUgImages model.filesrv ugimages
+            )
 
         ValidResp (Ok ugimages) ->
-            ( { model | ugimages_v = Just ugimages }, Cmd.none )
+            ( { model | ugimages_v = Just ugimages }
+            , preloadUgImages model.filesrv ugimages
+            )
 
         InvalidResp (Ok ugimages) ->
-            ( { model | ugimages_i = Just ugimages }, Cmd.none )
+            ( { model | ugimages_i = Just ugimages }
+            , preloadUgImages model.filesrv ugimages
+            )
 
         FillerResp (Err err) ->
             (valuationsErrState model err)
@@ -502,6 +508,13 @@ applyImages model gameSettings fun =
 getFullImagePaths : String -> Maybe (List Entity.Ugimage) -> Maybe (List String)
 getFullImagePaths prefix =
     Maybe.map (List.filterMap .gimage >> List.map (.path >> (++) (prefix ++ "/repo/")))
+
+
+preloadUgImages : String -> List Entity.Ugimage -> Cmd Msg
+preloadUgImages prefix images =
+    getFullImagePaths prefix (Just images)
+        |> Maybe.withDefault []
+        |> Port.preload
 
 
 handleGameInit :

@@ -22,7 +22,14 @@ app.ports.clear.subscribe(function(i){
 app.ports.ping.subscribe(function(nothing) {
     document.getElementById("ping").play()
 })
-
+app.ports.preload.subscribe(function(urls) {
+  urlsLen = urls.length;
+  loadedImages = new Array()
+  for (i = 0; i < urlsLen; i++) {
+    loadedImages[i] = new Image();
+    loadedImages[i].src = urls[i];
+  };
+})
 /**
  * in: where to upload, css form id, token to use
  * side: Uploads form as multi-part, sends statusText to status port
