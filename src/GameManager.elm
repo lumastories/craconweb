@@ -45,6 +45,7 @@ type alias GameData settings trial msg =
     , currTime : Time
     , prevTime : Time
     , startTime : Time
+    , maxDuration : Time
     , blockResults : List (Maybe GenGame.Reason)
     , results : List (Maybe GenGame.Reason)
     , settings : settings
@@ -59,6 +60,7 @@ type alias InitConfig settings trial msg =
     { gameConstructor : GameData settings trial msg -> Game msg
     , blocks : List (List trial)
     , currTime : Time
+    , maxDuration : Time
     , settings : settings
     , instructionsView : Html msg
     , trialRestView : Html msg
@@ -95,6 +97,7 @@ init initConfig =
                     { remainingBlocks = blocks
                     , currTime = initConfig.currTime
                     , prevTime = initConfig.currTime
+                    , maxDuration = initConfig.maxDuration
                     , startTime = initConfig.currTime
                     , blockResults = []
                     , results = []
@@ -200,7 +203,7 @@ dismissInfo game =
         proceed gameConstructor data =
             case data.remainingBlocks of
                 Instructions :: blocks ->
-                    gameConstructor { data | remainingBlocks = blocks }
+                    gameConstructor { data | remainingBlocks = blocks, startTime = data.currTime }
 
                 Report :: blocks ->
                     gameConstructor { data | remainingBlocks = blocks }
@@ -253,8 +256,14 @@ updateHelper :
     -> ( GameStatus msg, Cmd msg )
 updateHelper gameConstructor updateF currTime data =
     let
-        reRun =
+        reRunF =
             updateHelper gameConstructor updateF currTime
+
+        reRun newData =
+            if currTime - newData.startTime >= newData.maxDuration then
+                reRunF { newData | remainingBlocks = [ Report ] }
+            else
+                reRunF newData
 
         noOp =
             Running (gameConstructor { data | currTime = currTime }) ! []
