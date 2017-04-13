@@ -13,7 +13,6 @@ module GenGame
         )
 
 import Html exposing (Html, div, text)
-import Html.Attributes exposing (class)
 import Random exposing (Generator)
 import Task exposing (Task)
 import Time exposing (Time)
