@@ -7,8 +7,13 @@ module GenGame
         , updateReason
         , take
         , generatorToTask
+        , redCross
+        , blackDot
+        , fixationCross
         )
 
+import Html exposing (Html, div, text)
+import Html.Attributes exposing (class)
 import Random exposing (Generator)
 import Task exposing (Task)
 import Time exposing (Time)
@@ -73,3 +78,18 @@ generatorToTask : Generator a -> Task x a
 generatorToTask generator =
     Time.now
         |> Task.map (round >> Random.initialSeed >> Random.step generator >> Tuple.first)
+
+
+redCross : Html msg
+redCross =
+    text "X"
+
+
+blackDot : Html msg
+blackDot =
+    text "•"
+
+
+fixationCross : Html msg
+fixationCross =
+    text "+"

@@ -274,7 +274,6 @@ update msg model =
                     , fillerCount = 20
                     , picture = 1250 * Time.millisecond
                     , redCross = 500 * Time.millisecond
-                    , redCrossUrl = (model.filesrv ++ "/repo/redx.png")
                     }
 
                 --<| Maybe.withDefault "" <| Maybe.map .instruct model.gonogoGame

@@ -8,6 +8,7 @@ import GenGame
         , checkTransition
         , updateReason
         , take
+        , redCross
         )
 import Html exposing (Html, div, img, text)
 import Html.Attributes exposing (class, src)
@@ -24,7 +25,6 @@ type alias Trial =
     , kind : Kind
     , stage : Stage
     , reason : Maybe Reason
-    , redCrossUrl : String
     }
 
 
@@ -46,7 +46,6 @@ type alias Settings =
     , fillerCount : Int
     , picture : Time
     , redCross : Time
-    , redCrossUrl : String
     }
 
 
@@ -60,28 +59,25 @@ init settings responseUrls nonResponseUrls fillerUrls =
     Random.Extra.andThen3
         (\sGo sNoGo ( sGoFill, sNoGoFill ) ->
             let
-                initT =
-                    initTrial settings.redCrossUrl
-
                 go =
                     sGo
                         |> List.take settings.responseCount
-                        |> List.map (initT Go)
+                        |> List.map (initTrial Go)
 
                 noGo =
                     sNoGo
                         |> List.take settings.nonResponseCount
-                        |> List.map (initT NoGo)
+                        |> List.map (initTrial NoGo)
 
                 goFill =
                     sGoFill
                         |> List.take ((settings.fillerCount + 1) // 2)
-                        |> List.map (initT Go)
+                        |> List.map (initTrial Go)
 
                 noGoFill =
                     sNoGoFill
                         |> List.take (settings.fillerCount // 2)
-                        |> List.map (initT NoGo)
+                        |> List.map (initTrial NoGo)
             in
                 List.concat [ go, noGo, goFill, noGoFill ]
                     |> List.repeat 2
@@ -115,14 +111,13 @@ directionalize xs =
         |> Random.Extra.combine
 
 
-initTrial : String -> Kind -> String -> Direction -> Trial
-initTrial redCrossUrl kind imageUrl direction =
+initTrial : Kind -> String -> Direction -> Trial
+initTrial kind imageUrl direction =
     { position = direction
     , imageUrl = imageUrl
     , kind = kind
     , stage = NotStarted
     , reason = Nothing
-    , redCrossUrl = redCrossUrl
     }
 
 
@@ -204,11 +199,11 @@ updateIndicationHelper currTime direction trial =
 
 view : Trial -> Html msg
 view trial =
-    border trial.kind [ content trial.stage trial.imageUrl trial.redCrossUrl trial.position ]
+    border trial.kind [ content trial.stage trial.imageUrl trial.position ]
 
 
-content : Stage -> String -> String -> Direction -> Html msg
-content stage url redCrossUrl position =
+content : Stage -> String -> Direction -> Html msg
+content stage url position =
     case stage of
         NotStarted ->
             pictureView url position
@@ -218,8 +213,7 @@ content stage url redCrossUrl position =
 
         RedCross _ ->
             div [ class "container has-text-centered" ]
-                [ img [ class "redX", src redCrossUrl ] []
-                ]
+                [ redCross ]
 
 
 pictureView : String -> Direction -> Html msg
