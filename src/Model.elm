@@ -17,7 +17,6 @@ type alias Model =
     , filesrv : String
     , jwtencoded : String
     , activeRoute : Routing.Route
-    , presses : List Char
     , visitor : Visitor
     , isMenuActive : Bool
     , user : Maybe Entity.User

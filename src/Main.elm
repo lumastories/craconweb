@@ -65,7 +65,6 @@ init flags location =
             , filesrv = filesrv
             , jwtencoded = flags.token
             , activeRoute = route_
-            , presses = []
             , visitor = visitor_
             , isMenuActive = False
             , user = Nothing

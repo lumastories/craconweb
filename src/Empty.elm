@@ -10,7 +10,6 @@ emptyModel : Model.Model -> Model.Model
 emptyModel model =
     { model
         | activeRoute = Routing.LoginRoute
-        , presses = []
         , jwtencoded = ""
         , visitor = Model.Anon
         , users = []
