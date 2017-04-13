@@ -336,9 +336,7 @@ update msg model =
                     , responseCount = 80
                     , nonResponseCount = 80
                     , fillerCount = 32
-                    , audioEvent =
-                        Cmd.none
-                        -- TODO use audio signal port
+                    , audioEvent = Port.ping ()
                     }
 
                 gameSettings blocks currTime =
@@ -407,18 +405,24 @@ update msg model =
 
         Presses keyCode ->
             let
-                ( newModel, cmd ) =
+                ( indModel, indCmd ) =
                     handleGameUpdate (GM.updateIndication) model
+
+                ( keyModel, keyCmd ) =
+                    case keyCode of
+                        99 ->
+                            handleGameUpdate (GM.updateDirectionIndication GenGame.Left) indModel
+
+                        109 ->
+                            handleGameUpdate (GM.updateDirectionIndication GenGame.Right) indModel
+
+                        _ ->
+                            ( indModel, Cmd.none )
             in
-                case keyCode of
-                    99 ->
-                        handleGameUpdate (GM.updateDirectionIndication GenGame.Left) newModel
+                ( keyModel, Cmd.batch [ indCmd, keyCmd ] )
 
-                    109 ->
-                        handleGameUpdate (GM.updateDirectionIndication GenGame.Right) newModel
-
-                    _ ->
-                        newModel ! [ cmd ]
+        IntIndication i ->
+            handleGameUpdate (GM.updateIntIndication i) model
 
         MainMenuToggle ->
             let
@@ -432,9 +436,6 @@ update msg model =
 
         NewCurrentTime t ->
             handleGameUpdate (GM.updateTime t) model
-
-        IntIndication i ->
-            handleGameUpdate (GM.updateIntIndication i) model
 
         RoleResp (Ok role) ->
             ( { model | userRole = role }, Cmd.none )
