@@ -335,6 +335,11 @@ update msg model =
                     , responseCount = 80
                     , nonResponseCount = 80
                     , fillerCount = 32
+                    , audioDelay = 650 * Time.millisecond
+                    , delaySuccessChange = 50 * Time.millisecond
+                    , delayFailureChange = -17 * Time.millisecond
+                    , minDelay = 600 * Time.millisecond
+                    , maxDelay = 800 * Time.millisecond
                     , audioEvent = Port.ping ()
                     }
 

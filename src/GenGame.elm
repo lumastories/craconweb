@@ -13,6 +13,7 @@ module GenGame
         , fixationCross
         , defaultUpdateIndication
         , defaultUpdateWithIndication
+        , bounded
         )
 
 import Html exposing (Html, div, text)
@@ -129,3 +130,10 @@ defaultUpdateIndication settings _ trial =
 defaultUpdateWithIndication : settings -> time -> indication -> trial -> ( TrialResult trial msg, settings )
 defaultUpdateWithIndication settings _ _ trial =
     ( Continuing trial, settings )
+
+
+bounded : comparable -> comparable -> comparable -> comparable
+bounded low high x =
+    x
+        |> min low
+        |> max high

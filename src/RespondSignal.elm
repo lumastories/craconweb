@@ -8,6 +8,7 @@ import GenGame
         , TrialFuns
         , checkTransition
         , updateReason
+        , bounded
         )
 import Html exposing (Html, img, text)
 import Html.Attributes exposing (class, src)
@@ -23,7 +24,6 @@ type alias Trial =
     , kind : Kind
     , stage : Stage
     , reason : Maybe Reason
-    , audioDelay : Time
     }
 
 
@@ -48,6 +48,11 @@ type alias Settings msg =
     , nonResponseCount : Int
     , fillerCount : Int
     , feedback : Time
+    , audioDelay : Time
+    , delaySuccessChange : Time
+    , delayFailureChange : Time
+    , minDelay : Time
+    , maxDelay : Time
     , audioEvent : Cmd msg
     }
 
@@ -83,7 +88,6 @@ init settings responseUrls nonResponseUrls fillerUrls =
             in
                 (allGo ++ allNoGo)
                     |> Random.List.shuffle
-                    |> Random.andThen (addDelay settings.delayMin settings.delayMax)
                     |> Random.map (List.Extra.greedyGroupsOf settings.blockTrialCount)
         )
         (Random.List.shuffle responseUrls)
@@ -91,10 +95,9 @@ init settings responseUrls nonResponseUrls fillerUrls =
         (Random.List.shuffle fillerUrls)
 
 
-initTrial : Kind -> String -> Time -> Trial
-initTrial kind url delay =
-    { audioDelay = delay
-    , imageUrl = url
+initTrial : Kind -> String -> Trial
+initTrial kind url =
+    { imageUrl = url
     , kind = kind
     , stage = NotStarted
     , reason = Nothing
@@ -110,12 +113,6 @@ trialFuns =
     , updateIntIndication = GenGame.defaultUpdateWithIndication
     , view = view
     }
-
-
-addDelay : Time -> Time -> List (Time -> Trial) -> Generator (List Trial)
-addDelay low high fs =
-    List.map (\f -> Random.float low high |> Random.map ((<|) f)) fs
-        |> Random.Extra.combine
 
 
 isGo : Kind -> Bool
@@ -151,7 +148,7 @@ updateTimeHelper settings currTime trial =
             PicturePreAudio timeSince ->
                 trans
                     timeSince
-                    trial.audioDelay
+                    settings.audioDelay
                     (ContinuingWithEvent
                         { trial | stage = PicturePostAudio currTime }
                         settings.audioEvent
@@ -168,7 +165,7 @@ updateTimeHelper settings currTime trial =
                     delay =
                         case trial.kind of
                             Go ->
-                                trial.audioDelay
+                                settings.audioDelay
 
                             NoGo ->
                                 0
@@ -186,20 +183,31 @@ updateTimeHelper settings currTime trial =
 
 updateIndication : Settings msg -> Time -> Trial -> ( TrialResult Trial msg, Settings msg )
 updateIndication settings currTime trial =
-    ( updateIndicationHelper currTime trial, settings )
-
-
-updateIndicationHelper : Time -> Trial -> TrialResult Trial msg
-updateIndicationHelper currTime trial =
     case trial.stage of
         PicturePostAudio _ ->
             if isGo trial.kind then
-                Continuing { trial | reason = updateReason (GoSuccess currTime) trial.reason }
+                ( Continuing { trial | reason = updateReason (GoSuccess currTime) trial.reason }
+                , { settings
+                    | audioDelay =
+                        bounded
+                            settings.minDelay
+                            settings.maxDelay
+                            (settings.audioDelay + settings.delaySuccessChange)
+                  }
+                )
             else
-                Continuing { trial | reason = updateReason (IndicatedOnNoGo currTime) trial.reason }
+                ( Continuing { trial | reason = updateReason (IndicatedOnNoGo currTime) trial.reason }
+                , { settings
+                    | audioDelay =
+                        bounded
+                            settings.minDelay
+                            settings.maxDelay
+                            (settings.audioDelay + settings.delayFailureChange)
+                  }
+                )
 
         _ ->
-            Continuing trial
+            ( Continuing trial, settings )
 
 
 view : Trial -> Html msg
