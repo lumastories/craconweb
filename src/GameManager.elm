@@ -278,49 +278,47 @@ updateHelper gameConstructor updateF currTime data =
             Report :: blocks ->
                 noOp
 
-            (BlockActive block) :: blocks ->
-                case block of
-                    [] ->
-                        reRun { data | remainingBlocks = blocks }
+            (BlockActive []) :: blocks ->
+                reRun { data | remainingBlocks = blocks }
 
-                    (TrialRest duration) :: trials ->
-                        durationSwitch duration (BlockActive trials :: blocks)
+            (BlockActive ((TrialRest duration) :: trials)) :: blocks ->
+                durationSwitch duration (BlockActive trials :: blocks)
 
-                    (TrialActive trial) :: trials ->
-                        case updateF trial of
-                            ( Complete reason, settings ) ->
-                                reRun
-                                    { data
-                                        | remainingBlocks = BlockActive trials :: blocks
-                                        , results = reason :: data.results
-                                        , currTime = currTime
-                                        , prevTime = currTime
-                                        , settings = settings
-                                    }
+            (BlockActive ((TrialActive trial) :: trials)) :: blocks ->
+                case updateF trial of
+                    ( Complete reason, settings ) ->
+                        reRun
+                            { data
+                                | remainingBlocks = BlockActive trials :: blocks
+                                , results = reason :: data.results
+                                , currTime = currTime
+                                , prevTime = currTime
+                                , settings = settings
+                            }
 
-                            ( Continuing trial, settings ) ->
-                                Running
-                                    (gameConstructor
-                                        { data
-                                            | remainingBlocks =
-                                                BlockActive (TrialActive trial :: trials) :: blocks
-                                            , currTime = currTime
-                                            , settings = settings
-                                        }
-                                    )
-                                    ! []
+                    ( Continuing trial, settings ) ->
+                        Running
+                            (gameConstructor
+                                { data
+                                    | remainingBlocks =
+                                        BlockActive (TrialActive trial :: trials) :: blocks
+                                    , currTime = currTime
+                                    , settings = settings
+                                }
+                            )
+                            ! []
 
-                            ( ContinuingWithEvent trial event, settings ) ->
-                                Running
-                                    (gameConstructor
-                                        { data
-                                            | remainingBlocks =
-                                                BlockActive (TrialActive trial :: trials) :: blocks
-                                            , currTime = currTime
-                                            , settings = settings
-                                        }
-                                    )
-                                    ! [ event ]
+                    ( ContinuingWithEvent trial event, settings ) ->
+                        Running
+                            (gameConstructor
+                                { data
+                                    | remainingBlocks =
+                                        BlockActive (TrialActive trial :: trials) :: blocks
+                                    , currTime = currTime
+                                    , settings = settings
+                                }
+                            )
+                            ! [ event ]
 
 
 
