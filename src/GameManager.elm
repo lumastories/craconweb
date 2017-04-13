@@ -7,6 +7,7 @@ module GameManager
         , updateTime
         , updateIndication
         , updateIntIndication
+        , updateDirectionIndication
         , view
         )
 
@@ -60,14 +61,12 @@ type alias InitConfig settings trial msg =
     , currTime : Time
     , settings : settings
     , instructionsView : Html msg
-    , instructionsDuration : Time
     , trialRestView : Html msg
     , trialRestDuration : Time
     , trialRestJitter : Time
     , blockRestView : List (Maybe GenGame.Reason) -> Html msg
     , blockRestDuration : Time
     , reportView : List (Maybe GenGame.Reason) -> Html msg
-    , reportDuration : Time
     }
 
 
@@ -79,18 +78,16 @@ type Trials trial
 type Blocks trial
     = BlockRest Time
     | BlockActive (List (Trials trial))
-    | Instructions Time
-    | Report Time
+    | Instructions
+    | Report
 
 
 init : InitConfig settings trial msg -> Generator (Game msg)
 init initConfig =
     padBlocks
-        initConfig.instructionsDuration
         initConfig.blockRestDuration
         initConfig.trialRestDuration
         initConfig.trialRestJitter
-        initConfig.reportDuration
         initConfig.blocks
         |> Random.map
             (\blocks ->
@@ -110,8 +107,8 @@ init initConfig =
             )
 
 
-padBlocks : Time -> Time -> Time -> Time -> Time -> List (List trial) -> Generator (List (Blocks trial))
-padBlocks instructions blockRest trialRest trialJitter report blocks =
+padBlocks : Time -> Time -> Time -> List (List trial) -> Generator (List (Blocks trial))
+padBlocks blockRest trialRest trialJitter blocks =
     blocks
         |> List.map
             (\block ->
@@ -128,9 +125,9 @@ padBlocks instructions blockRest trialRest trialJitter report blocks =
         |> Random.map
             (\blocks ->
                 blocks
-                    |> (\l -> l ++ [ Report report ])
+                    |> (\l -> l ++ [ Report ])
                     |> List.intersperse (BlockRest blockRest)
-                    |> (::) (Instructions instructions)
+                    |> (::) Instructions
             )
 
 
@@ -178,7 +175,7 @@ updateDirectionIndication indication game =
 
 updateIndication : Game msg -> ( GameStatus msg, Cmd msg )
 updateIndication game =
-    case game of
+    case dismissInfo game of
         StopSignal data ->
             updateHelper
                 StopSignal
@@ -193,8 +190,39 @@ updateIndication game =
                 data.currTime
                 data
 
-        _ ->
-            Running game ! []
+        newGame ->
+            Running newGame ! []
+
+
+dismissInfo : Game msg -> Game msg
+dismissInfo game =
+    let
+        proceed gameConstructor data =
+            case data.remainingBlocks of
+                Instructions :: blocks ->
+                    gameConstructor { data | remainingBlocks = blocks }
+
+                Report :: blocks ->
+                    gameConstructor { data | remainingBlocks = blocks }
+
+                _ ->
+                    game
+    in
+        case game of
+            StopSignal data ->
+                proceed StopSignal data
+
+            GoNoGo data ->
+                proceed GoNoGo data
+
+            DotProbe data ->
+                proceed DotProbe data
+
+            RespondSignal data ->
+                proceed RespondSignal data
+
+            VisualSearch data ->
+                proceed VisualSearch data
 
 
 updateIntIndication : Int -> Game msg -> ( GameStatus msg, Cmd msg )
@@ -228,11 +256,14 @@ updateHelper gameConstructor updateF currTime data =
         reRun =
             updateHelper gameConstructor updateF currTime
 
+        noOp =
+            Running (gameConstructor { data | currTime = currTime }) ! []
+
         durationSwitch duration remaining =
             if currTime - data.prevTime >= duration then
                 reRun { data | remainingBlocks = remaining, prevTime = currTime }
             else
-                Running (gameConstructor { data | currTime = currTime }) ! []
+                noOp
     in
         case data.remainingBlocks of
             [] ->
@@ -241,11 +272,11 @@ updateHelper gameConstructor updateF currTime data =
             (BlockRest duration) :: blocks ->
                 durationSwitch duration blocks
 
-            (Instructions duration) :: blocks ->
-                durationSwitch duration blocks
+            Instructions :: blocks ->
+                noOp
 
-            (Report duration) :: blocks ->
-                durationSwitch duration blocks
+            Report :: blocks ->
+                noOp
 
             (BlockActive block) :: blocks ->
                 case block of
@@ -323,10 +354,10 @@ viewHelper viewF data =
         (BlockRest duration) :: blocks ->
             data.blockRestView data.blockResults
 
-        (Instructions duration) :: blocks ->
+        Instructions :: blocks ->
             data.instructionsView
 
-        (Report duration) :: blocks ->
+        Report :: blocks ->
             data.reportView data.results
 
         (BlockActive block) :: blocks ->

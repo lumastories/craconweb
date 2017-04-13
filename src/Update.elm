@@ -259,7 +259,6 @@ update msg model =
                     , blocks = blocks
                     , currTime = currTime
                     , settings = trialSettings
-                    , instructionsDuration = 10 * Time.second
                     , instructionsView = Html.text "Implement an instructions view."
                     , trialRestView = Html.text ""
                     , trialRestDuration = 500 * Time.millisecond
@@ -267,7 +266,6 @@ update msg model =
                     , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
                     , reportView = always (Html.text "Implement a report view.")
-                    , reportDuration = 10 * Time.second
                     }
 
                 getImages =
@@ -292,7 +290,6 @@ update msg model =
                     , blocks = blocks
                     , currTime = currTime
                     , settings = trialSettings
-                    , instructionsDuration = 10 * Time.second
                     , instructionsView = Html.text "Implement an instructions view."
                     , trialRestView = Html.text ""
                     , trialRestDuration = 500 * Time.millisecond
@@ -300,7 +297,6 @@ update msg model =
                     , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
                     , reportView = always (Html.text "Implement a report view.")
-                    , reportDuration = 10 * Time.second
                     }
 
                 getImages =
@@ -322,7 +318,6 @@ update msg model =
                     , blocks = blocks
                     , currTime = currTime
                     , settings = trialSettings
-                    , instructionsDuration = 10 * Time.second
                     , instructionsView = Html.text "Implement an instructions view."
                     , trialRestView = Html.text ""
                     , trialRestDuration = 0
@@ -330,7 +325,6 @@ update msg model =
                     , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
                     , reportView = always (Html.text "Implement a report view.")
-                    , reportDuration = 10 * Time.second
                     }
             in
                 applyImages model gameSettings (\v i _ -> DotProbe.init trialSettings v i)
@@ -358,14 +352,12 @@ update msg model =
                     , currTime = currTime
                     , settings = trialSettings
                     , instructionsView = Html.text "Implement an instructions view."
-                    , instructionsDuration = 10 * Time.second
                     , trialRestView = Html.text ""
                     , trialRestDuration = 0
                     , trialRestJitter = 0
                     , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
                     , reportView = always (Html.text "Implement a report view.")
-                    , reportDuration = 10 * Time.second
                     }
             in
                 applyImages model gameSettings (RespondSignal.init trialSettings)
@@ -386,14 +378,12 @@ update msg model =
                     , currTime = currTime
                     , settings = trialSettings
                     , instructionsView = Html.text "Implement an instructions view."
-                    , instructionsDuration = 10 * Time.second
                     , trialRestView = Html.text ""
                     , trialRestDuration = 0
                     , trialRestJitter = 0
                     , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
                     , reportView = always (Html.text "Implement a report view.")
-                    , reportDuration = 10 * Time.second
                     }
             in
                 applyImages model gameSettings (\v i _ -> VisualSearch.init trialSettings v i)
@@ -418,8 +408,20 @@ update msg model =
                 _ ->
                     model ! []
 
-        Presses _ ->
-            model ! []
+        Presses keyCode ->
+            let
+                ( newModel, cmd ) =
+                    handleGameUpdate (GM.updateIndication) model
+            in
+                case keyCode of
+                    99 ->
+                        handleGameUpdate (GM.updateDirectionIndication GenGame.Left) newModel
+
+                    109 ->
+                        handleGameUpdate (GM.updateDirectionIndication GenGame.Right) newModel
+
+                    _ ->
+                        newModel ! [ cmd ]
 
         MainMenuToggle ->
             let

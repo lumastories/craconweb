@@ -81,7 +81,7 @@ type Msg
     | ResetNotifications
     | MainMenuToggle
     | NewCurrentTime Time.Time
-    | Presses Char
+    | Presses Int
     | StartGameWith Time.Time
     | Tick Time.Time
     | IntIndication Int

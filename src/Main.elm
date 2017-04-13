@@ -1,9 +1,8 @@
 module Main exposing (..)
 
 import Api
-import Char
 import Empty
-import Keyboard exposing (..)
+import Keyboard
 import Model as M
 import Navigation
 import Routing as R
@@ -26,7 +25,7 @@ main =
 subscriptions : M.Model -> Sub M.Msg
 subscriptions model =
     Sub.batch
-        [ Keyboard.presses (\code -> M.Presses (Char.fromCode code))
+        [ Keyboard.presses M.Presses
         , ticker model.playingGame
         , Port.status M.SetStatus
         ]
