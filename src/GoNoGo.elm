@@ -213,7 +213,11 @@ content stage url redCrossUrl position =
             pictureView url position
 
         RedCross _ ->
-            img [ src redCrossUrl ] []
+            let
+                l =
+                    Debug.log "redx" redCrossUrl
+            in
+                img [ src redCrossUrl ] []
 
 
 pictureView : String -> Direction -> Html msg
