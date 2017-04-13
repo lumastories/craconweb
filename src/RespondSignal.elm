@@ -152,10 +152,18 @@ updateTimeHelper settings currTime trial =
                             IndicationTimeout
                         else
                             NoGoSuccess
+
+                    delay =
+                        case trial.kind of
+                            Go ->
+                                trial.audioDelay
+
+                            NoGo ->
+                                0
                 in
                     trans
                         timeSince
-                        (settings.totalPictureTime - trial.audioDelay)
+                        (settings.totalPictureTime - delay)
                         (Continuing { trial | stage = Feedback currTime, reason = Just reason })
 
             Feedback timeSince ->
@@ -195,7 +203,7 @@ view trial =
             pictureView trial.imageUrl
 
         Feedback _ ->
-            text ""
+            text "Implement feedback display."
 
 
 pictureView : String -> Html msg

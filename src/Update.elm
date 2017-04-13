@@ -328,7 +328,7 @@ update msg model =
         InitRespondSignal ->
             let
                 trialSettings =
-                    { totalPictureTime = 100 * Time.millisecond
+                    { totalPictureTime = 1000 * Time.millisecond
                     , feedback = 500
                     , delayMin = 200
                     , delayMax = 400
@@ -347,10 +347,10 @@ update msg model =
                     , settings = trialSettings
                     , instructionsView = Html.text "You will see pictures on the screen. Some of the pictures will be followed by a tone (a beep). Please press the space bar as quickly as you can. BUT only if you hear a beep after the picture. Do not press if you do not hear a beep."
                     , trialRestView = Html.text ""
-                    , trialRestDuration = 0
+                    , trialRestDuration = 500
                     , trialRestJitter = 0
                     , blockRestView = always (Html.text "Implement a block rest view.")
-                    , blockRestDuration = 1500 * Time.millisecond
+                    , blockRestDuration = 0
                     , reportView = always (Html.text "Implement a report view.")
                     }
             in
