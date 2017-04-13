@@ -42,16 +42,6 @@ update msg model =
         SetStatus message ->
             ( { model | informing = Just message }, Cmd.none )
 
-        Tick now ->
-            {- if playing game, calculate time since game started
-               display stims according to Entity.Game rules
-               (if now - lastOnset >= 1250, goto next trial)
-                   validImages
-                   invalidImages
-                   fillerImages
-            -}
-            ( { model | currentTime = now }, Cmd.none )
-
         -- ADMIN
         GroupResp (Ok group) ->
             case group.slug of
@@ -434,29 +424,22 @@ update msg model =
                 ( { model | isMenuActive = active }, Cmd.none )
 
         NewCurrentTime t ->
-            handleGameUpdate (GM.updateTime t) { model | currentTime = t }
+            handleGameUpdate (GM.updateTime t) model
 
         IntIndication i ->
             handleGameUpdate (GM.updateIntIndication i) model
-
-        StartGameWith time ->
-            ( { model
-                | startTime = time
-              }
-            , Cmd.none
-            )
 
         RoleResp (Ok role) ->
             ( { model | userRole = role }, Cmd.none )
 
         FillerResp (Ok ugimages) ->
-            ( { model | fillerImages = Just ugimages }, Cmd.none )
+            ( { model | ugimages_f = Just ugimages }, Cmd.none )
 
         ValidResp (Ok ugimages) ->
-            ( { model | validImages = Just ugimages }, Cmd.none )
+            ( { model | ugimages_v = Just ugimages }, Cmd.none )
 
         InvalidResp (Ok ugimages) ->
-            ( { model | invalidImages = Just ugimages }, Cmd.none )
+            ( { model | ugimages_i = Just ugimages }, Cmd.none )
 
         FillerResp (Err err) ->
             (valuationsErrState model err)
@@ -503,9 +486,9 @@ applyImages model gameSettings fun =
             (\v i f ->
                 ( model, handleGameInit (fun v i f) gameSettings )
             )
-            (getImages model.validImages)
-            (getImages model.invalidImages)
-            (getImages model.fillerImages)
+            (getImages model.ugimages_v)
+            (getImages model.ugimages_i)
+            (getImages model.ugimages_f)
             |> Maybe.withDefault ( model, Cmd.none )
 
 

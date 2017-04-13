@@ -15,15 +15,10 @@ emptyModel model =
         , visitor = Model.Anon
         , users = []
         , isMenuActive = False
-        , mainMenuItems = Routing.initMenuItems
-        , currentTime = 0
-        , currentTimeDelta = 0
         , user = Nothing
         , authRecord = emptyAuthRecord
         , loading = Nothing
         , glitching = Nothing
-        , responseTimes = []
-        , startTime = 0
         , playingGame = Nothing
     }
 

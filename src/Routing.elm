@@ -19,27 +19,6 @@ type alias MenuItem =
     }
 
 
-initMenuItems : List MenuItem
-initMenuItems =
-    [ { name = "Home"
-      , route = HomeRoute
-      , path = homePath
-      }
-    , { name = "Badges"
-      , route = BadgesRoute
-      , path = badgesPath
-      }
-    , { name = "Instructions"
-      , route = InstructionsRoute
-      , path = instructionsPath
-      }
-    , { name = "Settings"
-      , route = SettingsRoute
-      , path = settingsPath
-      }
-    ]
-
-
 {-|
 Match a location given by the Navigation package and return the matched route.
 -}
