@@ -192,7 +192,11 @@ updateIndicationHelper currTime direction trial =
                             , reason = updateReason (WrongIndication currTime) trial.reason
                         }
             else
-                Continuing { trial | reason = updateReason (IndicatedOnNoGo currTime) trial.reason }
+                Continuing
+                    { trial
+                        | stage = RedCross currTime
+                        , reason = updateReason (IndicatedOnNoGo currTime) trial.reason
+                    }
 
         _ ->
             Continuing trial
