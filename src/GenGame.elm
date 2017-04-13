@@ -135,5 +135,5 @@ defaultUpdateWithIndication settings _ _ trial =
 bounded : comparable -> comparable -> comparable -> comparable
 bounded low high x =
     x
-        |> min low
-        |> max high
+        |> min high
+        |> max low
