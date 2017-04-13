@@ -226,10 +226,10 @@ pictureView : String -> Direction -> Html msg
 pictureView url position =
     case position of
         Left ->
-            img [ class "leftSide squeezed", src url ] []
+            img [ class "squeezed", src url ] []
 
         Right ->
-            img [ class "rightSide squeezed", src url ] []
+            img [ class "is-pulled-right squeezed", src url ] []
 
 
 border : Kind -> List (Html msg) -> Html msg

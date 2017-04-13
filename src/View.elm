@@ -270,10 +270,6 @@ homePageGameCard gameSlug src_ title about =
             , div
                 [ class "content" ]
                 [ text about
-                , small
-                    []
-                    [ text "..."
-                    ]
                 ]
             ]
         ]
