@@ -205,7 +205,7 @@ welcome : Maybe Entity.User -> Html msg
 welcome user =
     case user of
         Just u ->
-            (text <| "Welcome," ++ u.username)
+            (text <| "Welcome, " ++ u.firstName)
 
         Nothing ->
             (text "")
