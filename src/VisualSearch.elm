@@ -52,13 +52,13 @@ init settings responseUrls nonResponseUrls =
                         Random.map2
                             (\i nRUrls ->
                                 nRUrls
-                                    |> List.take (settings.picturesPerTrial - 2)
+                                    |> List.take (settings.picturesPerTrial - 1)
                                     |> List.Extra.splitAt i
                                     |> (\( heads, tail ) ->
                                             initTrial i (heads ++ (rUrl :: tail))
                                        )
                             )
-                            (Random.int 0 (settings.picturesPerTrial - 1))
+                            (Random.int 0 settings.picturesPerTrial)
                             (Random.List.shuffle nonResponseUrls)
                     )
                     sGo
