@@ -198,25 +198,30 @@ updateIndicationHelper currTime direction trial =
 
 view : Trial -> Html msg
 view trial =
-    border trial.kind [ content trial.stage trial.imageUrl ]
+    border trial.kind [ content trial.stage trial.imageUrl trial.position ]
 
 
-content : Stage -> String -> Html msg
-content stage url =
+content : Stage -> String -> Direction -> Html msg
+content stage url position =
     case stage of
         NotStarted ->
-            pictureView url
+            pictureView url position
 
         Picture _ ->
-            pictureView url
+            pictureView url position
 
         RedCross _ ->
             img [ src "redCrossUrl" ] []
 
 
-pictureView : String -> Html msg
-pictureView url =
-    img [ src url ] []
+pictureView : String -> Direction -> Html msg
+pictureView url position =
+    case position of
+        Left ->
+            img [ class "leftSide", src url ] []
+
+        Right ->
+            img [ class "rightSide", src url ] []
 
 
 border : Kind -> List (Html msg) -> Html msg
