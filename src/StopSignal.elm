@@ -7,6 +7,7 @@ import GenGame
         , checkTransition
         , updateReason
         , take
+        , redCross
         )
 import Html exposing (Html, div, img, text)
 import Html.Attributes exposing (class, src)
@@ -116,7 +117,9 @@ updateTimeHelper settings currTime trial =
                             }
                         )
                 else
-                    Complete (Just NoGoSuccess)
+                    trans timeSince
+                        settings.pictureBorder
+                        (Complete (Just NoGoSuccess))
 
             RedCross timeSince ->
                 trans timeSince
@@ -161,12 +164,13 @@ view trial =
             border trial.kind [ img [ src trial.imageUrl ] [] ]
 
         RedCross _ ->
-            img [ src "redCrossUrl" ] []
+            div [ class "container has-text-centered" ]
+                [ redCross ]
 
 
 border : Kind -> List (Html msg) -> Html msg
 border kind =
     if isGo kind then
-        div [ class "solidBorder" ]
+        div [ class "blueBorder" ]
     else
-        div [ class "dashedBorder" ]
+        div [ class "greyBorder" ]
