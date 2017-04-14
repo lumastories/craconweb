@@ -134,7 +134,6 @@ update msg model =
             let
                 cmds =
                     [ Navigation.newUrl path
-                      --, Port.pinger True
                     ]
             in
                 ( model, Cmd.batch cmds )
@@ -185,7 +184,6 @@ update msg model =
                 cmds =
                     [ Port.clear ()
                     , Navigation.newUrl "/login"
-                    , Port.ping ()
                     ]
             in
                 ( Empty.emptyModel model, Cmd.batch cmds )
@@ -250,7 +248,7 @@ update msg model =
                     , currTime = currTime
                     , maxDuration = 5 * Time.minute
                     , settings = trialSettings
-                    , instructionsView = Html.text "You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a grey border. Go as fast as you can, but don't sacrifice accuracy for speed. Press any key to continue."
+                    , instructionsView = ssInstructions
                     , trialRestView = Html.text ""
                     , trialRestDuration = 500 * Time.millisecond
                     , trialRestJitter = 0
@@ -280,16 +278,13 @@ update msg model =
                     , redCross = 500 * Time.millisecond
                     }
 
-                highlight l =
-                    span [ class "highlight" ] [ strong [] [ text l ] ]
-
                 --<| Maybe.withDefault "" <| Maybe.map .instruct model.gonogoGame
                 gameSettings blocks currTime =
                     { blocks = blocks
                     , currTime = currTime
                     , maxDuration = 5 * Time.minute
                     , settings = trialSettings
-                    , instructionsView = div [ class "columns" ] [ div [ class "column is-half is-offset-one-quarter" ] [ div [ class "box" ] [ p [] [ text "You will see pictures either on the left or right side of the screen, surrounded by a solid or dashed border. Press ", highlight "c", text " when the picture is on the left side of the screen or ", highlight "m", text " when the picture is on the right side of the screen. BUT only if you see a solid bar around the picture. Do not press if you see a dashed border. Go as fast as you can, but don't sacrifice accuracy for speed.", br [] [], br [] [], strong [] [ text "Press any key to continue." ] ] ] ] ]
+                    , instructionsView = gngInstructions
                     , trialRestView = Html.text ""
                     , trialRestDuration = 500 * Time.millisecond
                     , trialRestJitter = 0
@@ -355,7 +350,7 @@ update msg model =
                     , currTime = currTime
                     , maxDuration = 5 * Time.minute
                     , settings = trialSettings
-                    , instructionsView = Html.text "You will see pictures on the screen. Some of the pictures will be followed by a tone (a beep). Please press the space bar as quickly as you can. BUT only if you hear a beep after the picture. Do not press if you do not hear a beep."
+                    , instructionsView = rsInstructions
                     , trialRestView = Html.text ""
                     , trialRestDuration = 500
                     , trialRestJitter = 0
@@ -382,7 +377,7 @@ update msg model =
                     , currTime = currTime
                     , maxDuration = 5 * Time.minute
                     , settings = trialSettings
-                    , instructionsView = Html.text "You will see a grid of 16 images of food. It is your job to swipe on the image of the healthy food as quickly as you can. Press any key to continue."
+                    , instructionsView = vsInstructions
                     , trialRestView = Html.text ""
                     , trialRestDuration = 0
                     , trialRestJitter = 0
@@ -737,3 +732,46 @@ httpHumanError err =
 delay : Time.Time -> Msg -> Cmd Msg
 delay t msg =
     Process.sleep t |> Task.perform (\_ -> msg)
+
+
+
+-- Instruction Views
+
+
+highlight l =
+    span [ class "highlight" ] [ strong [] [ text l ] ]
+
+
+solid t =
+    span [ style [ ( "border", "solid 1px #000" ), ( "padding", "2px" ) ] ] [ text t ]
+
+
+dashed t =
+    span [ style [ ( "border", "dashed 1px #000" ), ( "padding", "2px" ) ] ] [ text t ]
+
+
+base kids =
+    div [ class "columns" ] [ div [ class "column is-half is-offset-one-quarter" ] [ div [ class "box" ] kids ] ]
+
+
+title =
+    h3 [ class "title" ] [ text "Instructions" ]
+
+
+vsInstructions =
+    base [ title, text "You will see a grid of 16 images of food. It is your job to swipe on the image of the healthy food as quickly as you can. Press any key to continue." ]
+
+
+rsInstructions : Html msg
+rsInstructions =
+    base [ title, text "You will see pictures on the screen. Some of the pictures will be followed by a tone (a beep). Please press the space bar as quickly as you can. BUT only if you hear a beep after the picture. Do not press if you do not hear a beep." ]
+
+
+ssInstructions : Html msg
+ssInstructions =
+    base [ title, text "You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a grey border. Go as fast as you can, but don't sacrifice accuracy for speed. Press any key to continue." ]
+
+
+gngInstructions : Html msg
+gngInstructions =
+    base [ title, p [] [ text "You will see pictures either on the left or right side of the screen, surrounded by a solid or dashed border. Press ", highlight "c", text " when the picture is on the left side of the screen or ", highlight "m", text " when the picture is on the right side of the screen. BUT only if you see a ", solid "solid border", text " around the picture. Do not press if you see a ", dashed "dashed border", text ". Go as fast as you can, but don't sacrifice accuracy for speed.", br [] [], br [] [], strong [] [ text "Press any key to continue." ] ] ]

@@ -9,7 +9,7 @@ import GenGame
         , updateReason
         )
 import Html exposing (Html, div, img, text)
-import Html.Attributes exposing (src)
+import Html.Attributes exposing (src, class)
 import Html.Events exposing (onClick)
 import List.Extra
 import Random exposing (Generator)
@@ -163,14 +163,20 @@ view msgF trial =
             Html.strong [ Html.Attributes.class "fixationCross  has-text-centered" ] [ text "+" ]
 
         FixationCross _ ->
-            Html.strong [ Html.Attributes.class "fixationCross  has-text-centered" ] [ text "+" ]
-
-        SelectionGrid _ ->
-            div [ Html.Attributes.class "columns" ]
-                [ div [ Html.Attributes.class "column" ]
-                    (List.indexedMap (\i url -> img [ Html.Attributes.class "vsImg", src url, onClick (msgF i) ] []) trial.imageUrls)
+            div [ class "columns" ]
+                [ div [ class "column is-half is-offset-one-quarter" ]
+                    [ Html.strong [ Html.Attributes.class "fixationCross" ] [ text "+" ]
+                    ]
                 ]
 
+        SelectionGrid _ ->
+            div [ class "columns" ]
+                ((List.indexedMap (\i url -> img [ Html.Attributes.class "vsImg", src url, onClick (msgF i) ] []) trial.imageUrls)
+                    |> List.Extra.groupsOf 4
+                    |> List.map (div [ class "column" ])
+                )
+
+        -- |> List.Extra.groupsOf 4
         SuccessAnimation _ ->
             text ""
 

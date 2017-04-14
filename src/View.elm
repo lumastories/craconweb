@@ -425,13 +425,22 @@ settingsPage model =
 
 game : Model -> String -> Msg -> Html Msg
 game model title msg =
-    basicPage model
-        [ div
-            [ class "container" ]
-            [ h1 [ class "title is-1" ] [ text title ]
-            , gameView model.playingGame msg
+    let
+        title_ =
+            case model.playingGame of
+                Nothing ->
+                    h1 [ class "title is-1" ] [ text title ]
+
+                _ ->
+                    text ""
+    in
+        basicPage model
+            [ div
+                [ class "container" ]
+                [ title_
+                , gameView model.playingGame msg
+                ]
             ]
-        ]
 
 
 visualSearchGame : Model -> Html Msg
