@@ -4,7 +4,8 @@ import Api
 import Empty
 import Entity
 import GenGame
-import Html
+import Html exposing (..)
+import Html.Attributes exposing (..)
 import Http
 import Model exposing (..)
 import Navigation
@@ -279,13 +280,16 @@ update msg model =
                     , redCross = 500 * Time.millisecond
                     }
 
+                highlight l =
+                    span [ class "highlight" ] [ strong [] [ text l ] ]
+
                 --<| Maybe.withDefault "" <| Maybe.map .instruct model.gonogoGame
                 gameSettings blocks currTime =
                     { blocks = blocks
                     , currTime = currTime
                     , maxDuration = 5 * Time.minute
                     , settings = trialSettings
-                    , instructionsView = Html.text "You will see pictures either on the left or right side of the screen, surrounded by a solid or dashed border. Press 'c' when the picture is on the left side of the screen or 'm' when the picture is on the right side of the screen. BUT only if you see a solid bar around the picture. Do not press if you see a dashed border. Go as fast as you can, but don't sacrifice accuracy for speed. Press any key to continue"
+                    , instructionsView = div [ class "columns" ] [ div [ class "column is-half is-offset-one-quarter" ] [ div [ class "box" ] [ p [] [ text "You will see pictures either on the left or right side of the screen, surrounded by a solid or dashed border. Press ", highlight "c", text " when the picture is on the left side of the screen or ", highlight "m", text " when the picture is on the right side of the screen. BUT only if you see a solid bar around the picture. Do not press if you see a dashed border. Go as fast as you can, but don't sacrifice accuracy for speed.", br [] [], br [] [], strong [] [ text "Press any key to continue." ] ] ] ] ]
                     , trialRestView = Html.text ""
                     , trialRestDuration = 500 * Time.millisecond
                     , trialRestJitter = 0

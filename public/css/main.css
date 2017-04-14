@@ -19,7 +19,7 @@ html {
 }
 
 .badge4 {
-    background:#E89179;
+    background:#f4c6ee;
 }
 
 .badge5 {
@@ -28,6 +28,13 @@ html {
 
 .badge6 {
     background:#C784FF;
+}
+
+.highlight {
+    background: yellow;
+    padding-left: 2px;
+    padding-right: 2px;
+    border-radius:2px;
 }
 
 .fixationCross{

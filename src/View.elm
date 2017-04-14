@@ -502,35 +502,33 @@ instructionsPage model =
             , hr [] []
             , div
                 [ class "columns" ]
-                [ instBlock "Stop Signal" """You will see pictures presented
-                     in either a dark blue or light gray border. Press the space
-                      bar as quickly as you can. BUT only if you see a blue border
-                       around the picture. Do not press if you see a grey border.
-                        Go as fast as you can, but don’t sacrifice accuracy for speed."""
-                , instBlock "Go/no-go" """You will see pictures either on
+                [ instBlock "Go/no-go" """You will see pictures either on
                     the left or right side of the screen, surrounded by a solid
                     or dashed border. Press ‘c’ when the picture is on the left
                     side of the screen or ‘m’ when the picture is on the right
                     side of the screen. BUT only if you see a solid bar around
                     the picture. Do not press if you see a dashed border. Go as
                     fast as you can, but don’t sacrifice accuracy for speed."""
-                , instBlock "Respond signal" """You will see pictures on
-                    the screen. Some of the pictures will be followed by a tone (a beep).
-                        Please press the space bar as quickly as you can. BUT only
-                        if you hear a beep after the picture. Do not press if you
-                        do not hear a beep."""
                 , instBlock "Dot probe" """You will see pictures on the
                     left and right side of the screen, followed by a dot on the
                     left or right side of the screen. Press the “c” if the dot is
                     on the left side of the screen or “m” when the dot is on the
                     right side of the screen. Go as fast as you can, but don’t
                     sacrifice accuracy for speed."""
+                , instBlock "Stop Signal" """You will see pictures presented
+                     in either a dark blue or light gray border. Press the space
+                      bar as quickly as you can. BUT only if you see a blue border
+                       around the picture. Do not press if you see a grey border.
+                        Go as fast as you can, but don’t sacrifice accuracy for speed."""
+                , instBlock "Respond signal" """You will see pictures on
+                    the screen. Some of the pictures will be followed by a tone (a beep).
+                        Please press the space bar as quickly as you can. BUT only
+                        if you hear a beep after the picture. Do not press if you
+                        do not hear a beep."""
                 , instBlock "Visual search" """Food response training:
                         You will see a grid of 16 images of food. It is your job
                         to swipe on the image of the healthy food as quickly as
-                        you can. Control training: you will see a grid of 16
-                        images of birds and flowers. It is your job to swipe on
-                        the image of the bird as quickly as you can. """
+                        you can."""
                 ]
             ]
         ]
