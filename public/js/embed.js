@@ -1,3 +1,21 @@
+function addMp3Elem(id, srcPath) {
+    var a      = document.createElement('audio');
+    a.id       = id;
+    a.type     = "audio/mpeg";
+
+    var srcPrefix = "https://file.cravecontrol.org";
+    if (window.location.host == "localhost") {
+        srcPrefix = "localhost:8654/";
+    }
+    a.src = srcPrefix + srcPath;
+
+    if (document.body != null) {
+        document.body.appendChild(a);
+    }
+}
+
+addMp3Elem("ping", "/repo/ding.mp3");
+
 var flags = {"token": token()
             ,"time": Date.now()
             }
@@ -22,6 +40,7 @@ app.ports.clear.subscribe(function(i){
 app.ports.ping.subscribe(function(nothing) {
     document.getElementById("ping").play()
 })
+
 app.ports.preload.subscribe(function(urls) {
   urlsLen = urls.length;
   loadedImages = new Array()
