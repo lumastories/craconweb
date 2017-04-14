@@ -272,7 +272,10 @@ update msg model =
                     , responseCount = 40
                     , nonResponseCount = 40
                     , fillerCount = 20
-                    , picture = 1250 * Time.millisecond
+                    , pictureDuration = 1750 * Time.millisecond
+                    , durationIncrement = -20 * Time.millisecond
+                    , minDuration = 1250 * Time.millisecond
+                    , maxDuration = 2000 * Time.millisecond
                     , redCross = 500 * Time.millisecond
                     }
 

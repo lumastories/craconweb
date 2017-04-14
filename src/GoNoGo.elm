@@ -10,6 +10,7 @@ import GenGame
         , updateReason
         , take
         , redCross
+        , bounded
         )
 import Html exposing (Html, div, img, text)
 import Html.Attributes exposing (class, src)
@@ -45,7 +46,10 @@ type alias Settings =
     , responseCount : Int
     , nonResponseCount : Int
     , fillerCount : Int
-    , picture : Time
+    , pictureDuration : Time
+    , durationIncrement : Time
+    , minDuration : Time
+    , maxDuration : Time
     , redCross : Time
     }
 
@@ -145,23 +149,18 @@ isGo kind =
 
 updateTime : Settings -> Time -> Trial -> ( TrialResult Trial msg, Settings )
 updateTime settings currTime trial =
-    ( updateTimeHelper settings currTime trial, settings )
-
-
-updateTimeHelper : Settings -> Time -> Trial -> TrialResult Trial msg
-updateTimeHelper settings currTime trial =
     let
         trans =
             checkTransition trial currTime
     in
         case trial.stage of
             NotStarted ->
-                Continuing { trial | stage = Picture currTime }
+                ( Continuing { trial | stage = Picture currTime }, settings )
 
             Picture timeSince ->
                 if isGo trial.kind then
-                    trans timeSince
-                        settings.picture
+                    ( trans timeSince
+                        settings.pictureDuration
                         (Continuing
                             { trial
                                 | stage = RedCross currTime
@@ -169,15 +168,27 @@ updateTimeHelper settings currTime trial =
                                     updateReason IndicationTimeout trial.reason
                             }
                         )
+                    , settings
+                    )
                 else
-                    trans timeSince
-                        settings.picture
+                    ( trans timeSince
+                        settings.pictureDuration
                         (Complete (updateReason NoGoSuccess trial.reason))
+                    , { settings
+                        | pictureDuration =
+                            bounded
+                                settings.minDuration
+                                settings.maxDuration
+                                (settings.pictureDuration + settings.durationIncrement)
+                      }
+                    )
 
             RedCross timeSince ->
-                trans timeSince
+                ( trans timeSince
                     settings.redCross
                     (Complete trial.reason)
+                , settings
+                )
 
 
 updateIndication : Settings -> Time -> Direction -> Trial -> ( TrialResult Trial msg, Settings )
