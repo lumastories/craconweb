@@ -24,7 +24,6 @@ import GameManager as GM
 import StopSignal
 import GoNoGo
 import DotProbe
-import RespondSignal
 import VisualSearch
 
 
@@ -326,42 +325,6 @@ update msg model =
                 applyImages DotProbe model gameSettings (\v i _ -> DotProbe.init trialSettings v i)
 
         -- TODO fetch configuration from the model
-        InitRespondSignal ->
-            let
-                trialSettings =
-                    { totalPictureTime = 1000 * Time.millisecond
-                    , feedback = 500
-                    , delayMin = 200
-                    , delayMax = 400
-                    , blockTrialCount = 44
-                    , responseCount = 80
-                    , nonResponseCount = 80
-                    , fillerCount = 32
-                    , audioDelay = 650 * Time.millisecond
-                    , delaySuccessChange = 50 * Time.millisecond
-                    , delayFailureChange = -17 * Time.millisecond
-                    , minDelay = 600 * Time.millisecond
-                    , maxDelay = 800 * Time.millisecond
-                    , audioEvent = Port.ping ()
-                    }
-
-                gameSettings blocks currTime =
-                    { blocks = blocks
-                    , currTime = currTime
-                    , maxDuration = 5 * Time.minute
-                    , settings = trialSettings
-                    , instructionsView = rsInstructions
-                    , trialRestView = Html.text ""
-                    , trialRestDuration = 500
-                    , trialRestJitter = 0
-                    , blockRestView = always (Html.text "Implement a block rest view.")
-                    , blockRestDuration = 0
-                    , reportView = always (Html.text "Implement a report view.")
-                    , trialFuns = RespondSignal.trialFuns
-                    }
-            in
-                applyImages RespondSignal model gameSettings (RespondSignal.init trialSettings)
-
         InitVisualSearch ->
             let
                 trialSettings =
@@ -567,9 +530,6 @@ handleTimeUpdate time model =
             Just (DotProbe data) ->
                 updateData DotProbe data
 
-            Just (RespondSignal data) ->
-                updateData RespondSignal data
-
             Just (VisualSearch data) ->
                 updateData VisualSearch data
 
@@ -597,9 +557,6 @@ handleIndicationUpdate model =
 
             Just (DotProbe data) ->
                 updateData DotProbe data
-
-            Just (RespondSignal data) ->
-                updateData RespondSignal data
 
             Just (VisualSearch data) ->
                 updateData VisualSearch data
@@ -629,9 +586,6 @@ handleIntIndicationUpdate n model =
             Just (DotProbe data) ->
                 updateData DotProbe data
 
-            Just (RespondSignal data) ->
-                updateData RespondSignal data
-
             Just (VisualSearch data) ->
                 updateData VisualSearch data
 
@@ -659,9 +613,6 @@ handleDirectionIndicationUpdate n model =
 
             Just (DotProbe data) ->
                 updateData DotProbe data
-
-            Just (RespondSignal data) ->
-                updateData RespondSignal data
 
             Just (VisualSearch data) ->
                 updateData VisualSearch data

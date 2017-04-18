@@ -16,7 +16,6 @@ import Json.Decode.Pipeline as JP
 import StopSignal
 import GoNoGo
 import DotProbe
-import RespondSignal
 import VisualSearch
 
 
@@ -56,7 +55,6 @@ type Game
     = StopSignal (GameManager.GameData StopSignal.Settings StopSignal.Trial Msg)
     | GoNoGo (GameManager.GameData GoNoGo.Settings GoNoGo.Trial Msg)
     | DotProbe (GameManager.GameData DotProbe.Settings DotProbe.Trial Msg)
-    | RespondSignal (GameManager.GameData (RespondSignal.Settings Msg) RespondSignal.Trial Msg)
     | VisualSearch (GameManager.GameData VisualSearch.Settings VisualSearch.Trial Msg)
 
 
@@ -96,7 +94,6 @@ type Msg
     | InitStopSignal
     | InitGoNoGo
     | InitDotProbe
-    | InitRespondSignal
     | InitVisualSearch
     | PlayGame Game
     | StopGame
