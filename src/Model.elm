@@ -138,7 +138,7 @@ errorCodeEncoder errorCode =
             ed
 
         Err _ ->
-            { error = "error"
+            { error = ""
             , code = 0
             }
 

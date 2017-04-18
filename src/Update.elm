@@ -39,8 +39,12 @@ update msg model =
                 )
             )
 
-        SetStatus message ->
-            ( { model | informing = Just message }, Cmd.none )
+        SetStatus response ->
+            let
+                resp =
+                    errorCodeEncoder response
+            in
+                ( { model | informing = Just resp.error }, Cmd.none )
 
         -- ADMIN
         GroupResp (Ok group) ->

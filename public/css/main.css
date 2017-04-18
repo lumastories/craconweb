@@ -2,6 +2,10 @@ html {
     background:#EFEFEF;
 }
 
+.notification{
+    word-break: break-all;
+}
+
 .squeezed{
     max-width:300px;
 }
