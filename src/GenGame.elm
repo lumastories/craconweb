@@ -42,8 +42,7 @@ type TrialResult trial msg
 
 
 type alias TrialFuns settings trial msg =
-    { getTrialImages : trial -> List String
-    , updateTime : settings -> Time -> trial -> ( TrialResult trial msg, settings )
+    { updateTime : settings -> Time -> trial -> ( TrialResult trial msg, settings )
     , updateIndication :
         settings
         -> Time

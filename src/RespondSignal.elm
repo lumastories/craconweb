@@ -106,8 +106,7 @@ initTrial kind url =
 
 trialFuns : TrialFuns (Settings msg) Trial msg
 trialFuns =
-    { getTrialImages = always []
-    , updateTime = updateTime
+    { updateTime = updateTime
     , updateIndication = updateIndication
     , updateDirectionIndication = GenGame.defaultUpdateWithIndication
     , updateIntIndication = GenGame.defaultUpdateWithIndication

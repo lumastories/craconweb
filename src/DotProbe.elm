@@ -81,8 +81,7 @@ initTrial left right direction =
 
 trialFuns : TrialFuns Settings Trial msg
 trialFuns =
-    { getTrialImages = always []
-    , updateTime = updateTime
+    { updateTime = updateTime
     , updateIndication = GenGame.defaultUpdateIndication
     , updateDirectionIndication = updateIndication
     , updateIntIndication = GenGame.defaultUpdateWithIndication
