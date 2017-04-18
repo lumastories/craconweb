@@ -9,7 +9,8 @@ import GenGame
         , checkTransition
         )
 import List.Extra
-import Html exposing (Html, text)
+import Html exposing (Html, text, div, img)
+import Html.Attributes exposing (src, class)
 import Random exposing (Generator)
 import Random.Extra
 import Random.List
@@ -140,17 +141,36 @@ updateIndicationHelper currTime direction trial =
             Continuing trial
 
 
+
+--probePosition
+--
+--rightImageUrl
+
+
 view : Trial -> Html msg
 view trial =
     case trial.stage of
         NotStarted ->
-            text ""
+            text """You will see pictures on the
+                    left and right side of the screen, followed by a dot on the
+                    left or right side of the screen. Press the “c” if the dot is
+                    on the left side of the screen or “m” when the dot is on the
+                    right side of the screen. Go as fast as you can, but don’t
+                    sacrifice accuracy for speed."""
 
         FixationCross _ ->
-            text ""
+            div [ class "fixationCross" ] [ text "+" ]
 
         Pictures _ ->
-            text ""
+            div []
+                [ img [ class "squeezed", src trial.leftImageUrl ] []
+                , img [ class "is-pulled-right squeezed", src trial.rightImageUrl ] []
+                ]
 
         Probe _ ->
-            text ""
+            case trial.probePosition of
+                Right ->
+                    div [ class "probeRight" ] [ text "•" ]
+
+                Left ->
+                    div [ class "probeLeft" ] [ text "•" ]

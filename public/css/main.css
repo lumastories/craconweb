@@ -65,6 +65,22 @@ html {
     border: 2px dashed #000;
     overflow: hidden;
 }
+
+.blueBorder{
+    border:5px solid blue;
+}
+.greyBorder{
+    border:5px solid grey;
+}
+
+.probeLeft {
+    font-size:2rem;
+}
+.probeRight {
+    float:right;
+    font-size:2rem;
+}
+
 .rightSide {
     padding:1em;
 }

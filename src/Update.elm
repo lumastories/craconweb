@@ -693,40 +693,46 @@ delay t msg =
 -- Instruction Views
 
 
+highlight : String -> Html Msg
 highlight l =
     span [ class "highlight" ] [ strong [] [ text l ] ]
 
 
+solid : String -> Html Msg
 solid t =
     span [ style [ ( "border", "solid 1px #000" ), ( "padding", "2px" ) ] ] [ text t ]
 
 
+dashed : String -> Html Msg
 dashed t =
     span [ style [ ( "border", "dashed 1px #000" ), ( "padding", "2px" ) ] ] [ text t ]
 
 
+base : List (Html Msg) -> Html Msg
 base kids =
     div [ class "columns" ] [ div [ class "column is-half is-offset-one-quarter" ] [ div [ class "box" ] kids ] ]
 
 
+title : Html Msg
 title =
     h3 [ class "title" ] [ text "Instructions" ]
 
 
+vsInstructions : Html Msg
 vsInstructions =
     base [ title, text "You will see a grid of 16 images of food. It is your job to swipe on the image of the healthy food as quickly as you can. Press any key to continue." ]
 
 
-rsInstructions : Html msg
+rsInstructions : Html Msg
 rsInstructions =
     base [ title, text "You will see pictures on the screen. Some of the pictures will be followed by a tone (a beep). Please press the space bar as quickly as you can. BUT only if you hear a beep after the picture. Do not press if you do not hear a beep." ]
 
 
-ssInstructions : Html msg
+ssInstructions : Html Msg
 ssInstructions =
     base [ title, text "You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a grey border. Go as fast as you can, but don't sacrifice accuracy for speed. Press any key to continue." ]
 
 
-gngInstructions : Html msg
+gngInstructions : Html Msg
 gngInstructions =
     base [ title, p [] [ text "You will see pictures either on the left or right side of the screen, surrounded by a solid or dashed border. Press ", highlight "c", text " when the picture is on the left side of the screen or ", highlight "m", text " when the picture is on the right side of the screen. BUT only if you see a ", solid "solid border", text " around the picture. Do not press if you see a ", dashed "dashed border", text ". Go as fast as you can, but don't sacrifice accuracy for speed.", br [] [], br [] [], strong [] [ text "Press any key to continue." ] ] ]
