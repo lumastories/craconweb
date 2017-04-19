@@ -170,7 +170,7 @@ view trial =
         Probe _ ->
             case trial.probePosition of
                 Right ->
-                    div [ class "probeRight" ] [ text "•" ]
+                    div [ class "probeRight" ] [ Html.text "•" ]
 
                 Left ->
-                    div [ class "probeLeft" ] [ text "•" ]
+                    div [ class "probeLeft" ] [ Html.text "•" ]

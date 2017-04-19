@@ -316,7 +316,7 @@ update msg model =
                     , currTime = currTime
                     , maxDuration = 5 * Time.minute
                     , settings = trialSettings
-                    , instructionsView = Html.text "You will see pictures on the left and right side of the screen, followed by a dot on the left or right side of the screen. Press the \" c \" if the dot is on the left side of the screen or \" m \" when the dot is on the right side of the screen. Go as fast as you can, but don't sacrifice accuracy for speed. Press any key to continue."
+                    , instructionsView = dpInstructions
                     , trialRestView = Html.text ""
                     , trialRestDuration = 0
                     , trialRestJitter = 0
@@ -710,7 +710,12 @@ dashed t =
 
 base : List (Html Msg) -> Html Msg
 base kids =
-    div [ class "columns" ] [ div [ class "column is-half is-offset-one-quarter" ] [ div [ class "box" ] kids ] ]
+    div [ class "columns" ]
+        [ div [ class "column is-half is-offset-one-quarter" ]
+            [ div [ class "box" ]
+                kids
+            ]
+        ]
 
 
 title : Html Msg
@@ -718,21 +723,69 @@ title =
     h3 [ class "title" ] [ text "Instructions" ]
 
 
+pressAnyKey : Html Msg
+pressAnyKey =
+    div []
+        [ br [] []
+        , br [] []
+        , strong [] [ text "Press any key to continue." ]
+        ]
+
+
+dpInstructions : Html Msg
+dpInstructions =
+    base
+        [ title
+        , text "You will see pictures on the left and right side of the screen, followed by a dot on the left or right side of the screen. Press the "
+        , highlight "c"
+        , text " if the dot is on the left side of the screen or "
+        , highlight "m"
+        , text " when the dot is on the right side of the screen. Go as fast as you can, but don't sacrifice accuracy for speed."
+        , pressAnyKey
+        ]
+
+
 vsInstructions : Html Msg
 vsInstructions =
-    base [ title, text "You will see a grid of 16 images of food. It is your job to swipe on the image of the healthy food as quickly as you can. Press any key to continue." ]
+    base
+        [ title
+        , text "You will see a grid of 6 images. Find on the image of the target image as quickly as you can."
+        , pressAnyKey
+        ]
 
 
 rsInstructions : Html Msg
 rsInstructions =
-    base [ title, text "You will see pictures on the screen. Some of the pictures will be followed by a tone (a beep). Please press the space bar as quickly as you can. BUT only if you hear a beep after the picture. Do not press if you do not hear a beep." ]
+    base
+        [ title
+        , text "You will see pictures on the screen. Some of the pictures will be followed by a tone (a beep). Please press the space bar as quickly as you can. BUT only if you hear a beep after the picture. Do not press if you do not hear a beep."
+        , pressAnyKey
+        ]
 
 
 ssInstructions : Html Msg
 ssInstructions =
-    base [ title, text "You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a grey border. Go as fast as you can, but don't sacrifice accuracy for speed. Press any key to continue." ]
+    base
+        [ title
+        , text "You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a grey border. Go as fast as you can, but don't sacrifice accuracy for speed."
+        , pressAnyKey
+        ]
 
 
 gngInstructions : Html Msg
 gngInstructions =
-    base [ title, p [] [ text "You will see pictures either on the left or right side of the screen, surrounded by a solid or dashed border. Press ", highlight "c", text " when the picture is on the left side of the screen or ", highlight "m", text " when the picture is on the right side of the screen. BUT only if you see a ", solid "solid border", text " around the picture. Do not press if you see a ", dashed "dashed border", text ". Go as fast as you can, but don't sacrifice accuracy for speed.", br [] [], br [] [], strong [] [ text "Press any key to continue." ] ] ]
+    base
+        [ title
+        , p []
+            [ text "You will see pictures either on the left or right side of the screen, surrounded by a solid or dashed border. Press "
+            , highlight "c"
+            , text " when the picture is on the left side of the screen or "
+            , highlight "m"
+            , text " when the picture is on the right side of the screen. BUT only if you see a "
+            , solid "solid border"
+            , text " around the picture. Do not press if you see a "
+            , dashed "dashed border"
+            , text ". Go as fast as you can, but don't sacrifice accuracy for speed."
+            , pressAnyKey
+            ]
+        ]
