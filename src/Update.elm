@@ -749,7 +749,7 @@ vsInstructions : Html Msg
 vsInstructions =
     base
         [ title
-        , text "You will see a grid of 6 images. Find on the image of the target image as quickly as you can."
+        , text "You will see a grid of images. Select the target image as quickly as you can."
         , pressAnyKey
         ]
 

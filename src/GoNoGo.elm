@@ -237,8 +237,7 @@ content stage url position =
             pictureView url position
 
         RedCross _ ->
-            div [ class "container has-text-centered" ]
-                [ redCross ]
+            redCross
 
 
 pictureView : String -> Direction -> Html msg

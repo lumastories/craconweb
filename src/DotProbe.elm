@@ -7,6 +7,7 @@ import GenGame
         , Reason(GoSuccess, WrongIndication)
         , TrialFuns
         , checkTransition
+        , wrapper
         )
 import List.Extra
 import Html exposing (Html, text, div, img)
@@ -153,31 +154,32 @@ dot : Direction -> Svg msg
 dot dir =
     case dir of
         Left ->
-            div [ class "probeRight" ] [ svg [] [ circle [ cx "10", cy "10", r "5" ] [] ] ]
+            div [ class "probeRight" ] [ svg [] [ circle [ cx "10", cy "10", r "10" ] [] ] ]
 
         Right ->
-            div [ class "probeLeft" ] [ svg [] [ circle [ cx "10", cy "10", r "5" ] [] ] ]
+            div [ class "probeLeft" ] [ svg [] [ circle [ cx "10", cy "10", r "10" ] [] ] ]
 
 
 view : Trial -> Html msg
 view trial =
     case trial.stage of
         NotStarted ->
-            text """You will see pictures on the
-                    left and right side of the screen, followed by a dot on the
-                    left or right side of the screen. Press the “c” if the dot is
-                    on the left side of the screen or “m” when the dot is on the
-                    right side of the screen. Go as fast as you can, but don’t
-                    sacrifice accuracy for speed."""
+            text ""
 
         FixationCross _ ->
-            div [ class "fixationCross" ] [ text "+" ]
+            div
+                [ class "columns is-mobile" ]
+                [ div
+                    [ class "column" ]
+                    [ div [ class "fixationCross" ] [ text "+" ] ]
+                ]
 
         Pictures _ ->
-            div []
+            wrapper
                 [ img [ class "squeezed", src trial.leftImageUrl ] []
                 , img [ class "is-pulled-right squeezed", src trial.rightImageUrl ] []
                 ]
 
         Probe _ ->
-            dot trial.probePosition
+            wrapper
+                [ dot trial.probePosition ]

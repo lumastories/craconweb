@@ -519,10 +519,8 @@ instructionsPage model =
                       bar as quickly as you can. BUT only if you see a blue border
                        around the picture. Do not press if you see a grey border.
                         Go as fast as you can, but don’t sacrifice accuracy for speed."""
-                , instBlock "Visual search" """Food response training:
-                        You will see a grid of 16 images of food. It is your job
-                        to swipe on the image of the healthy food as quickly as
-                        you can."""
+                , instBlock "Visual search" """You will see a grid of 6 images.
+                    Find on the image of the target image as quickly as you can."""
                 ]
             ]
         ]

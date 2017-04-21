@@ -9,10 +9,10 @@ html {
 
 .redCross {
     color: red;
-    font-size: 3em;
+    font-size: 6em;
     font-weight: bold;
     text-align: center;
-    align-items: center;
+    margin-top:2em;
 }
 
 .notification{
@@ -20,7 +20,7 @@ html {
 }
 
 .squeezed{
-    max-width:300px;
+    max-width:50%;
 }
 
 .badge1 {
