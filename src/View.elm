@@ -141,6 +141,7 @@ navRight activeMenu activeRoute visitor =
         [ navLink "Games" R.homePath (R.HomeRoute == activeRoute)
         , navLink "Badges" R.badgesPath (R.BadgesRoute == activeRoute)
         , navLink "Instructions" R.instructionsPath (R.InstructionsRoute == activeRoute)
+        , navLink "Statements" R.statementsPath (R.StatementsRoute == activeRoute)
         , adminLink visitor
         , a ([ class "nav-item is-tab", onClick Logout ]) [ text "Logout" ]
         ]
@@ -315,7 +316,7 @@ notFoundPage model =
     basicPage model
         [ div
             [ class "container" ]
-            [ poem404
+            [ middleBlock
                 [ h1 [ class "title is-1" ] [ text "Poem 404" ]
                 , h5 [ class "subtitle is-5" ] [ text "Page Not Found" ]
                 , p []
@@ -337,8 +338,8 @@ notFoundPage model =
         ]
 
 
-poem404 : List (Html Msg) -> Html Msg
-poem404 children =
+middleBlock : List (Html Msg) -> Html Msg
+middleBlock children =
     div
         [ class "columns" ]
         [ div
@@ -503,24 +504,25 @@ instructionsPage model =
                 [ class "columns" ]
                 [ instBlock "Go/no-go" """You will see pictures either on
                     the left or right side of the screen, surrounded by a solid
-                    or dashed border. Press ‘c’ when the picture is on the left
-                    side of the screen or ‘m’ when the picture is on the right
+                    or dashed border. Press 'c' when the picture is on the left
+                    side of the screen or 'm' when the picture is on the right
                     side of the screen. BUT only if you see a solid bar around
                     the picture. Do not press if you see a dashed border. Go as
-                    fast as you can, but don’t sacrifice accuracy for speed."""
+                    fast as you can, but don't sacrifice accuracy for speed."""
                 , instBlock "Dot probe" """You will see pictures on the
                     left and right side of the screen, followed by a dot on the
-                    left or right side of the screen. Press the “c” if the dot is
-                    on the left side of the screen or “m” when the dot is on the
-                    right side of the screen. Go as fast as you can, but don’t
+                    left or right side of the screen. Press the "c" if the dot is
+                    on the left side of the screen or "m" when the dot is on the
+                    right side of the screen. Go as fast as you can, but don't
                     sacrifice accuracy for speed."""
                 , instBlock "Stop Signal" """You will see pictures presented
                      in either a dark blue or light gray border. Press the space
-                      bar as quickly as you can. BUT only if you see a blue border
-                       around the picture. Do not press if you see a grey border.
-                        Go as fast as you can, but don’t sacrifice accuracy for speed."""
-                , instBlock "Visual search" """You will see a grid of 6 images.
-                    Find on the image of the target image as quickly as you can."""
+                      bar if you see a blue border around the picture.
+                    Do not press if you see a grey border.
+                        Go as fast as you can, but don't sacrifice accuracy for speed."""
+                , instBlock "Visual search" """You will see a grid of images.
+                    Select the target image as quickly as you can. Don't sacrifice
+                    accuracy for speed."""
                 ]
             ]
         ]
@@ -917,6 +919,18 @@ editUserPage model userid =
             editUser404
 
 
+statementsPage : Model -> Html Msg
+statementsPage model =
+    basicPage model
+        [ middleBlock
+            [ h1 [ class "title" ] [ text "Statements" ]
+            , p [] [ text """Coming soon! You will be able to see personal
+                statements from other members of the study about their journey to better
+                health and some of the choices they made that helped them get there!""" ]
+            ]
+        ]
+
+
 view : Model -> Html Msg
 view model =
     let
@@ -924,6 +938,9 @@ view model =
             case model.activeRoute of
                 R.AdminRoute ->
                     adminPage model
+
+                R.StatementsRoute ->
+                    statementsPage model
 
                 R.RegisterRoute ->
                     registerPage model

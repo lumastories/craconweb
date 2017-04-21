@@ -12,13 +12,6 @@ adminPaths =
     [ adminPath, registerPath ]
 
 
-type alias MenuItem =
-    { name : String
-    , route : Route
-    , path : String
-    }
-
-
 {-|
 Match a location given by the Navigation package and return the matched route.
 -}
@@ -62,6 +55,7 @@ type Route
     | BadgesRoute
     | SettingsRoute
     | InstructionsRoute
+    | StatementsRoute
     | AdminRoute
     | RegisterRoute
     | EditUserRoute String
@@ -97,6 +91,11 @@ badgesPath =
     "/badges"
 
 
+statementsPath : String
+statementsPath =
+    "/statements"
+
+
 settingsPath : String
 settingsPath =
     "/settings"
@@ -130,6 +129,7 @@ matchers =
         , map GameRouteSs (s "stopsignal")
         , map BadgesRoute (s "badges")
         , map SettingsRoute (s "settings")
+        , map StatementsRoute (s "statements")
         , map InstructionsRoute (s "instructions")
         , map AdminRoute (s "admin")
         , map RegisterRoute (s "register")

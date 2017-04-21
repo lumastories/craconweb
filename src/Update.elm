@@ -389,6 +389,9 @@ update msg model =
                         109 ->
                             handleDirectionIndicationUpdate GenGame.Right indModel
 
+                        32 ->
+                            handleDirectionIndicationUpdate GenGame.Right indModel
+
                         _ ->
                             ( indModel, Cmd.none )
             in
