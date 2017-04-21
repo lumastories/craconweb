@@ -12,9 +12,6 @@ adminPaths =
     [ adminPath, registerPath ]
 
 
-{-|
-Match a location given by the Navigation package and return the matched route.
--}
 parseLocation : Navigation.Location -> Route
 parseLocation location =
     case (parsePath matchers location) of
@@ -43,15 +40,10 @@ type Route
     | NotFoundRoute
     | LoginRoute
     | HomeRoute
-      -- Visual Search
     | GameRouteVs
-      -- Dot probe
     | GameRouteDp
-      -- Go/No-go
     | GameRouteGn
-      -- Stop Signale
     | GameRouteSs
-      -- Respond Signal
     | BadgesRoute
     | SettingsRoute
     | InstructionsRoute
@@ -109,10 +101,6 @@ instructionsPath =
 editPath : String
 editPath =
     "/edit/"
-
-
-
--- Private
 
 
 {-|
