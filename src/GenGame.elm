@@ -14,9 +14,11 @@ module GenGame
         , defaultUpdateIndication
         , defaultUpdateWithIndication
         , bounded
+        , wrapper
         )
 
 import Html exposing (Html, div, text)
+import Html.Attributes exposing (class)
 import Random exposing (Generator)
 import Task exposing (Task)
 import Time exposing (Time)
@@ -108,7 +110,7 @@ generatorToTask generator =
 
 redCross : Html msg
 redCross =
-    text "X"
+    div [ class "redCross" ] [ text "X" ]
 
 
 blackDot : Html msg
@@ -119,6 +121,11 @@ blackDot =
 fixationCross : Html msg
 fixationCross =
     text "+"
+
+
+wrapper : List (Html msg) -> Html msg
+wrapper kids =
+    div [ class "gameWrapper" ] kids
 
 
 defaultUpdateIndication : settings -> time -> trial -> ( TrialResult trial msg, settings )

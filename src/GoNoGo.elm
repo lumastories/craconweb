@@ -11,6 +11,7 @@ import GenGame
         , take
         , redCross
         , bounded
+        , wrapper
         )
 import Html exposing (Html, div, img, text, p)
 import Html.Attributes exposing (class, src)
@@ -221,7 +222,9 @@ updateIndicationHelper currTime direction trial =
 
 view : Trial -> Html msg
 view trial =
-    border trial.kind [ content trial.stage trial.imageUrl trial.position, p [] [ text <| toString trial ] ]
+    wrapper
+        [ border trial.kind [ content trial.stage trial.imageUrl trial.position ]
+        ]
 
 
 content : Stage -> String -> Direction -> Html msg

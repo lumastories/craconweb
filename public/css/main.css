@@ -1,5 +1,18 @@
 html {
-    background:#EFEFEF;
+    background:#fff;
+}
+
+.gameWrapper {
+    max-width:960px;
+    margin:0px auto;
+}
+
+.redCross {
+    color: red;
+    font-size: 3em;
+    font-weight: bold;
+    text-align: center;
+    align-items: center;
 }
 
 .notification{
@@ -52,8 +65,8 @@ html {
 }
 
 .sized{
-    height: 420px;
-    width: 960px;
+    height: 340px;
+    max-width: 960px;
 }
 
 .solidBorder {
