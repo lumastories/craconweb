@@ -11,6 +11,8 @@ import GenGame
 import List.Extra
 import Html exposing (Html, text, div, img)
 import Html.Attributes exposing (src, class)
+import Svg exposing (Svg, svg, circle)
+import Svg.Attributes exposing (cx, cy, r)
 import Random exposing (Generator)
 import Random.Extra
 import Random.List
@@ -147,6 +149,16 @@ updateIndicationHelper currTime direction trial =
 --rightImageUrl
 
 
+dot : Direction -> Svg msg
+dot dir =
+    case dir of
+        Left ->
+            div [ class "probeRight" ] [ svg [] [ circle [ cx "10", cy "10", r "5" ] [] ] ]
+
+        Right ->
+            div [ class "probeLeft" ] [ svg [] [ circle [ cx "10", cy "10", r "5" ] [] ] ]
+
+
 view : Trial -> Html msg
 view trial =
     case trial.stage of
@@ -168,9 +180,4 @@ view trial =
                 ]
 
         Probe _ ->
-            case trial.probePosition of
-                Right ->
-                    div [ class "probeRight" ] [ Html.text "•" ]
-
-                Left ->
-                    div [ class "probeLeft" ] [ Html.text "•" ]
+            dot trial.probePosition
