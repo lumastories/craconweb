@@ -23,6 +23,7 @@ type alias Trial =
     , imageUrls : List String
     , stage : Stage
     , reason : Maybe Reason
+    , selected : Maybe Int
     }
 
 
@@ -72,6 +73,7 @@ initTrial i urls =
     , imageUrls = urls
     , stage = NotStarted
     , reason = Nothing
+    , selected = Nothing
     }
 
 
@@ -140,6 +142,7 @@ updateIndicationHelper currTime selection trial =
                     { trial
                         | stage = SuccessAnimation currTime
                         , reason = updateReason (GoSuccess currTime) trial.reason
+                        , selected = Just selection
                     }
             else
                 Continuing
@@ -149,6 +152,7 @@ updateIndicationHelper currTime selection trial =
                             updateReason
                                 (WrongIndication currTime)
                                 trial.reason
+                        , selected = Just selection
                     }
 
         _ ->
@@ -159,25 +163,53 @@ view : (Int -> msg) -> Trial -> Html msg
 view msgF trial =
     case trial.stage of
         NotStarted ->
-            Html.strong [ Html.Attributes.class "fixationCross  has-text-centered" ] [ text "+" ]
+            Html.p [ Html.Attributes.class "fixationCross has-text-centered" ] [ text "+" ]
 
         FixationCross _ ->
-            div [ class "columns" ]
+            div [ class "columns is-mobile" ]
                 [ div [ class "column is-half is-offset-one-quarter" ]
-                    [ Html.strong [ Html.Attributes.class "fixationCross" ] [ text "+" ]
+                    [ Html.p [ Html.Attributes.class "fixationCross" ] [ text "+" ]
                     ]
                 ]
 
         SelectionGrid _ ->
-            div [ class "columns" ]
-                ((List.indexedMap (\i url -> img [ Html.Attributes.class "vsImg", src url, onClick (msgF i) ] []) trial.imageUrls)
+            div [ class "columns is-mobile" ]
+                ((List.indexedMap
+                    (\i url ->
+                        img
+                            [ Html.Attributes.class "vsImg"
+                            , src url
+                            , onClick (msgF i)
+                            ]
+                            []
+                    )
+                    trial.imageUrls
+                 )
                     |> List.Extra.groupsOf 4
                     |> List.map (div [ class "column" ])
                 )
 
-        -- |> List.Extra.groupsOf 4
         SuccessAnimation _ ->
-            text ""
+            div [ class "columns is-mobile" ]
+                ((List.indexedMap
+                    (\i url ->
+                        img
+                            [ Html.Attributes.class
+                                (if Just i == trial.selected then
+                                    "vsImg selected"
+                                 else
+                                    "vsImg"
+                                )
+                            , src url
+                            , onClick (msgF i)
+                            ]
+                            []
+                    )
+                    trial.imageUrls
+                 )
+                    |> List.Extra.groupsOf 4
+                    |> List.map (div [ class "column" ])
+                )
 
         FailureAnimation _ ->
-            text ""
+            text "NoooOOooO"

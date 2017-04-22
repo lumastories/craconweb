@@ -2,6 +2,10 @@ html {
     background:#fff;
 }
 
+.selected {
+    border: 3px solid green;
+}
+
 .gameWrapper {
     max-width:960px;
     margin:0px auto;
@@ -63,8 +67,8 @@ html {
 
 .fixationCross{
     text-align: center;
-    font-size: 3em;
-    margin: 1em auto;
+    font-size: 4em;
+    margin: 2em auto;
 
 }
 
