@@ -26,6 +26,7 @@ type alias Trial =
     , rightImageUrl : String
     , stage : Stage
     , reason : Maybe Reason
+    , trialStart : Maybe Time
     }
 
 
@@ -80,6 +81,7 @@ initTrial left right direction =
     , rightImageUrl = right
     , stage = NotStarted
     , reason = Nothing
+    , trialStart = Nothing
     }
 
 
@@ -114,7 +116,11 @@ updateTimeHelper settings currTime trial =
     in
         case trial.stage of
             NotStarted ->
-                Continuing { trial | stage = FixationCross currTime }
+                Continuing
+                    { trial
+                        | stage = FixationCross currTime
+                        , trialStart = Just currTime
+                    }
 
             FixationCross timeSince ->
                 trans settings.fixationCross timeSince (Continuing { trial | stage = Pictures currTime })

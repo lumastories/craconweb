@@ -121,11 +121,16 @@ updateTimeHelper settings currTime trial =
                 if isGo trial.kind then
                     trans timeSince
                         settings.pictureBorder
-                        (Continuing
-                            { trial
-                                | stage = RedCross currTime
-                                , reason = updateReason IndicationTimeout trial.reason
-                            }
+                        (case trial.reason of
+                            Just (GoSuccess _) ->
+                                Complete trial.reason
+
+                            _ ->
+                                Continuing
+                                    { trial
+                                        | stage = RedCross currTime
+                                        , reason = updateReason IndicationTimeout trial.reason
+                                    }
                         )
                 else
                     trans timeSince

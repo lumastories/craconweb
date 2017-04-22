@@ -239,8 +239,8 @@ update msg model =
         InitStopSignal ->
             let
                 trialSettings =
-                    { blockResponseCount = 20
-                    , blockNonResponseCount = 20
+                    { blockResponseCount = 10000
+                    , blockNonResponseCount = 10000
                     , pictureNoBorder = 100 * Time.millisecond
                     , pictureBorder = 900 * Time.millisecond
                     , redCross = 500 * Time.millisecond
@@ -255,7 +255,7 @@ update msg model =
                     , trialRestView = Html.text ""
                     , trialRestDuration = 500 * Time.millisecond
                     , trialRestJitter = 0
-                    , blockRestView = always (Html.text "Implement a block rest view.")
+                    , blockRestView = always (Html.text "")
                     , blockRestDuration = 1500 * Time.millisecond
                     , reportView = always (Html.text "Implement a report view.")
                     , trialFuns = StopSignal.trialFuns

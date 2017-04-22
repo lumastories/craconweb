@@ -30,6 +30,8 @@ type Reason
     | IndicationTimeout
     | WrongIndication Time
     | IndicatedOnNoGo Time
+    | DirectionSuccess Direction (List String) Time
+    | SelectionSuccess Int (List String) Time
 
 
 type Direction
