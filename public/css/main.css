@@ -12,7 +12,7 @@ html {
     font-size: 6em;
     font-weight: bold;
     text-align: center;
-    margin-top:2em;
+    margin-top:1em;
 }
 
 .notification{
@@ -43,6 +43,13 @@ html {
     background:#39e17e;
 }
 
+.block-center{
+    display: block;
+    margin-left:auto;
+    margin-right:auto;
+    margin-top:2em;
+}
+
 .badge6 {
     background:#C784FF;
 }
@@ -55,9 +62,10 @@ html {
 }
 
 .fixationCross{
-    text-align:center;
-    font-size: 100px;
-    margin-left:100px;
+    text-align: center;
+    font-size: 3em;
+    margin: 1em auto;
+
 }
 
 .vsImg {

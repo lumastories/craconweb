@@ -11,7 +11,7 @@ import GenGame
         )
 import List.Extra
 import Html exposing (Html, text, div, img)
-import Html.Attributes exposing (src, class)
+import Html.Attributes as Attrs exposing (src, class, style)
 import Svg exposing (Svg, svg, circle)
 import Svg.Attributes exposing (cx, cy, r)
 import Random exposing (Generator)
@@ -156,14 +156,23 @@ updateIndicationHelper currTime direction trial =
 --rightImageUrl
 
 
-dot : Direction -> Svg msg
+probe : Svg msg
+probe =
+    svg [] [ circle [ cx "10", cy "10", r "10" ] [] ]
+
+
+dot : Direction -> List (Html msg)
 dot dir =
     case dir of
         Left ->
-            div [ class "probeRight" ] [ svg [] [ circle [ cx "10", cy "10", r "10" ] [] ] ]
+            [ div [ class "column" ] [ probe ]
+            , div [ class "column" ] []
+            ]
 
         Right ->
-            div [ class "probeLeft" ] [ svg [] [ circle [ cx "10", cy "10", r "10" ] [] ] ]
+            [ div [ class "column" ] []
+            , div [ class "column" ] [ probe ]
+            ]
 
 
 view : Trial -> Html msg
@@ -181,11 +190,18 @@ view trial =
                 ]
 
         Pictures _ ->
-            wrapper
-                [ img [ class "squeezed", src trial.leftImageUrl ] []
-                , img [ class "is-pulled-right squeezed", src trial.rightImageUrl ] []
+            div
+                [ class "columns is-mobile" ]
+                [ div
+                    [ class "column" ]
+                    [ img [ src trial.leftImageUrl ] []
+                    ]
+                , div
+                    [ class "column" ]
+                    [ img [ src trial.rightImageUrl ] []
+                    ]
                 ]
 
         Probe _ ->
-            wrapper
-                [ dot trial.probePosition ]
+            div [ class "columns is-mobile" ]
+                (dot trial.probePosition)
