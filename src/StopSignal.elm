@@ -171,10 +171,14 @@ view : Trial -> Html msg
 view trial =
     case trial.stage of
         NotStarted ->
-            img [ src trial.imageUrl ] []
+            div [ class "whiteBorder" ]
+                [ img [ src trial.imageUrl ] []
+                ]
 
         PictureNoBorder _ ->
-            img [ src trial.imageUrl ] []
+            div [ class "whiteBorder" ]
+                [ img [ src trial.imageUrl ] []
+                ]
 
         PictureBorder _ ->
             border trial.kind [ img [ src trial.imageUrl ] [] ]

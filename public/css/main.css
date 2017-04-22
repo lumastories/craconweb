@@ -93,6 +93,9 @@ html {
 .greyBorder{
     border:5px solid grey;
 }
+.whiteBorder{
+    border:5px solid white;
+}
 
 .probeLeft {
     font-size:2rem;
