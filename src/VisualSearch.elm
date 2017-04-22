@@ -190,26 +190,45 @@ view msgF trial =
                 )
 
         SuccessAnimation _ ->
-            div [ class "columns is-mobile" ]
-                ((List.indexedMap
-                    (\i url ->
-                        img
-                            [ Html.Attributes.class
-                                (if Just i == trial.selected then
-                                    "vsImg selected"
-                                 else
-                                    "vsImg"
-                                )
-                            , src url
-                            , onClick (msgF i)
-                            ]
-                            []
-                    )
-                    trial.imageUrls
-                 )
-                    |> List.Extra.groupsOf 4
-                    |> List.map (div [ class "column" ])
-                )
+            (animatedGrid trial)
 
         FailureAnimation _ ->
-            text "NoooOOooO"
+            (animatedGrid trial)
+
+
+animatedGrid : Trial -> Html msg
+animatedGrid trial =
+    div [ class "columns is-mobile" ]
+        ((List.indexedMap
+            (\i url ->
+                img
+                    [ Html.Attributes.class
+                        (selectClasses
+                            i
+                            trial.selected
+                            trial.correctPosition
+                        )
+                    , src url
+                    ]
+                    []
+            )
+            trial.imageUrls
+         )
+            |> List.Extra.groupsOf 4
+            |> List.map (div [ class "column" ])
+        )
+
+
+selectClasses : Int -> Maybe Int -> Int -> String
+selectClasses index selected_ correct =
+    case selected_ of
+        Just selected ->
+            if (index == selected) && (selected /= correct) then
+                "vsImg red-shrink"
+            else if index == correct then
+                "vsImg green-grow"
+            else
+                "vsImg"
+
+        Nothing ->
+            ""
