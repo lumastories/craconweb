@@ -687,11 +687,6 @@ httpHumanError err =
             "Unknown error"
 
 
-delay : Time.Time -> Msg -> Cmd Msg
-delay t msg =
-    Process.sleep t |> Task.perform (\_ -> msg)
-
-
 
 -- Instruction Views
 
