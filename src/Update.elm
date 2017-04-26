@@ -11,7 +11,6 @@ import Model exposing (..)
 import Navigation
 import Navigation
 import Port
-import Process
 import Random exposing (Generator)
 import Routing as R
 import Task exposing (Task)
