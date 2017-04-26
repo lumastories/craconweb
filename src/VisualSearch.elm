@@ -231,4 +231,4 @@ selectClasses index selected_ correct =
                 "vsImg"
 
         Nothing ->
-            ""
+            "vsImg"
