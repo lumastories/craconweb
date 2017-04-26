@@ -13,7 +13,7 @@ import List.Extra
 import Html exposing (Html, text, div, img)
 import Html.Attributes as Attrs exposing (src, class, style)
 import Svg exposing (Svg, svg, circle)
-import Svg.Attributes exposing (cx, cy, r)
+import Svg.Attributes as Sattr exposing (cx, cy, r, width)
 import Random exposing (Generator)
 import Random.Extra
 import Random.List
@@ -158,7 +158,7 @@ updateIndicationHelper currTime direction trial =
 
 probe : Svg msg
 probe =
-    svg [] [ circle [ cx "10", cy "10", r "10" ] [] ]
+    svg [ Sattr.width "20", style [ ( "margin", "0 auto" ) ] ] [ circle [ cx "10", cy "10", r "10" ] [] ]
 
 
 dot : Direction -> List (Html msg)
