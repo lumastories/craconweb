@@ -11,7 +11,6 @@ import Model exposing (..)
 import Navigation
 import Navigation
 import Port
-import Process
 import Random exposing (Generator)
 import Routing as R
 import Task exposing (Task)
@@ -293,7 +292,7 @@ update msg model =
                     , trialRestJitter = 0
                     , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
-                    , reportView = always (Html.text "Implement a report view.")
+                    , reportView = GoNoGo.viewReport
                     , trialFuns = GoNoGo.trialFuns
                     }
 

@@ -6,3 +6,4 @@ node_modules/
 store.db
 notes.md
 *.swp
+.vscode
