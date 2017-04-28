@@ -8,6 +8,7 @@ import Model exposing (..)
 import Routing as R
 import Entity
 import Access as A
+import Html.Card as Card
 
 
 bigLogo : String -> Html Msg
@@ -316,7 +317,7 @@ notFoundPage model =
     basicPage model
         [ div
             [ class "container" ]
-            [ middleBlock
+            [ Card.middleBlock
                 [ h1 [ class "title is-1" ] [ text "Poem 404" ]
                 , h5 [ class "subtitle is-5" ] [ text "Page Not Found" ]
                 , p []
@@ -333,22 +334,6 @@ notFoundPage model =
                     ]
                 , em [] [ text "- Robert Frost" ]
                 , br [] []
-                ]
-            ]
-        ]
-
-
-middleBlock : List (Html Msg) -> Html Msg
-middleBlock children =
-    div
-        [ class "columns" ]
-        [ div
-            [ class "column is-6 is-offset-3" ]
-            [ div
-                [ class "card" ]
-                [ div
-                    [ class "card-content" ]
-                    children
                 ]
             ]
         ]
@@ -922,7 +907,7 @@ editUserPage model userid =
 statementsPage : Model -> Html Msg
 statementsPage model =
     basicPage model
-        [ middleBlock
+        [ Card.middleBlock
             [ h1 [ class "title" ] [ text "Statements" ]
             , p [] [ text """Coming soon! You will be able to see personal
                 statements from other members of the study about their journey to better

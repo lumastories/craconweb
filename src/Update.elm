@@ -292,7 +292,7 @@ update msg model =
                     , trialRestJitter = 0
                     , blockRestView = always (Html.text "Implement a block rest view.")
                     , blockRestDuration = 1500 * Time.millisecond
-                    , reportView = always (Html.text "Implement a report view.")
+                    , reportView = GoNoGo.viewReport
                     , trialFuns = GoNoGo.trialFuns
                     }
 

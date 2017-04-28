@@ -20,6 +20,8 @@ import Random exposing (Generator)
 import Random.Extra
 import Random.List
 import Time exposing (Time)
+import Html.Card as Card
+import Numeral
 
 
 type alias Trial =
@@ -256,3 +258,21 @@ border kind =
         div [ class "solidBorder sized" ]
     else
         div [ class "dashedBorder sized" ]
+
+
+viewReport : List (Maybe GenGame.Reason) -> Html msg
+viewReport gameReasons =
+    gameReasons
+        |> GenGame.aggregateReasons
+        |> viewAggregatedReasons
+        |> Card.middleBlock
+
+
+viewAggregatedReasons : GenGame.AggregatedReason -> List (Html msg)
+viewAggregatedReasons aggregation =
+    [ Html.h1 [ class "title" ] [ text "Results" ]
+    , Html.ul []
+        [ Html.li [] [ text <| "Average Response Time: " ++ Numeral.format "0,0.00" aggregation.averageResponseTimeInSecond ++ " seconds" ]
+        , Html.li [] [ text <| "Percent Correct: " ++ Numeral.format "0.00" aggregation.percentCorrect ++ "%" ]
+        ]
+    ]

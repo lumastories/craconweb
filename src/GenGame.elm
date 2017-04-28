@@ -4,6 +4,7 @@ module GenGame
         , TrialResult(..)
         , Reason(..)
         , TrialFuns
+        , AggregatedReason
         , checkTransition
         , updateReason
         , take
@@ -15,6 +16,7 @@ module GenGame
         , defaultUpdateWithIndication
         , bounded
         , wrapper
+        , aggregateReasons
         )
 
 import Html exposing (Html, div, text)
@@ -22,6 +24,7 @@ import Html.Attributes exposing (class)
 import Random exposing (Generator)
 import Task exposing (Task)
 import Time exposing (Time)
+import Maybe.Extra
 
 
 type Reason
@@ -145,3 +148,122 @@ bounded low high x =
     x
         |> min high
         |> max low
+
+
+type alias AggregatedReason =
+    { averageResponseTimeInSecond : Float
+    , percentCorrect : Float
+    }
+
+
+type alias CurrentTally =
+    { totalResponseTime : Float
+    , responseTimeCount : Int
+    , totalCorrect : Int
+    , totalTrials : Int
+    }
+
+
+aggregateReasons : List (Maybe Reason) -> AggregatedReason
+aggregateReasons reasons =
+    reasons
+        |> List.foldl aggregator
+            { totalResponseTime = 0
+            , responseTimeCount = 0
+            , totalCorrect = 0
+            , totalTrials = 0
+            }
+        |> aggregateTally
+
+
+aggregateTally : CurrentTally -> AggregatedReason
+aggregateTally tally =
+    let
+        _ =
+            Debug.log "tally" tally
+    in
+        { averageResponseTimeInSecond = (tally.totalResponseTime / toFloat tally.responseTimeCount) / 1000.0
+        , percentCorrect = toFloat tally.totalCorrect / toFloat tally.totalTrials * 100
+        }
+
+
+aggregator : Maybe Reason -> CurrentTally -> CurrentTally
+aggregator reason currentTally =
+    let
+        responseTime =
+            getResponseTime reason
+
+        hasResponseTime =
+            Maybe.Extra.isJust responseTime
+    in
+        { currentTally
+            | totalResponseTime =
+                currentTally.totalResponseTime + Maybe.withDefault 0 responseTime
+            , responseTimeCount =
+                if hasResponseTime then
+                    currentTally.responseTimeCount + 1
+                else
+                    currentTally.responseTimeCount
+            , totalCorrect =
+                if isCorrect reason then
+                    currentTally.totalCorrect + 1
+                else
+                    currentTally.totalCorrect
+            , totalTrials = currentTally.totalTrials + 1
+        }
+
+
+getResponseTime : Maybe Reason -> Maybe Time
+getResponseTime reason =
+    case reason of
+        Nothing ->
+            Nothing
+
+        Just (GoSuccess time) ->
+            Just time
+
+        Just NoGoSuccess ->
+            Nothing
+
+        Just IndicationTimeout ->
+            Nothing
+
+        Just (WrongIndication time) ->
+            Just time
+
+        Just (IndicatedOnNoGo time) ->
+            Just time
+
+        Just (DirectionSuccess _ _ time) ->
+            Just time
+
+        Just (SelectionSuccess _ _ time) ->
+            Just time
+
+
+isCorrect : Maybe Reason -> Bool
+isCorrect reason =
+    case reason of
+        Nothing ->
+            False
+
+        Just (GoSuccess _) ->
+            True
+
+        Just NoGoSuccess ->
+            True
+
+        Just IndicationTimeout ->
+            False
+
+        Just (WrongIndication time) ->
+            False
+
+        Just (IndicatedOnNoGo time) ->
+            True
+
+        Just (DirectionSuccess _ _ time) ->
+            True
+
+        Just (SelectionSuccess _ _ time) ->
+            True
