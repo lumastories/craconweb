@@ -1,6 +1,7 @@
 module View exposing (view)
 
-import GameManager
+import Game
+import Game.Card
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -233,7 +234,6 @@ homePageGameCards model =
             [ model.gonogoGame
             , model.dotprobeGame
             , model.stopsignalGame
-            , model.respondsignalGame
             , model.visualsearchGame
             ]
 
@@ -463,33 +463,25 @@ stopSignalGame model =
     game model "Stop Signal" InitStopSignal
 
 
-respSignalGame : Model -> Html Msg
-respSignalGame model =
-    game model "Respond Signal" InitRespondSignal
-
-
-gameView : Maybe Model.Game -> Msg -> Html Msg
+gameView : Maybe (Game.Game Msg) -> Msg -> Html Msg
 gameView playingGame msg =
     case playingGame of
-        Just (StopSignal data) ->
-            div []
-                [ GameManager.view data ]
+        Just game ->
+            case Game.Card.layout game of
+                Nothing ->
+                    text ""
 
-        Just (GoNoGo data) ->
-            div []
-                [ GameManager.view data ]
+                Just (Game.Info border string) ->
+                    text string
 
-        Just (DotProbe data) ->
-            div []
-                [ GameManager.view data ]
+                Just (Game.Single border image) ->
+                    text (image.url ++ " " ++ toString border)
 
-        Just (RespondSignal data) ->
-            div []
-                [ GameManager.view data ]
+                Just (Game.LeftRight border lImage rImage) ->
+                    text (lImage.url ++ rImage.url)
 
-        Just (VisualSearch data) ->
-            div []
-                [ GameManager.view data ]
+                Just (Game.SelectGrid border rows cols images) ->
+                    text (toString (rows * cols))
 
         Nothing ->
             div []
@@ -529,11 +521,6 @@ instructionsPage model =
                       bar as quickly as you can. BUT only if you see a blue border
                        around the picture. Do not press if you see a grey border.
                         Go as fast as you can, but don’t sacrifice accuracy for speed."""
-                , instBlock "Respond signal" """You will see pictures on
-                    the screen. Some of the pictures will be followed by a tone (a beep).
-                        Please press the space bar as quickly as you can. BUT only
-                        if you hear a beep after the picture. Do not press if you
-                        do not hear a beep."""
                 , instBlock "Visual search" """Food response training:
                         You will see a grid of 16 images of food. It is your job
                         to swipe on the image of the healthy food as quickly as
@@ -665,7 +652,7 @@ groupDropDown groupIdExp groupIdCon =
             p [ class "control" ]
                 [ label []
                     [ input [ type_ "checkbox", value groupIdExp_, onCheck (toGroup groupIdCon_ groupIdExp_) ] []
-                    , text "Experimental"
+                    , text " Experimental"
                     ]
                 ]
 
@@ -977,9 +964,6 @@ view model =
 
                 R.GameRouteSs ->
                     stopSignalGame model
-
-                R.GameRouteRs ->
-                    respSignalGame model
 
                 R.EditUserRoute userid ->
                     editUserPage model userid

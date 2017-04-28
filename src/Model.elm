@@ -1,23 +1,14 @@
 module Model exposing (..)
 
 import Entity
+import Game
 import Http
-import GameManager
 import Navigation
 import Routing
 import Time
 import Json.Decode as JD
 import Json.Encode as JE
 import Json.Decode.Pipeline as JP
-
-
--- games
-
-import StopSignal
-import GoNoGo
-import DotProbe
-import RespondSignal
-import VisualSearch
 
 
 type alias Model =
@@ -47,17 +38,9 @@ type alias Model =
     , stopsignalGame : Maybe Entity.Game
     , respondsignalGame : Maybe Entity.Game
     , visualsearchGame : Maybe Entity.Game
-    , playingGame : Maybe Game
+    , playingGame : Maybe (Game.Game Msg)
     , ugimgsets : Maybe (List Entity.Ugimgset)
     }
-
-
-type Game
-    = StopSignal (GameManager.GameData StopSignal.Settings StopSignal.Trial Msg)
-    | GoNoGo (GameManager.GameData GoNoGo.Settings GoNoGo.Trial Msg)
-    | DotProbe (GameManager.GameData DotProbe.Settings DotProbe.Trial Msg)
-    | RespondSignal (GameManager.GameData (RespondSignal.Settings Msg) RespondSignal.Trial Msg)
-    | VisualSearch (GameManager.GameData VisualSearch.Settings VisualSearch.Trial Msg)
 
 
 type ValuationsError
@@ -98,7 +81,7 @@ type Msg
     | InitDotProbe
     | InitRespondSignal
     | InitVisualSearch
-    | PlayGame Game
+    | PlayGame (Game.Game Msg)
     | StopGame
     | AuthResp (Result Http.Error Entity.Auth)
     | UserResp (Result Http.Error Entity.User)

@@ -59,7 +59,7 @@ type Route
       -- Stop Signale
     | GameRouteSs
       -- Respond Signal
-    | GameRouteRs
+      -- | GameRouteRs
     | BadgesRoute
     | SettingsRoute
     | InstructionsRoute
@@ -129,7 +129,7 @@ matchers =
         , map GameRouteDp (s "dotprobe")
         , map GameRouteGn (s "gonogo")
         , map GameRouteSs (s "stopsignal")
-        , map GameRouteRs (s "respondsignal")
+          -- , map GameRouteRs (s "respondsignal")
         , map BadgesRoute (s "badges")
         , map SettingsRoute (s "settings")
         , map InstructionsRoute (s "instructions")
