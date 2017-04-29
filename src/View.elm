@@ -7,8 +7,9 @@ import Html.Events exposing (..)
 import Model exposing (..)
 import Routing as R
 import Entity
-import Access as A
-import Html.Card as Card
+import Ui.Card as Card
+import Ui.Admin as Admin
+import Ui.Parts as Parts
 
 
 bigLogo : String -> Html Msg
@@ -31,7 +32,7 @@ loginPage model =
                 [ div [ class "column is-half is-offset-one-quarter" ]
                     [ bigLogo model.filesrv
                     , loginPageBoxForm model
-                    , notification model.glitching "is-warning"
+                    , Parts.notification model.glitching "is-warning"
                     ]
                 ]
             ]
@@ -184,7 +185,7 @@ homePage model =
     div []
         [ navBar model
         , homePageBody model
-        , notification model.glitching "is-danger"
+        , Parts.notification model.glitching "is-danger"
         ]
 
 
@@ -276,20 +277,6 @@ homePageGameCard gameSlug src_ title about =
         ]
 
 
-notification : Maybe String -> String -> Html Msg
-notification notifText mods =
-    case notifText of
-        Just nTxt ->
-            div
-                [ class <| "notification " ++ mods ]
-                [ button [ class "delete", onClick ResetNotifications ] []
-                , text nTxt
-                ]
-
-        Nothing ->
-            div [] []
-
-
 basicPage : Model -> List (Html Msg) -> Html Msg
 basicPage model children =
     section []
@@ -297,7 +284,7 @@ basicPage model children =
         , section
             [ class "section" ]
             children
-        , notification model.glitching "is-danger"
+        , Parts.notification model.glitching "is-danger"
         ]
 
 
@@ -683,45 +670,6 @@ divColumns children =
     div [ class "columns" ] children
 
 
-registerPage : Model -> Html Msg
-registerPage model =
-    basicAdminPage model.glitching
-        [ divColumns
-            [ div [ class "column is-half is-offset-one-quarter" ]
-                [ h1
-                    [ class "title" ]
-                    [ text <| "Register a new user" ]
-                , registerUserForm model
-                ]
-            ]
-        ]
-
-
-adminTop : Maybe Entity.User -> Html Msg
-adminTop user =
-    div [ class "columns" ]
-        [ div [ class "column" ]
-            [ h1 [ class "title" ] [ text "Users" ]
-            ]
-        , div [ class "column" ]
-            [ div [ class "block is-pulled-right" ]
-                [ bButton "Register User" R.registerPath "is-success"
-                , bButton "Go to games" R.homePath "is-link"
-                , a ([ class "button is-link", onClick Logout ])
-                    [ text "Logout" ]
-                ]
-            ]
-        ]
-
-
-adminPage : Model -> Html Msg
-adminPage model =
-    basicAdminPage model.glitching
-        [ adminTop model.user
-        , usersTable model
-        ]
-
-
 primaryButton : String -> String -> Html Msg
 primaryButton title path =
     a
@@ -730,83 +678,6 @@ primaryButton title path =
         , R.onLinkClick <| UpdateLocation path
         ]
         [ text title ]
-
-
-bButton : String -> String -> String -> Html Msg
-bButton title path mods =
-    a
-        [ class ("button " ++ mods)
-        , href <| path
-        , R.onLinkClick <| UpdateLocation path
-        ]
-        [ text title ]
-
-
-iconButton : String -> String -> String -> String -> Html Msg
-iconButton text_ path icon mods =
-    a
-        [ class <| "button " ++ mods
-        , href <| path
-        , R.onLinkClick <| UpdateLocation path
-        ]
-        [ span
-            [ class <| "icon " ++ mods ]
-            [ i
-                [ class <| "fa " ++ icon ]
-                []
-            ]
-        , span
-            []
-            [ text text_
-            ]
-        ]
-
-
-usersTable : Model -> Html Msg
-usersTable model =
-    table [ class "table is-bordered is-striped is-narrow" ]
-        [ thead []
-            [ tr []
-                [ th [] [ text "First Name" ]
-                , th [] [ text "Last Name" ]
-                , th [] [ text "Username" ]
-                , th [] [ text "Email" ]
-                , th [] [ text "Actions" ]
-                ]
-            ]
-        , tbody [] (userRows model.users)
-        ]
-
-
-userRows : List Entity.User -> List (Html Msg)
-userRows users =
-    let
-        row user =
-            tr []
-                [ td [] [ text user.firstName ]
-                , td [] [ text user.lastName ]
-                , td [] [ text user.username ]
-                , td [] [ text user.email ]
-                , td []
-                    [ iconButton "Edit"
-                        (R.editPath ++ user.id)
-                        "fa-wrench"
-                        "is-small"
-                    ]
-                ]
-    in
-        users
-            |> List.map row
-
-
-basicAdminPage : Maybe String -> List (Html Msg) -> Html Msg
-basicAdminPage glitching children =
-    section [ class "section" ]
-        [ div
-            [ class "container" ]
-            children
-        , notification glitching "is-warning"
-        ]
 
 
 editUserForm : String -> Entity.User -> Html Msg
@@ -860,50 +731,6 @@ editButtons =
         ]
 
 
-editUser : Maybe String -> String -> Entity.User -> Maybe (List Entity.Ugimgset) -> Html Msg
-editUser informing tasksrv user ugimgsets =
-    basicAdminPage Nothing
-        [ divColumns
-            [ div [ class "column is-half is-offset-one-quarter" ]
-                [ h1
-                    [ class "title" ]
-                    [ text "Upload valuations for "
-                    , strong [] [ text user.firstName ]
-                    ]
-                , br [] []
-                , notification informing "is-warning"
-                , editUserForm tasksrv user
-                , prevUgimgsets ugimgsets
-                ]
-            ]
-        ]
-
-
-prevUgimgsets : Maybe (List Entity.Ugimgset) -> Html Msg
-prevUgimgsets ugimgsets =
-    div [ class "box" ] [ text "Previous uploads" ]
-
-
-editUser404 : Html Msg
-editUser404 =
-    basicAdminPage Nothing
-        [ divColumns
-            [ div [ class "column is-half is-offset-one-quarter" ]
-                [ h1 [ class "title" ] [ text "User not found" ] ]
-            ]
-        ]
-
-
-editUserPage : Model -> String -> Html Msg
-editUserPage model userid =
-    case (A.userName model.users userid) of
-        Just user ->
-            editUser model.informing model.tasksrv user model.ugimgsets
-
-        Nothing ->
-            editUser404
-
-
 statementsPage : Model -> Html Msg
 statementsPage model =
     basicPage model
@@ -922,7 +749,7 @@ view model =
         page =
             case model.activeRoute of
                 R.AdminRoute ->
-                    adminPage model
+                    Admin.adminPage model
 
                 R.StatementsRoute ->
                     statementsPage model

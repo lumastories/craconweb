@@ -1,4 +1,4 @@
-module Html.Card exposing (middleBlock)
+module Ui.Card exposing (middleBlock)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
