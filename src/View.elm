@@ -86,11 +86,6 @@ loginPageBoxForm model =
         ]
 
 
-linkAttrs : String -> List (Attribute Msg)
-linkAttrs path =
-    [ href <| path, R.onLinkClick <| UpdateLocation path ]
-
-
 navBar : Model -> Html Msg
 navBar model =
     nav
@@ -158,7 +153,7 @@ navLink text_ path active =
             else
                 "nav-item is-tab"
     in
-        a ([ class class_ ] ++ (linkAttrs path))
+        a ([ class class_ ] ++ (Parts.linkAttrs path))
             [ text text_ ]
 
 
@@ -248,7 +243,7 @@ homePageGameCard gameSlug src_ title about =
             [ class "card-image" ]
             [ figure
                 [ class "image is-4by3" ]
-                [ a (linkAttrs gameSlug)
+                [ a (Parts.linkAttrs gameSlug)
                     [ img
                         [ src src_
                         , alt title
@@ -543,194 +538,6 @@ toStyle styles =
 -}
 
 
-textInput : String -> String -> Html Msg
-textInput field_ placeholder_ =
-    p [ class "control" ]
-        [ input
-            [ class "input"
-            , placeholder placeholder_
-            , type_ "text"
-            , onInput <| SetRegistration field_
-            ]
-            []
-        ]
-
-
-emailInput : String -> String -> Html Msg
-emailInput field_ placeholder_ =
-    p [ class "control" ]
-        [ input
-            [ class "input"
-            , placeholder placeholder_
-            , type_ "email"
-            , onInput <| SetRegistration field_
-            ]
-            []
-        ]
-
-
-label_ : String -> Html Msg
-label_ title =
-    label [ class "label" ]
-        [ text title ]
-
-
-firstLastReg : Html Msg
-firstLastReg =
-    div [ class "columns" ]
-        [ div [ class "column" ]
-            [ label_ "First Name"
-            , textInput "firstName" ""
-            ]
-        , div [ class "column" ]
-            [ label_ "Last Name"
-            , textInput "lastName" ""
-            ]
-        ]
-
-
-userEmailPassReg : Html Msg
-userEmailPassReg =
-    div [ class "columns" ]
-        [ div [ class "column" ]
-            [ label_ "Username"
-            , textInput "username" "joey123"
-            ]
-        , div [ class "column" ]
-            [ label_ "Email"
-            , emailInput "email" "joe@example.com"
-            ]
-        , div [ class "column" ]
-            [ label_ "Password"
-            , textInput "password" "longfancyphrase"
-            ]
-        ]
-
-
-toGroup : String -> String -> Bool -> Msg
-toGroup groupIdCon_ groupIdExp_ bool =
-    if bool then
-        SetRegistration "exp" groupIdExp_
-    else
-        SetRegistration "con" groupIdCon_
-
-
-groupDropDown : Maybe String -> Maybe String -> Html Msg
-groupDropDown groupIdExp groupIdCon =
-    case ( groupIdExp, groupIdCon ) of
-        ( Just groupIdExp_, Just groupIdCon_ ) ->
-            p [ class "control" ]
-                [ label []
-                    [ input [ type_ "checkbox", value groupIdExp_, onCheck (toGroup groupIdCon_ groupIdExp_) ] []
-                    , text " Experimental"
-                    ]
-                ]
-
-        _ ->
-            p [] []
-
-
-registerUserForm : Model -> Html Msg
-registerUserForm model =
-    Html.form
-        [ onSubmit TryRegisterUser ]
-        [ firstLastReg
-        , userEmailPassReg
-        , groupDropDown model.groupIdExp model.groupIdCon
-        , hr []
-            []
-        , regButtons model.loading
-        ]
-
-
-regButtons : Maybe String -> Html Msg
-regButtons loading =
-    let
-        class_ =
-            case loading of
-                Just l ->
-                    "button is-primary is-loading"
-
-                Nothing ->
-                    "button is-primary"
-    in
-        div
-            [ class "field is-grouped" ]
-            [ button
-                [ class class_ ]
-                [ text "Submit" ]
-            , button
-                ([ class "button is-link" ] ++ (linkAttrs R.adminPath))
-                [ text "Cancel" ]
-            ]
-
-
-divColumns : List (Html Msg) -> Html Msg
-divColumns children =
-    div [ class "columns" ] children
-
-
-primaryButton : String -> String -> Html Msg
-primaryButton title path =
-    a
-        [ class "button is-primary"
-        , href <| path
-        , R.onLinkClick <| UpdateLocation path
-        ]
-        [ text title ]
-
-
-editUserForm : String -> Entity.User -> Html Msg
-editUserForm tasksrv user =
-    Html.form
-        [ enctype "multipart/form-data"
-        , name "csvfile"
-        , action <| tasksrv ++ "/upload/ugimgset"
-        , method "POST"
-        , id "csvForm"
-        , class "box"
-        ]
-        [ input
-            [ type_ "file"
-            , id "csvFilInput"
-            , accept ".csv"
-            , name "upload"
-            ]
-            []
-        , input
-            [ type_ "hidden"
-            , id "csvFilInput"
-            , name "userid"
-            , value user.id
-            ]
-            []
-        , editButtons
-        ]
-
-
-editButtons : Html Msg
-editButtons =
-    div
-        [ class "field is-grouped is-pulled-right" ]
-        [ a
-            [ class "button is-primary", onClick TryUpdateUser ]
-            [ span
-                [ class "icon" ]
-                [ i
-                    [ class "fa fa-file-text-o" ]
-                    []
-                ]
-            , span
-                []
-                [ text "Upload"
-                ]
-            ]
-        , button
-            ([ class "button is-link" ] ++ (linkAttrs R.adminPath))
-            [ text "Go back" ]
-        ]
-
-
 statementsPage : Model -> Html Msg
 statementsPage model =
     basicPage model
@@ -755,7 +562,7 @@ view model =
                     statementsPage model
 
                 R.RegisterRoute ->
-                    registerPage model
+                    Admin.registerPage model
 
                 R.LoginRoute ->
                     loginPage model
@@ -791,6 +598,6 @@ view model =
                     stopSignalGame model
 
                 R.EditUserRoute userid ->
-                    editUserPage model userid
+                    Admin.editUserPage model userid
     in
         div [] [ page ]
