@@ -20,7 +20,7 @@ import Random exposing (Generator)
 import Random.Extra
 import Random.List
 import Time exposing (Time)
-import Html.Card as Card
+import Ui.Card as Card
 import Numeral
 
 

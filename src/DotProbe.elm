@@ -158,7 +158,7 @@ updateIndicationHelper currTime direction trial =
 
 probe : Svg msg
 probe =
-    svg [ Sattr.width "20", style [ ( "margin", "0 auto" ) ] ] [ circle [ cx "10", cy "10", r "10" ] [] ]
+    svg [ Sattr.width "20", style [ ( "margin", "50% auto" ), ("display", "block") ] ] [ circle [ cx "10", cy "10", r "10" ] [] ]
 
 
 dot : Direction -> List (Html msg)
