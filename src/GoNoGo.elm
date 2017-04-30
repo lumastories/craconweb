@@ -11,14 +11,17 @@ import GenGame
         , take
         , redCross
         , bounded
+        , wrapper
         )
-import Html exposing (Html, div, img, text)
+import Html exposing (Html, div, img, text, p)
 import Html.Attributes exposing (class, src)
 import List.Extra
 import Random exposing (Generator)
 import Random.Extra
 import Random.List
 import Time exposing (Time)
+import Ui.Card as Card
+import Numeral
 
 
 type alias Trial =
@@ -128,8 +131,7 @@ initTrial kind imageUrl direction =
 
 trialFuns : TrialFuns Settings Trial msg
 trialFuns =
-    { getTrialImages = always []
-    , updateTime = updateTime
+    { updateTime = updateTime
     , updateIndication = GenGame.defaultUpdateIndication
     , updateDirectionIndication = updateIndication
     , updateIntIndication = GenGame.defaultUpdateWithIndication
@@ -222,7 +224,9 @@ updateIndicationHelper currTime direction trial =
 
 view : Trial -> Html msg
 view trial =
-    border trial.kind [ content trial.stage trial.imageUrl trial.position ]
+    wrapper
+        [ border trial.kind [ content trial.stage trial.imageUrl trial.position ]
+        ]
 
 
 content : Stage -> String -> Direction -> Html msg
@@ -235,8 +239,7 @@ content stage url position =
             pictureView url position
 
         RedCross _ ->
-            div [ class "container has-text-centered" ]
-                [ redCross ]
+            redCross
 
 
 pictureView : String -> Direction -> Html msg
@@ -255,3 +258,21 @@ border kind =
         div [ class "solidBorder sized" ]
     else
         div [ class "dashedBorder sized" ]
+
+
+viewReport : List (Maybe GenGame.Reason) -> Html msg
+viewReport gameReasons =
+    gameReasons
+        |> GenGame.aggregateReasons
+        |> viewAggregatedReasons
+        |> Card.middleBlock
+
+
+viewAggregatedReasons : GenGame.AggregatedReason -> List (Html msg)
+viewAggregatedReasons aggregation =
+    [ Html.h1 [ class "title" ] [ text "Results" ]
+    , Html.ul []
+        [ Html.li [] [ text <| "Average Response Time: " ++ Numeral.format "0,0.00" aggregation.averageResponseTimeInSecond ++ " seconds" ]
+        , Html.li [] [ text <| "Percent Correct: " ++ Numeral.format "0.00" aggregation.percentCorrect ++ "%" ]
+        ]
+    ]

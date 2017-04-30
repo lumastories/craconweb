@@ -11,6 +11,14 @@ import Json.Encode as JE
 import Json.Decode.Pipeline as JP
 
 
+-- games
+
+import StopSignal
+import GoNoGo
+import DotProbe
+import VisualSearch
+
+
 type alias Model =
     { httpsrv : String
     , tasksrv : String
@@ -28,7 +36,6 @@ type alias Model =
     , glitching : Maybe String
     , informing : Maybe String
     , users : List Entity.User
-    , tmpUserRecord : Entity.UserRecord
     , userRole : Entity.Role
     , groupIdExp : Maybe String
     , groupIdCon : Maybe String
@@ -40,7 +47,20 @@ type alias Model =
     , visualsearchGame : Maybe Entity.Game
     , playingGame : Maybe (Game.Game Msg)
     , ugimgsets : Maybe (List Entity.Ugimgset)
+    , adminModel : AdminModel
     }
+
+
+type alias AdminModel =
+    { tmpUserRecord : Entity.UserRecord
+    }
+
+
+type Game
+    = StopSignal (GameManager.GameData StopSignal.Settings StopSignal.Trial Msg)
+    | GoNoGo (GameManager.GameData GoNoGo.Settings GoNoGo.Trial Msg)
+    | DotProbe (GameManager.GameData DotProbe.Settings DotProbe.Trial Msg)
+    | VisualSearch (GameManager.GameData VisualSearch.Settings VisualSearch.Trial Msg)
 
 
 type ValuationsError
@@ -79,7 +99,6 @@ type Msg
     | InitStopSignal
     | InitGoNoGo
     | InitDotProbe
-    | InitRespondSignal
     | InitVisualSearch
     | PlayGame (Game.Game Msg)
     | StopGame
@@ -124,7 +143,7 @@ errorCodeEncoder errorCode =
             ed
 
         Err _ ->
-            { error = "error"
+            { error = ""
             , code = 0
             }
 

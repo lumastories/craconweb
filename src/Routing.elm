@@ -12,16 +12,6 @@ adminPaths =
     [ adminPath, registerPath ]
 
 
-type alias MenuItem =
-    { name : String
-    , route : Route
-    , path : String
-    }
-
-
-{-|
-Match a location given by the Navigation package and return the matched route.
--}
 parseLocation : Navigation.Location -> Route
 parseLocation location =
     case (parsePath matchers location) of
@@ -50,19 +40,14 @@ type Route
     | NotFoundRoute
     | LoginRoute
     | HomeRoute
-      -- Visual Search
     | GameRouteVs
-      -- Dot probe
     | GameRouteDp
-      -- Go/No-go
     | GameRouteGn
-      -- Stop Signale
     | GameRouteSs
-      -- Respond Signal
-      -- | GameRouteRs
     | BadgesRoute
     | SettingsRoute
     | InstructionsRoute
+    | StatementsRoute
     | AdminRoute
     | RegisterRoute
     | EditUserRoute String
@@ -98,6 +83,11 @@ badgesPath =
     "/badges"
 
 
+statementsPath : String
+statementsPath =
+    "/statements"
+
+
 settingsPath : String
 settingsPath =
     "/settings"
@@ -113,10 +103,6 @@ editPath =
     "/edit/"
 
 
-
--- Private
-
-
 {-|
 Define how to match urls
 -}
@@ -129,9 +115,9 @@ matchers =
         , map GameRouteDp (s "dotprobe")
         , map GameRouteGn (s "gonogo")
         , map GameRouteSs (s "stopsignal")
-          -- , map GameRouteRs (s "respondsignal")
         , map BadgesRoute (s "badges")
         , map SettingsRoute (s "settings")
+        , map StatementsRoute (s "statements")
         , map InstructionsRoute (s "instructions")
         , map AdminRoute (s "admin")
         , map RegisterRoute (s "register")

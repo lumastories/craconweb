@@ -23,6 +23,7 @@ type alias Trial =
     , imageUrls : List String
     , stage : Stage
     , reason : Maybe Reason
+    , selected : Maybe Int
     }
 
 
@@ -72,13 +73,13 @@ initTrial i urls =
     , imageUrls = urls
     , stage = NotStarted
     , reason = Nothing
+    , selected = Nothing
     }
 
 
 trialFuns : (Int -> msg) -> TrialFuns Settings Trial msg
 trialFuns intMsg =
-    { getTrialImages = always []
-    , updateTime = updateTime
+    { updateTime = updateTime
     , updateIndication = GenGame.defaultUpdateIndication
     , updateDirectionIndication = GenGame.defaultUpdateWithIndication
     , updateIntIndication = updateIndication
@@ -141,6 +142,7 @@ updateIndicationHelper currTime selection trial =
                     { trial
                         | stage = SuccessAnimation currTime
                         , reason = updateReason (GoSuccess currTime) trial.reason
+                        , selected = Just selection
                     }
             else
                 Continuing
@@ -150,6 +152,7 @@ updateIndicationHelper currTime selection trial =
                             updateReason
                                 (WrongIndication currTime)
                                 trial.reason
+                        , selected = Just selection
                     }
 
         _ ->
@@ -160,25 +163,72 @@ view : (Int -> msg) -> Trial -> Html msg
 view msgF trial =
     case trial.stage of
         NotStarted ->
-            Html.strong [ Html.Attributes.class "fixationCross  has-text-centered" ] [ text "+" ]
+            Html.p [ Html.Attributes.class "fixationCross has-text-centered" ] [ text "+" ]
 
         FixationCross _ ->
-            div [ class "columns" ]
+            div [ class "columns is-mobile" ]
                 [ div [ class "column is-half is-offset-one-quarter" ]
-                    [ Html.strong [ Html.Attributes.class "fixationCross" ] [ text "+" ]
+                    [ Html.p [ Html.Attributes.class "fixationCross" ] [ text "+" ]
                     ]
                 ]
 
         SelectionGrid _ ->
-            div [ class "columns" ]
-                ((List.indexedMap (\i url -> img [ Html.Attributes.class "vsImg", src url, onClick (msgF i) ] []) trial.imageUrls)
+            div [ class "columns is-mobile" ]
+                ((List.indexedMap
+                    (\i url ->
+                        img
+                            [ Html.Attributes.class "vsImg"
+                            , src url
+                            , onClick (msgF i)
+                            ]
+                            []
+                    )
+                    trial.imageUrls
+                 )
                     |> List.Extra.groupsOf 4
                     |> List.map (div [ class "column" ])
                 )
 
-        -- |> List.Extra.groupsOf 4
         SuccessAnimation _ ->
-            text ""
+            (animatedGrid trial)
 
         FailureAnimation _ ->
-            text ""
+            (animatedGrid trial)
+
+
+animatedGrid : Trial -> Html msg
+animatedGrid trial =
+    div [ class "columns is-mobile" ]
+        ((List.indexedMap
+            (\i url ->
+                img
+                    [ Html.Attributes.class
+                        (selectClasses
+                            i
+                            trial.selected
+                            trial.correctPosition
+                        )
+                    , src url
+                    ]
+                    []
+            )
+            trial.imageUrls
+         )
+            |> List.Extra.groupsOf 4
+            |> List.map (div [ class "column" ])
+        )
+
+
+selectClasses : Int -> Maybe Int -> Int -> String
+selectClasses index selected_ correct =
+    case selected_ of
+        Just selected ->
+            if (index == selected) && (selected /= correct) then
+                "vsImg red-shrink"
+            else if index == correct then
+                "vsImg green-grow"
+            else
+                "vsImg"
+
+        Nothing ->
+            "vsImg"

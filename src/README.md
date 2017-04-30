@@ -2,15 +2,23 @@
 
 `elm make Main.elm --output ../build/app.html`
 
+
+### Test
+
+Currently we only have dummy tests. But the framework is in place.
+
+`npm install -g elm-test`
+
+Then run `elm-test`
+
 ### Develop
 
 The http server will run on :8680. See `/docs` for docs.
 
-### Update entities
+### Entities
 
 1. pb2elm ~/work/src/gitlab.com/lumastudio/craconidl/cracon.proto
 
-2. cat Entity.elm | gsed 's/"id" JD.int 0/"id" JD.string ""/' | gsed 's/"id" JE.int 0 v.id/"id" JE.string "" v.id/'
 
 
 

@@ -7,7 +7,9 @@ import Html.Events exposing (..)
 import Model exposing (..)
 import Routing as R
 import Entity
-import Access as A
+import Ui.Card as Card
+import Ui.Admin as Admin
+import Ui.Parts as Parts
 
 
 bigLogo : String -> Html Msg
@@ -30,7 +32,7 @@ loginPage model =
                 [ div [ class "column is-half is-offset-one-quarter" ]
                     [ bigLogo model.filesrv
                     , loginPageBoxForm model
-                    , notification model.glitching "is-warning"
+                    , Parts.notification model.glitching "is-warning"
                     ]
                 ]
             ]
@@ -82,11 +84,6 @@ loginPageBoxForm model =
                 ]
             ]
         ]
-
-
-linkAttrs : String -> List (Attribute Msg)
-linkAttrs path =
-    [ href <| path, R.onLinkClick <| UpdateLocation path ]
 
 
 navBar : Model -> Html Msg
@@ -141,6 +138,7 @@ navRight activeMenu activeRoute visitor =
         [ navLink "Games" R.homePath (R.HomeRoute == activeRoute)
         , navLink "Badges" R.badgesPath (R.BadgesRoute == activeRoute)
         , navLink "Instructions" R.instructionsPath (R.InstructionsRoute == activeRoute)
+        , navLink "Statements" R.statementsPath (R.StatementsRoute == activeRoute)
         , adminLink visitor
         , a ([ class "nav-item is-tab", onClick Logout ]) [ text "Logout" ]
         ]
@@ -155,7 +153,7 @@ navLink text_ path active =
             else
                 "nav-item is-tab"
     in
-        a ([ class class_ ] ++ (linkAttrs path))
+        a ([ class class_ ] ++ (Parts.linkAttrs path))
             [ text text_ ]
 
 
@@ -182,7 +180,7 @@ homePage model =
     div []
         [ navBar model
         , homePageBody model
-        , notification model.glitching "is-danger"
+        , Parts.notification model.glitching "is-danger"
         ]
 
 
@@ -245,7 +243,7 @@ homePageGameCard gameSlug src_ title about =
             [ class "card-image" ]
             [ figure
                 [ class "image is-4by3" ]
-                [ a (linkAttrs gameSlug)
+                [ a (Parts.linkAttrs gameSlug)
                     [ img
                         [ src src_
                         , alt title
@@ -274,20 +272,6 @@ homePageGameCard gameSlug src_ title about =
         ]
 
 
-notification : Maybe String -> String -> Html Msg
-notification notifText mods =
-    case notifText of
-        Just nTxt ->
-            div
-                [ class <| "notification " ++ mods ]
-                [ button [ class "delete", onClick ResetNotifications ] []
-                , text nTxt
-                ]
-
-        Nothing ->
-            div [] []
-
-
 basicPage : Model -> List (Html Msg) -> Html Msg
 basicPage model children =
     section []
@@ -295,7 +279,7 @@ basicPage model children =
         , section
             [ class "section" ]
             children
-        , notification model.glitching "is-danger"
+        , Parts.notification model.glitching "is-danger"
         ]
 
 
@@ -315,7 +299,7 @@ notFoundPage model =
     basicPage model
         [ div
             [ class "container" ]
-            [ poem404
+            [ Card.middleBlock
                 [ h1 [ class "title is-1" ] [ text "Poem 404" ]
                 , h5 [ class "subtitle is-5" ] [ text "Page Not Found" ]
                 , p []
@@ -332,22 +316,6 @@ notFoundPage model =
                     ]
                 , em [] [ text "- Robert Frost" ]
                 , br [] []
-                ]
-            ]
-        ]
-
-
-poem404 : List (Html Msg) -> Html Msg
-poem404 children =
-    div
-        [ class "columns" ]
-        [ div
-            [ class "column is-6 is-offset-3" ]
-            [ div
-                [ class "card" ]
-                [ div
-                    [ class "card-content" ]
-                    children
                 ]
             ]
         ]
@@ -474,26 +442,25 @@ instructionsPage model =
                 [ class "columns" ]
                 [ instBlock "Go/no-go" """You will see pictures either on
                     the left or right side of the screen, surrounded by a solid
-                    or dashed border. Press ‘c’ when the picture is on the left
-                    side of the screen or ‘m’ when the picture is on the right
+                    or dashed border. Press 'c' when the picture is on the left
+                    side of the screen or 'm' when the picture is on the right
                     side of the screen. BUT only if you see a solid bar around
                     the picture. Do not press if you see a dashed border. Go as
-                    fast as you can, but don’t sacrifice accuracy for speed."""
+                    fast as you can, but don't sacrifice accuracy for speed."""
                 , instBlock "Dot probe" """You will see pictures on the
                     left and right side of the screen, followed by a dot on the
-                    left or right side of the screen. Press the “c” if the dot is
-                    on the left side of the screen or “m” when the dot is on the
-                    right side of the screen. Go as fast as you can, but don’t
+                    left or right side of the screen. Press the "c" if the dot is
+                    on the left side of the screen or "m" when the dot is on the
+                    right side of the screen. Go as fast as you can, but don't
                     sacrifice accuracy for speed."""
                 , instBlock "Stop Signal" """You will see pictures presented
                      in either a dark blue or light gray border. Press the space
-                      bar as quickly as you can. BUT only if you see a blue border
-                       around the picture. Do not press if you see a grey border.
-                        Go as fast as you can, but don’t sacrifice accuracy for speed."""
-                , instBlock "Visual search" """Food response training:
-                        You will see a grid of 16 images of food. It is your job
-                        to swipe on the image of the healthy food as quickly as
-                        you can."""
+                      bar if you see a blue border around the picture.
+                    Do not press if you see a grey border.
+                        Go as fast as you can, but don't sacrifice accuracy for speed."""
+                , instBlock "Visual search" """You will see a grid of images.
+                    Select the target image as quickly as you can. Don't sacrifice
+                    accuracy for speed."""
                 ]
             ]
         ]
@@ -542,352 +509,16 @@ toStyle styles =
 -}
 
 
-textInput : String -> String -> Html Msg
-textInput field_ placeholder_ =
-    p [ class "control" ]
-        [ input
-            [ class "input"
-            , placeholder placeholder_
-            , type_ "text"
-            , onInput <| SetRegistration field_
-            ]
-            []
-        ]
-
-
-emailInput : String -> String -> Html Msg
-emailInput field_ placeholder_ =
-    p [ class "control" ]
-        [ input
-            [ class "input"
-            , placeholder placeholder_
-            , type_ "email"
-            , onInput <| SetRegistration field_
-            ]
-            []
-        ]
-
-
-label_ : String -> Html Msg
-label_ title =
-    label [ class "label" ]
-        [ text title ]
-
-
-firstLastReg : Html Msg
-firstLastReg =
-    div [ class "columns" ]
-        [ div [ class "column" ]
-            [ label_ "First Name"
-            , textInput "firstName" ""
-            ]
-        , div [ class "column" ]
-            [ label_ "Last Name"
-            , textInput "lastName" ""
+statementsPage : Model -> Html Msg
+statementsPage model =
+    basicPage model
+        [ Card.middleBlock
+            [ h1 [ class "title" ] [ text "Statements" ]
+            , p [] [ text """Coming soon! You will be able to see personal
+                statements from other members of the study about their journey to better
+                health and some of the choices they made that helped them get there!""" ]
             ]
         ]
-
-
-userEmailPassReg : Html Msg
-userEmailPassReg =
-    div [ class "columns" ]
-        [ div [ class "column" ]
-            [ label_ "Username"
-            , textInput "username" "joey123"
-            ]
-        , div [ class "column" ]
-            [ label_ "Email"
-            , emailInput "email" "joe@example.com"
-            ]
-        , div [ class "column" ]
-            [ label_ "Password"
-            , textInput "password" "longfancyphrase"
-            ]
-        ]
-
-
-toGroup : String -> String -> Bool -> Msg
-toGroup groupIdCon_ groupIdExp_ bool =
-    if bool then
-        SetRegistration "exp" groupIdExp_
-    else
-        SetRegistration "con" groupIdCon_
-
-
-groupDropDown : Maybe String -> Maybe String -> Html Msg
-groupDropDown groupIdExp groupIdCon =
-    case ( groupIdExp, groupIdCon ) of
-        ( Just groupIdExp_, Just groupIdCon_ ) ->
-            p [ class "control" ]
-                [ label []
-                    [ input [ type_ "checkbox", value groupIdExp_, onCheck (toGroup groupIdCon_ groupIdExp_) ] []
-                    , text " Experimental"
-                    ]
-                ]
-
-        _ ->
-            p [] []
-
-
-registerUserForm : Model -> Html Msg
-registerUserForm model =
-    Html.form
-        [ onSubmit TryRegisterUser ]
-        [ firstLastReg
-        , userEmailPassReg
-        , groupDropDown model.groupIdExp model.groupIdCon
-        , hr []
-            []
-        , regButtons model.loading
-        ]
-
-
-regButtons : Maybe String -> Html Msg
-regButtons loading =
-    let
-        class_ =
-            case loading of
-                Just l ->
-                    "button is-primary is-loading"
-
-                Nothing ->
-                    "button is-primary"
-    in
-        div
-            [ class "field is-grouped" ]
-            [ button
-                [ class class_ ]
-                [ text "Submit" ]
-            , button
-                ([ class "button is-link" ] ++ (linkAttrs R.adminPath))
-                [ text "Cancel" ]
-            ]
-
-
-divColumns : List (Html Msg) -> Html Msg
-divColumns children =
-    div [ class "columns" ] children
-
-
-registerPage : Model -> Html Msg
-registerPage model =
-    basicAdminPage model.glitching
-        [ divColumns
-            [ div [ class "column is-half is-offset-one-quarter" ]
-                [ h1
-                    [ class "title" ]
-                    [ text <| "Register a new user" ]
-                , registerUserForm model
-                ]
-            ]
-        ]
-
-
-adminTop : Maybe Entity.User -> Html Msg
-adminTop user =
-    div [ class "columns" ]
-        [ div [ class "column" ]
-            [ h1 [ class "title" ] [ text "Users" ]
-            ]
-        , div [ class "column" ]
-            [ div [ class "block is-pulled-right" ]
-                [ bButton "Register User" R.registerPath "is-success"
-                , bButton "Go to games" R.homePath "is-link"
-                , a ([ class "button is-link", onClick Logout ])
-                    [ text "Logout" ]
-                ]
-            ]
-        ]
-
-
-adminPage : Model -> Html Msg
-adminPage model =
-    basicAdminPage model.glitching
-        [ adminTop model.user
-        , usersTable model
-        ]
-
-
-primaryButton : String -> String -> Html Msg
-primaryButton title path =
-    a
-        [ class "button is-primary"
-        , href <| path
-        , R.onLinkClick <| UpdateLocation path
-        ]
-        [ text title ]
-
-
-bButton : String -> String -> String -> Html Msg
-bButton title path mods =
-    a
-        [ class ("button " ++ mods)
-        , href <| path
-        , R.onLinkClick <| UpdateLocation path
-        ]
-        [ text title ]
-
-
-iconButton : String -> String -> String -> String -> Html Msg
-iconButton text_ path icon mods =
-    a
-        [ class <| "button " ++ mods
-        , href <| path
-        , R.onLinkClick <| UpdateLocation path
-        ]
-        [ span
-            [ class <| "icon " ++ mods ]
-            [ i
-                [ class <| "fa " ++ icon ]
-                []
-            ]
-        , span
-            []
-            [ text text_
-            ]
-        ]
-
-
-usersTable : Model -> Html Msg
-usersTable model =
-    table [ class "table is-bordered is-striped is-narrow" ]
-        [ thead []
-            [ tr []
-                [ th [] [ text "First Name" ]
-                , th [] [ text "Last Name" ]
-                , th [] [ text "Username" ]
-                , th [] [ text "Email" ]
-                , th [] [ text "Actions" ]
-                ]
-            ]
-        , tbody [] (userRows model.users)
-        ]
-
-
-userRows : List Entity.User -> List (Html Msg)
-userRows users =
-    let
-        row user =
-            tr []
-                [ td [] [ text user.firstName ]
-                , td [] [ text user.lastName ]
-                , td [] [ text user.username ]
-                , td [] [ text user.email ]
-                , td []
-                    [ iconButton "Edit"
-                        (R.editPath ++ user.id)
-                        "fa-wrench"
-                        "is-small"
-                    ]
-                ]
-    in
-        users
-            |> List.map row
-
-
-basicAdminPage : Maybe String -> List (Html Msg) -> Html Msg
-basicAdminPage glitching children =
-    section [ class "section" ]
-        [ div
-            [ class "container" ]
-            children
-        , notification glitching "is-warning"
-        ]
-
-
-editUserForm : String -> Entity.User -> Html Msg
-editUserForm tasksrv user =
-    Html.form
-        [ enctype "multipart/form-data"
-        , name "csvfile"
-        , action <| tasksrv ++ "/upload/ugimgset"
-        , method "POST"
-        , id "csvForm"
-        , class "box"
-        ]
-        [ input
-            [ type_ "file"
-            , id "csvFilInput"
-            , accept ".csv"
-            , name "upload"
-            ]
-            []
-        , input
-            [ type_ "hidden"
-            , id "csvFilInput"
-            , name "userid"
-            , value user.id
-            ]
-            []
-        , editButtons
-        ]
-
-
-editButtons : Html Msg
-editButtons =
-    div
-        [ class "field is-grouped is-pulled-right" ]
-        [ a
-            [ class "button is-primary", onClick TryUpdateUser ]
-            [ span
-                [ class "icon" ]
-                [ i
-                    [ class "fa fa-file-text-o" ]
-                    []
-                ]
-            , span
-                []
-                [ text "Upload"
-                ]
-            ]
-        , button
-            ([ class "button is-link" ] ++ (linkAttrs R.adminPath))
-            [ text "Go back" ]
-        ]
-
-
-editUser : Maybe String -> String -> Entity.User -> Maybe (List Entity.Ugimgset) -> Html Msg
-editUser informing tasksrv user ugimgsets =
-    basicAdminPage Nothing
-        [ divColumns
-            [ div [ class "column is-half is-offset-one-quarter" ]
-                [ h1
-                    [ class "title" ]
-                    [ text "Upload valuations for "
-                    , strong [] [ text user.firstName ]
-                    ]
-                , br [] []
-                , notification informing "is-warning"
-                , editUserForm tasksrv user
-                , prevUgimgsets ugimgsets
-                ]
-            ]
-        ]
-
-
-prevUgimgsets : Maybe (List Entity.Ugimgset) -> Html Msg
-prevUgimgsets ugimgsets =
-    div [ class "box" ] [ text "Previous uploads" ]
-
-
-editUser404 : Html Msg
-editUser404 =
-    basicAdminPage Nothing
-        [ divColumns
-            [ div [ class "column is-half is-offset-one-quarter" ]
-                [ h1 [ class "title" ] [ text "User not found" ] ]
-            ]
-        ]
-
-
-editUserPage : Model -> String -> Html Msg
-editUserPage model userid =
-    case (A.userName model.users userid) of
-        Just user ->
-            editUser model.informing model.tasksrv user model.ugimgsets
-
-        Nothing ->
-            editUser404
 
 
 view : Model -> Html Msg
@@ -896,10 +527,13 @@ view model =
         page =
             case model.activeRoute of
                 R.AdminRoute ->
-                    adminPage model
+                    Admin.adminPage model
+
+                R.StatementsRoute ->
+                    statementsPage model
 
                 R.RegisterRoute ->
-                    registerPage model
+                    Admin.registerPage model
 
                 R.LoginRoute ->
                     loginPage model
@@ -935,6 +569,6 @@ view model =
                     stopSignalGame model
 
                 R.EditUserRoute userid ->
-                    editUserPage model userid
+                    Admin.editUserPage model userid
     in
         div [] [ page ]

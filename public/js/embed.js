@@ -64,7 +64,7 @@ app.ports.upload.subscribe(function(pathIdToken){
         r.setRequestHeader("Authorization", "Bearer " + token )
         r.send(fd)
         r.onload = function() {
-            app.ports.status.send(r.statusText)
+            app.ports.status.send(r.response)
         }
     } catch(e) {
         console.log(e.message);

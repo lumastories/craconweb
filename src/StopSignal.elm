@@ -79,8 +79,7 @@ initTrial kind imageUrl =
 
 trialFuns : TrialFuns Settings Trial msg
 trialFuns =
-    { getTrialImages = always []
-    , updateTime = updateTime
+    { updateTime = updateTime
     , updateIndication = updateIndication
     , updateDirectionIndication = GenGame.defaultUpdateWithIndication
     , updateIntIndication = GenGame.defaultUpdateWithIndication
@@ -122,11 +121,16 @@ updateTimeHelper settings currTime trial =
                 if isGo trial.kind then
                     trans timeSince
                         settings.pictureBorder
-                        (Continuing
-                            { trial
-                                | stage = RedCross currTime
-                                , reason = updateReason IndicationTimeout trial.reason
-                            }
+                        (case trial.reason of
+                            Just (GoSuccess _) ->
+                                Complete trial.reason
+
+                            _ ->
+                                Continuing
+                                    { trial
+                                        | stage = RedCross currTime
+                                        , reason = updateReason IndicationTimeout trial.reason
+                                    }
                         )
                 else
                     trans timeSince
@@ -167,10 +171,14 @@ view : Trial -> Html msg
 view trial =
     case trial.stage of
         NotStarted ->
-            img [ src trial.imageUrl ] []
+            div [ class "whiteBorder" ]
+                [ img [ src trial.imageUrl ] []
+                ]
 
         PictureNoBorder _ ->
-            img [ src trial.imageUrl ] []
+            div [ class "whiteBorder" ]
+                [ img [ src trial.imageUrl ] []
+                ]
 
         PictureBorder _ ->
             border trial.kind [ img [ src trial.imageUrl ] [] ]

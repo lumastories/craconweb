@@ -7,9 +7,13 @@ import GenGame
         , Reason(GoSuccess, WrongIndication)
         , TrialFuns
         , checkTransition
+        , wrapper
         )
 import List.Extra
-import Html exposing (Html, text)
+import Html exposing (Html, text, div, img)
+import Html.Attributes as Attrs exposing (src, class, style)
+import Svg exposing (Svg, svg, circle)
+import Svg.Attributes as Sattr exposing (cx, cy, r, width)
 import Random exposing (Generator)
 import Random.Extra
 import Random.List
@@ -22,6 +26,7 @@ type alias Trial =
     , rightImageUrl : String
     , stage : Stage
     , reason : Maybe Reason
+    , trialStart : Maybe Time
     }
 
 
@@ -76,13 +81,13 @@ initTrial left right direction =
     , rightImageUrl = right
     , stage = NotStarted
     , reason = Nothing
+    , trialStart = Nothing
     }
 
 
 trialFuns : TrialFuns Settings Trial msg
 trialFuns =
-    { getTrialImages = always []
-    , updateTime = updateTime
+    { updateTime = updateTime
     , updateIndication = GenGame.defaultUpdateIndication
     , updateDirectionIndication = updateIndication
     , updateIntIndication = GenGame.defaultUpdateWithIndication
@@ -111,7 +116,11 @@ updateTimeHelper settings currTime trial =
     in
         case trial.stage of
             NotStarted ->
-                Continuing { trial | stage = FixationCross currTime }
+                Continuing
+                    { trial
+                        | stage = FixationCross currTime
+                        , trialStart = Just currTime
+                    }
 
             FixationCross timeSince ->
                 trans settings.fixationCross timeSince (Continuing { trial | stage = Pictures currTime })
@@ -141,6 +150,31 @@ updateIndicationHelper currTime direction trial =
             Continuing trial
 
 
+
+--probePosition
+--
+--rightImageUrl
+
+
+probe : Svg msg
+probe =
+    svg [ Sattr.width "20", style [ ( "margin", "50% auto" ), ("display", "block") ] ] [ circle [ cx "10", cy "10", r "10" ] [] ]
+
+
+dot : Direction -> List (Html msg)
+dot dir =
+    case dir of
+        Left ->
+            [ div [ class "column" ] [ probe ]
+            , div [ class "column" ] []
+            ]
+
+        Right ->
+            [ div [ class "column" ] []
+            , div [ class "column" ] [ probe ]
+            ]
+
+
 view : Trial -> Html msg
 view trial =
     case trial.stage of
@@ -148,10 +182,26 @@ view trial =
             text ""
 
         FixationCross _ ->
-            text ""
+            div
+                [ class "columns is-mobile" ]
+                [ div
+                    [ class "column" ]
+                    [ div [ class "fixationCross" ] [ text "+" ] ]
+                ]
 
         Pictures _ ->
-            text ""
+            div
+                [ class "columns is-mobile" ]
+                [ div
+                    [ class "column" ]
+                    [ img [ src trial.leftImageUrl ] []
+                    ]
+                , div
+                    [ class "column" ]
+                    [ img [ src trial.rightImageUrl ] []
+                    ]
+                ]
 
         Probe _ ->
-            text ""
+            div [ class "columns is-mobile" ]
+                (dot trial.probePosition)
