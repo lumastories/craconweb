@@ -5,6 +5,7 @@ import Game.Card
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Markdown
 
 
 view : Maybe (Game.Game msg) -> msg -> Html msg
@@ -29,7 +30,7 @@ view playingGame msg =
                             text ""
 
                         Just (Game.Info borderType string) ->
-                            border borderType [ text string ]
+                            Markdown.toHtml [ class "box" ] string
 
                         Just (Game.Single borderType image) ->
                             border borderType [ img [ src image.url ] [] ]

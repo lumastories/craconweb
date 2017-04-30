@@ -233,12 +233,18 @@ update msg model =
                         Game.Implementations.stopSignalInit
                             { borderDelay = 100 * Time.millisecond
                             , totalDuration = 1000 * Time.millisecond
-                            , infoString = "Placeholder"
+                            , infoString = """
+<h3 class="title">Instructions</h3>
+You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a grey border. Go as fast as you can, but don't sacrifice accuracy for speed.
+<br>
+<br>
+**Press any key to continue.**
+                            """
                             , responseImages = (getFullImagePaths model.filesrv model.ugimages_v |> Maybe.withDefault [])
                             , nonResponseImages = (getFullImagePaths model.filesrv model.ugimages_i |> Maybe.withDefault [])
                             , seedInt = 0
                             , currentTime = time
-                            , gameDuration = 0.1 * Time.minute
+                            , gameDuration = 5 * Time.minute
                             }
                     )
                 |> Task.perform PlayGame
