@@ -6,51 +6,91 @@ import Game
         ( Game
         , Image
         , Layout(..)
-        , Border(..)
+        , BorderType(..)
         , LogEntry(..)
         , State
         , andThen
         , emptyState
-        , game
+        , segment
         , log
         , addRests
         , info
         , onIndication
         , timeout
         , resultTimeout
+        , startSession
         )
 import Random exposing (Generator)
 import Random.List
 import Time exposing (Time)
 
 
-stopSignalInit : Time -> Time -> String -> List Image -> List Image -> Int -> Time -> Game msg
-stopSignalInit borderDelay totalDuration infoString responseImages nonResponseImages seedInt currTime =
+stopSignalInit :
+    { borderDelay : Time
+    , totalDuration : Time
+    , infoString : String
+    , responseImages : List Image
+    , nonResponseImages : List Image
+    , seedInt : Int
+    , currentTime : Time
+    , gameDuration : Time
+    }
+    -> Game msg
+stopSignalInit { borderDelay, totalDuration, infoString, responseImages, nonResponseImages, seedInt, currentTime, gameDuration } =
     let
         gos =
-            List.map (\img -> stopSignalTrial borderDelay totalDuration img True) responseImages
+            responseImages
+                |> List.map
+                    (stopSignalTrial
+                        { borderDelay = borderDelay
+                        , totalDuration = totalDuration
+                        , goTrial = True
+                        , gameDuration = gameDuration
+                        }
+                    )
 
         noGos =
-            List.map (\img -> stopSignalTrial borderDelay totalDuration img False) nonResponseImages
+            nonResponseImages
+                |> List.map
+                    (stopSignalTrial
+                        { borderDelay = borderDelay
+                        , totalDuration = totalDuration
+                        , goTrial = False
+                        , gameDuration = gameDuration
+                        }
+                    )
 
         trials =
             gos ++ noGos
+
+        isTimeout state =
+            state.sessionStart
+                |> Maybe.map (\sessionStart -> sessionStart + gameDuration < state.currTime)
+                |> Maybe.withDefault False
     in
         Random.List.shuffle trials
             |> Random.andThen (addRests Nothing 500 0)
             |> Random.map
                 (\trials ->
-                    (info infoString :: log (BeginSession seedInt) :: trials)
-                        |> List.foldl Game.andThen (Game.Card.complete (emptyState currTime))
+                    (info infoString :: startSession :: log (BeginSession seedInt) :: trials)
+                        |> List.foldl (Game.andThen isTimeout) (Game.Card.complete (emptyState currentTime))
                 )
             |> (\generator -> Random.step generator (Random.initialSeed seedInt))
             |> Tuple.first
 
 
-stopSignalTrial : Time -> Time -> Image -> Bool -> State -> Game msg
-stopSignalTrial borderDelay totalDuration image goTrial state =
+stopSignalTrial :
+    { borderDelay : Time
+    , totalDuration : Time
+    , gameDuration : Time
+    , goTrial : Bool
+    }
+    -> Image
+    -> State
+    -> Game msg
+stopSignalTrial { borderDelay, totalDuration, goTrial, gameDuration } image state =
     let
-        border =
+        borderType =
             if goTrial then
                 Blue
             else
@@ -60,17 +100,17 @@ stopSignalTrial borderDelay totalDuration image goTrial state =
             Just (Single None image)
 
         bordered =
-            Just (Single border image)
+            Just (Single borderType image)
     in
         complete { state | trialResult = Nothing, trialStart = state.currTime }
-            |> andThen (log (BeginDisplay borderless))
-            |> andThen (game [ onIndication False, timeout borderDelay ] borderless)
-            |> andThen (log (BeginDisplay bordered))
-            |> andThen
-                (game
+            |> andThen (always False) (log (BeginDisplay borderless))
+            |> andThen (always False) (segment [ onIndication False, timeout borderDelay ] borderless)
+            |> andThen (always False) (log (BeginDisplay bordered))
+            |> andThen (always False)
+                (segment
                     [ onIndication goTrial
                     , resultTimeout (not goTrial) totalDuration
                     ]
                     bordered
                 )
-            |> andThen (game [ timeout totalDuration ] bordered)
+            |> andThen (always False) (segment [ timeout totalDuration ] bordered)

@@ -231,13 +231,15 @@ update msg model =
                 |> Task.map
                     (\time ->
                         Game.Implementations.stopSignalInit
-                            (100 * Time.millisecond)
-                            (1000 * Time.millisecond)
-                            "Placeholder"
-                            (getFullImagePaths model.filesrv model.ugimages_v |> Maybe.withDefault [])
-                            (getFullImagePaths model.filesrv model.ugimages_i |> Maybe.withDefault [])
-                            0
-                            time
+                            { borderDelay = 100 * Time.millisecond
+                            , totalDuration = 1000 * Time.millisecond
+                            , infoString = "Placeholder"
+                            , responseImages = (getFullImagePaths model.filesrv model.ugimages_v |> Maybe.withDefault [])
+                            , nonResponseImages = (getFullImagePaths model.filesrv model.ugimages_i |> Maybe.withDefault [])
+                            , seedInt = 0
+                            , currentTime = time
+                            , gameDuration = 0.1 * Time.minute
+                            }
                     )
                 |> Task.perform PlayGame
             )
@@ -368,10 +370,10 @@ handleInput input model =
 
         Just game ->
             case Game.Card.step input game of
-                ( Game.Card.Complete _, cmd ) ->
+                ( Game.Card.Complete state, cmd ) ->
                     ( { model | playingGame = Nothing }, cmd )
 
-                ( Game.Card.Continue newGame, cmd ) ->
+                ( Game.Card.Continue _ newGame, cmd ) ->
                     ( { model | playingGame = Just newGame }, cmd )
 
 

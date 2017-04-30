@@ -5,3 +5,4 @@ public/js/app.js
 node_modules/
 store.db
 notes.md
+.vscode/

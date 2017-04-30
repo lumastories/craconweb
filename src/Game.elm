@@ -28,13 +28,13 @@ type Direction
 
 
 type Layout
-    = Info Border String
-    | Single Border Image
-    | LeftRight Border Image Image
-    | SelectGrid Border Int Int (List Image)
+    = Info BorderType String
+    | Single BorderType Image
+    | LeftRight BorderType Image Image
+    | SelectGrid BorderType Int Int (List Image)
 
 
-type Border
+type BorderType
     = None
     | Grey
     | Blue
@@ -62,7 +62,8 @@ type LogEntry
 
 
 type alias State =
-    { trialStart : Time
+    { sessionStart : Maybe Time
+    , trialStart : Time
     , currTime : Time
     , log : List LogEntry
     , trialResult : Maybe Bool
@@ -73,8 +74,13 @@ type alias Logic =
     State -> Input -> ( Bool, State )
 
 
-game : List Logic -> Maybe Layout -> State -> Game msg
-game logics layout state =
+unwrap : Game msg -> State
+unwrap =
+    Card.unwrap Initialize
+
+
+segment : List Logic -> Maybe Layout -> State -> Game msg
+segment logics layout state =
     let
         combined =
             oneOf (updateCurrTime :: logics) state
@@ -84,16 +90,16 @@ game logics layout state =
             (\input ->
                 case combined input of
                     ( True, newState ) ->
-                        ( Continue (game logics layout newState), Cmd.none )
+                        ( Continue newState (segment logics layout newState), Cmd.none )
 
                     ( False, newState ) ->
                         ( Complete newState, Cmd.none )
             )
 
 
-andThen : (State -> Game msg) -> Game msg -> Game msg
-andThen =
-    Card.andThen Initialize
+andThen : (State -> Bool) -> (State -> Game msg) -> Game msg -> Game msg
+andThen isTimeout =
+    Card.andThen isTimeout Initialize
 
 
 oneOf : List Logic -> Logic
@@ -123,7 +129,7 @@ log logEntry state =
 rest : Maybe Layout -> Time -> State -> Game msg
 rest layout expiration state =
     log (BeginDisplay layout) (startTrial state)
-        |> andThen (game [ timeout expiration ] layout)
+        |> andThen (always False) (segment [ timeout expiration ] layout)
 
 
 addRests : Maybe Layout -> Time -> Time -> List (State -> Game msg) -> Generator (List (State -> Game msg))
@@ -134,6 +140,11 @@ addRests layout min jitter trials =
         |> Random.Extra.combine
 
 
+startSession : State -> Game msg
+startSession state =
+    Card.complete { state | sessionStart = Just state.currTime }
+
+
 startTrial : State -> State
 startTrial state =
     { state | trialStart = state.currTime, trialResult = Nothing }
@@ -141,7 +152,7 @@ startTrial state =
 
 info : String -> State -> Game msg
 info infoString state =
-    game [ advanceOnIndication ] (Just (Info None infoString)) state
+    segment [ advanceOnIndication ] (Just (Info None infoString)) state
 
 
 advanceOnIndication : Logic
@@ -204,7 +215,8 @@ updateCurrTime state input =
 
 emptyState : Time -> State
 emptyState time =
-    { trialStart = time
+    { sessionStart = Nothing
+    , trialStart = time
     , currTime = time
     , log = []
     , trialResult = Nothing

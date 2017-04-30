@@ -1,7 +1,6 @@
 module View exposing (view)
 
-import Game
-import Game.Card
+import Game.View as Game
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -145,7 +144,7 @@ navRight activeMenu activeRoute visitor =
         , adminLink visitor
         , a ([ class "nav-item is-tab", onClick Logout ]) [ text "Logout" ]
         ]
-
+ 
 
 navLink : String -> String -> Bool -> Html Msg
 navLink text_ path active =
@@ -438,7 +437,7 @@ game model title msg =
             [ div
                 [ class "container" ]
                 [ title_
-                , gameView model.playingGame msg
+                , Game.view model.playingGame msg
                 ]
             ]
 
@@ -461,36 +460,6 @@ goNoGoGame model =
 stopSignalGame : Model -> Html Msg
 stopSignalGame model =
     game model "Stop Signal" InitStopSignal
-
-
-gameView : Maybe (Game.Game Msg) -> Msg -> Html Msg
-gameView playingGame msg =
-    case playingGame of
-        Just game ->
-            case Game.Card.layout game of
-                Nothing ->
-                    text ""
-
-                Just (Game.Info border string) ->
-                    text string
-
-                Just (Game.Single border image) ->
-                    text (image.url ++ " " ++ toString border)
-
-                Just (Game.LeftRight border lImage rImage) ->
-                    text (lImage.url ++ rImage.url)
-
-                Just (Game.SelectGrid border rows cols images) ->
-                    text (toString (rows * cols))
-
-        Nothing ->
-            div []
-                [ a
-                    [ class "button is-info is-large"
-                    , onClick msg
-                    ]
-                    [ text "Start Game" ]
-                ]
 
 
 instructionsPage : Model -> Html Msg
