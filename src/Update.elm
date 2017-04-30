@@ -66,11 +66,17 @@ update msg model =
 
         SetRegistration key value ->
             let
+                adminModel_ =
+                    model.adminModel
+
                 tmpUserRecord_old_ =
-                    model.tmpUserRecord
+                    adminModel_.tmpUserRecord
 
                 tmpUserRecord_old =
-                    { tmpUserRecord_old_ | roles = [ model.userRole.id ], groupId = Maybe.withDefault "" model.groupIdCon }
+                    { tmpUserRecord_old_
+                        | roles = [ model.userRole.id ]
+                        , groupId = Maybe.withDefault "" model.groupIdCon
+                    }
 
                 tmpUserRecord_ =
                     case key of
@@ -98,7 +104,7 @@ update msg model =
                         _ ->
                             tmpUserRecord_old
             in
-                ( { model | tmpUserRecord = tmpUserRecord_ }, Cmd.none )
+                ( { model | adminModel = { adminModel_ | tmpUserRecord = tmpUserRecord_ } }, Cmd.none )
 
         EditUserAccount key value ->
             model ! []
@@ -110,7 +116,7 @@ update msg model =
                     (Api.createUserRecord
                         model.httpsrv
                         model.jwtencoded
-                        model.tmpUserRecord
+                        model.adminModel.tmpUserRecord
                     )
                 ]
             )
@@ -119,8 +125,20 @@ update msg model =
             let
                 users_ =
                     [ newUser ] ++ model.users
+
+                adminModel_ =
+                    model.adminModel
+
+                adminModel__ =
+                    { adminModel_ | tmpUserRecord = Empty.emptyUserRecord }
             in
-                ( { model | loading = Nothing, users = users_, tmpUserRecord = Empty.emptyUserRecord }, Navigation.newUrl R.adminPath )
+                ( { model
+                    | loading = Nothing
+                    , users = users_
+                    , adminModel = adminModel__
+                  }
+                , Navigation.newUrl R.adminPath
+                )
 
         -- SHARED
         ResetNotifications ->

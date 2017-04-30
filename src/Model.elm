@@ -36,7 +36,6 @@ type alias Model =
     , glitching : Maybe String
     , informing : Maybe String
     , users : List Entity.User
-    , tmpUserRecord : Entity.UserRecord
     , userRole : Entity.Role
     , groupIdExp : Maybe String
     , groupIdCon : Maybe String
@@ -48,6 +47,12 @@ type alias Model =
     , visualsearchGame : Maybe Entity.Game
     , playingGame : Maybe Game
     , ugimgsets : Maybe (List Entity.Ugimgset)
+    , adminModel : AdminModel
+    }
+
+
+type alias AdminModel =
+    { tmpUserRecord : Entity.UserRecord
     }
 
 

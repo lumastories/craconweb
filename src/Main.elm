@@ -76,7 +76,6 @@ init flags location =
             , glitching = Nothing
             , informing = Nothing
             , users = []
-            , tmpUserRecord = Empty.emptyUserRecord
             , userRole = Empty.emptyRole
             , groupIdExp = Nothing
             , groupIdCon = Nothing
@@ -88,6 +87,7 @@ init flags location =
             , visualsearchGame = Nothing
             , playingGame = Nothing
             , ugimgsets = Nothing
+            , adminModel = { tmpUserRecord = Empty.emptyUserRecord }
             }
     in
         ( baseModel, commands_ )
