@@ -170,6 +170,7 @@ update msg model =
                 | activeRoute = R.parseLocation location
                 , isMenuActive = False
                 , playingGame = Nothing
+                , playingGameNew = Nothing
               }
             , Cmd.none
             )
@@ -260,7 +261,7 @@ update msg model =
             ( { model | playingGame = Just game }, Cmd.none )
 
         StopGame ->
-            ( { model | playingGame = Nothing }, Cmd.none )
+            ( { model | playingGame = Nothing, playingGameNew = Nothing }, Cmd.none )
 
         -- TODO fetch configuration from the model
         InitStopSignal ->

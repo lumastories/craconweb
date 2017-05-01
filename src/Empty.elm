@@ -19,6 +19,7 @@ emptyModel model =
         , loading = Nothing
         , glitching = Nothing
         , playingGame = Nothing
+        , playingGameNew = Nothing
     }
 
 

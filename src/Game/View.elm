@@ -6,6 +6,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Markdown
+import Ui.Card
 
 
 view : Maybe (Game.Game msg) -> msg -> Html msg
@@ -30,7 +31,7 @@ view playingGame msg =
                             text ""
 
                         Just (Game.Info borderType string) ->
-                            Markdown.toHtml [ class "box" ] string
+                            Ui.Card.middleBlock [ Markdown.toHtml [] string ]
 
                         Just (Game.Single borderType image) ->
                             border borderType [ img [ src image.url ] [] ]
@@ -48,27 +49,8 @@ view playingGame msg =
                     [ class "button is-info is-large"
                     , onClick msg
                     ]
-                    [ text "Start Game (New)" ]
+                    [ text "Start Game" ]
                 ]
-
-
-
--- view : Trial -> Html msg
--- view trial =
---     case trial.stage of
---         NotStarted ->
---             div [ class "whiteBorder" ]
---                 [ img [ src trial.imageUrl ] []
---                 ]
---         PictureNoBorder _ ->
---             div [ class "whiteBorder" ]
---                 [ img [ src trial.imageUrl ] []
---                 ]
---         PictureBorder _ ->
---             border trial.kind [ img [ src trial.imageUrl ] [] ]
---         RedCross _ ->
---             div [ class "container has-text-centered" ]
---                 [ redCross ]
 
 
 border : BorderType -> List (Html msg) -> Html msg

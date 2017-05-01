@@ -395,8 +395,8 @@ game : Model -> String -> Msg -> Html Msg
 game model title msg =
     let
         title_ =
-            case model.playingGame of
-                Nothing ->
+            case ( model.playingGame, model.playingGameNew ) of
+                ( Nothing, Nothing ) ->
                     h1 [ class "title is-1" ] [ text title ]
 
                 _ ->
