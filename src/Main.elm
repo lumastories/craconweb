@@ -10,6 +10,7 @@ import Update
 import View
 import Port
 import Time
+import Maybe.Extra
 
 
 main : Program Flags M.Model M.Msg
@@ -26,16 +27,17 @@ subscriptions : M.Model -> Sub M.Msg
 subscriptions model =
     Sub.batch
         [ Keyboard.presses M.Presses
-        , ticker model.playingGame
+        , ticker model.playingGame model.playingGameNew
         , Port.status M.SetStatus
         ]
 
 
-ticker : Maybe a -> Sub M.Msg
-ticker playingGame =
-    playingGame
-        |> Maybe.map (\_ -> Time.every Time.millisecond M.NewCurrentTime)
-        |> Maybe.withDefault Sub.none
+ticker : Maybe a -> Maybe b -> Sub M.Msg
+ticker playingGame playingGameNew =
+    if Maybe.Extra.isJust playingGame || Maybe.Extra.isJust playingGameNew then
+        Time.every Time.millisecond M.NewCurrentTime
+    else
+        Sub.none
 
 
 init : Flags -> Navigation.Location -> ( M.Model, Cmd M.Msg )
@@ -76,7 +78,6 @@ init flags location =
             , glitching = Nothing
             , informing = Nothing
             , users = []
-            , tmpUserRecord = Empty.emptyUserRecord
             , userRole = Empty.emptyRole
             , groupIdExp = Nothing
             , groupIdCon = Nothing
@@ -87,7 +88,9 @@ init flags location =
             , respondsignalGame = Nothing
             , visualsearchGame = Nothing
             , playingGame = Nothing
+            , playingGameNew = Nothing
             , ugimgsets = Nothing
+            , adminModel = { tmpUserRecord = Empty.emptyUserRecord }
             }
     in
         ( baseModel, commands_ )

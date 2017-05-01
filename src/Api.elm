@@ -81,7 +81,10 @@ defaultHeaders jwtencoded =
         authHeaders
 
 
-createAuthRecord : String -> Entity.AuthRecord -> Task Http.Error Entity.Auth
+createAuthRecord :
+    String
+    -> Entity.AuthRecord
+    -> Task Http.Error Entity.Auth
 createAuthRecord httpsrv authRecord =
     Http.request
         { method = "POST"
@@ -95,7 +98,11 @@ createAuthRecord httpsrv authRecord =
         |> Http.toTask
 
 
-fetchAllUgimgsets : String -> String -> String -> Task Http.Error (List Entity.Ugimgset)
+fetchAllUgimgsets :
+    String
+    -> String
+    -> String
+    -> Task Http.Error (List Entity.Ugimgset)
 fetchAllUgimgsets httpsrv token sub =
     getRequest token
         (httpsrv
@@ -112,22 +119,40 @@ fetchUsers_ httpsrv token =
         |> Task.andThen (fetchUsersInRole httpsrv token << .id)
 
 
-fetchFiller : String -> String -> String -> Task M.ValuationsError (List Entity.Ugimage)
+fetchFiller :
+    String
+    -> String
+    -> String
+    -> Task M.ValuationsError (List Entity.Ugimage)
 fetchFiller httpsrv token sub =
     fetchImages httpsrv token sub "40" "filler"
 
 
-fetchValid : String -> String -> String -> Task M.ValuationsError (List Entity.Ugimage)
+fetchValid :
+    String
+    -> String
+    -> String
+    -> Task M.ValuationsError (List Entity.Ugimage)
 fetchValid httpsrv token sub =
     fetchImages httpsrv token sub "80" "valid"
 
 
-fetchInvalid : String -> String -> String -> Task M.ValuationsError (List Entity.Ugimage)
+fetchInvalid :
+    String
+    -> String
+    -> String
+    -> Task M.ValuationsError (List Entity.Ugimage)
 fetchInvalid httpsrv token sub =
     fetchImages httpsrv token sub "80" "invalid"
 
 
-fetchImages : String -> String -> String -> String -> String -> Task M.ValuationsError (List Entity.Ugimage)
+fetchImages :
+    String
+    -> String
+    -> String
+    -> String
+    -> String
+    -> Task M.ValuationsError (List Entity.Ugimage)
 fetchImages httpsrv token sub count kind =
     fetchUgimgsets httpsrv token sub
         |> Task.mapError M.ReqFail
@@ -150,7 +175,13 @@ ugimsetsToString ugimgset =
         |> Maybe.map .id
 
 
-fetchUgimages : String -> String -> String -> String -> String -> Task Http.Error (List Entity.Ugimage)
+fetchUgimages :
+    String
+    -> String
+    -> String
+    -> String
+    -> String
+    -> Task Http.Error (List Entity.Ugimage)
 fetchUgimages httpsrv token limit gimgtypeSlug ugimgsetId =
     getRequest token
         (httpsrv
@@ -164,7 +195,11 @@ fetchUgimages httpsrv token limit gimgtypeSlug ugimgsetId =
         M.ugimageDecoder
 
 
-fetchUgimgsets : String -> String -> String -> Task Http.Error (List Entity.Ugimgset)
+fetchUgimgsets :
+    String
+    -> String
+    -> String
+    -> Task Http.Error (List Entity.Ugimgset)
 fetchUgimgsets httpsrv token sub =
     getRequest token
         (httpsrv
@@ -187,12 +222,20 @@ fetchUser httpsrv token sub =
 
 fetchUsers : String -> String -> Task Http.Error (List Entity.User)
 fetchUsers httpsrv token =
-    getRequest token (httpsrv ++ "/users?createdEach=true") (JD.field "users" (JD.list Entity.userDecoder))
+    getRequest token
+        (httpsrv ++ "/users?createdEach=true")
+        (JD.field "users" (JD.list Entity.userDecoder))
 
 
-fetchUsersInRole : String -> String -> String -> Task Http.Error (List Entity.User)
+fetchUsersInRole :
+    String
+    -> String
+    -> String
+    -> Task Http.Error (List Entity.User)
 fetchUsersInRole httpsrv token roleId =
-    getRequest token (httpsrv ++ "/users?createdEach=true&roleId=" ++ roleId) (JD.field "users" (JD.list Entity.userDecoder))
+    getRequest token
+        (httpsrv ++ "/users?createdEach=true&roleId=" ++ roleId)
+        (JD.field "users" (JD.list Entity.userDecoder))
 
 
 fetchGroup : String -> String -> String -> Task Http.Error Entity.Group
