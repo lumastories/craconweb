@@ -48,7 +48,7 @@ view playingGame msg =
                     [ class "button is-info is-large"
                     , onClick msg
                     ]
-                    [ text "Start Game" ]
+                    [ text "Start Game (New)" ]
                 ]
 
 

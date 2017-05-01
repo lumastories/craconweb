@@ -1,6 +1,7 @@
 module View exposing (view)
 
 import Game.View as Game
+import GameManager
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -142,7 +143,7 @@ navRight activeMenu activeRoute visitor =
         , adminLink visitor
         , a ([ class "nav-item is-tab", onClick Logout ]) [ text "Logout" ]
         ]
- 
+
 
 navLink : String -> String -> Bool -> Html Msg
 navLink text_ path active =
@@ -405,9 +406,39 @@ game model title msg =
             [ div
                 [ class "container" ]
                 [ title_
-                , Game.view model.playingGame msg
+                , case model.activeRoute of
+                    R.GameRouteSs ->
+                        Game.view model.playingGameNew msg
+
+                    _ ->
+                        gameView model.playingGame msg
                 ]
             ]
+
+
+gameView : Maybe Model.Game -> Msg -> Html Msg
+gameView playingGame msg =
+    case playingGame of
+        Just (GoNoGo data) ->
+            div []
+                [ GameManager.view data ]
+
+        Just (DotProbe data) ->
+            div []
+                [ GameManager.view data ]
+
+        Just (VisualSearch data) ->
+            div []
+                [ GameManager.view data ]
+
+        Nothing ->
+            div []
+                [ a
+                    [ class "button is-info is-large"
+                    , onClick msg
+                    ]
+                    [ text "Start Game" ]
+                ]
 
 
 visualSearchGame : Model -> Html Msg

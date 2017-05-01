@@ -25,9 +25,13 @@ import GoNoGo
 import DotProbe
 import VisualSearch
 
+
+-- NEW GAME ENGINES
+
 import Game
 import Game.Card
 import Game.Implementations
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -249,6 +253,9 @@ update msg model =
             , Cmd.none
             )
 
+        PlayGameNew game ->
+            handleInput Game.Initialize { model | playingGameNew = Just game }
+
         PlayGame game ->
             ( { model | playingGame = Just game }, Cmd.none )
 
@@ -271,14 +278,14 @@ You will see pictures presented in either a dark blue or light gray border. Pres
 <br>
 **Press any key to continue.**
                             """
-                            , responseImages = (getFullImagePaths model.filesrv model.ugimages_v |> Maybe.withDefault [])
-                            , nonResponseImages = (getFullImagePaths model.filesrv model.ugimages_i |> Maybe.withDefault [])
+                            , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
+                            , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
                             , seedInt = 0
                             , currentTime = time
                             , gameDuration = 5 * Time.minute
                             }
                     )
-                |> Task.perform PlayGame
+                |> Task.perform PlayGameNew
             )
 
         -- TODO fetch configuration from the model
@@ -392,28 +399,12 @@ You will see pictures presented in either a dark blue or light gray border. Pres
                     model ! []
 
         Presses keyCode ->
-            let
-                ( indModel, indCmd ) =
-                    handleIndicationUpdate model
-
-                ( keyModel, keyCmd ) =
-                    case keyCode of
-                        99 ->
-                            handleDirectionIndicationUpdate GenGame.Left indModel
-
-                        109 ->
-                            handleDirectionIndicationUpdate GenGame.Right indModel
-
-                        32 ->
-                            handleDirectionIndicationUpdate GenGame.Right indModel
-
-                        _ ->
-                            ( indModel, Cmd.none )
-            in
-                ( keyModel, Cmd.batch [ indCmd, keyCmd ] )
+            presses keyCode model
+                |> andThen (pressesNew keyCode)
 
         IntIndication n ->
             handleIntIndicationUpdate n model
+                |> andThen (handleIntIndicationUpdateNew n)
 
         MainMenuToggle ->
             let
@@ -427,6 +418,7 @@ You will see pictures presented in either a dark blue or light gray border. Pres
 
         NewCurrentTime t ->
             handleTimeUpdate t model
+                |> andThen (handleTimeUpdateNew t)
 
         RoleResp (Ok role) ->
             ( { model | userRole = role }, Cmd.none )
@@ -475,6 +467,38 @@ You will see pictures presented in either a dark blue or light gray border. Pres
 
         RoleResp (Err err) ->
             (httpErrorState model err)
+
+
+andThen : (Model -> ( Model, Cmd Msg )) -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+andThen f ( model, cmd ) =
+    let
+        ( updatedModel, cmd1 ) =
+            f model
+    in
+        ( updatedModel, Cmd.batch [ cmd, cmd1 ] )
+
+
+presses : Int -> Model -> ( Model, Cmd Msg )
+presses keyCode model =
+    let
+        ( indModel, indCmd ) =
+            handleIndicationUpdate model
+
+        ( keyModel, keyCmd ) =
+            case keyCode of
+                99 ->
+                    handleDirectionIndicationUpdate GenGame.Left indModel
+
+                109 ->
+                    handleDirectionIndicationUpdate GenGame.Right indModel
+
+                32 ->
+                    handleDirectionIndicationUpdate GenGame.Right indModel
+
+                _ ->
+                    ( indModel, Cmd.none )
+    in
+        ( keyModel, Cmd.batch [ indCmd, keyCmd ] )
 
 
 applyImages :
@@ -543,9 +567,6 @@ handleTimeUpdate time model =
             Nothing ->
                 ( model, Cmd.none )
 
-            Just (StopSignal data) ->
-                updateData StopSignal data
-
             Just (GoNoGo data) ->
                 updateData GoNoGo data
 
@@ -570,9 +591,6 @@ handleIndicationUpdate model =
         case model.playingGame of
             Nothing ->
                 ( model, Cmd.none )
-
-            Just (StopSignal data) ->
-                updateData StopSignal data
 
             Just (GoNoGo data) ->
                 updateData GoNoGo data
@@ -599,9 +617,6 @@ handleIntIndicationUpdate n model =
             Nothing ->
                 ( model, Cmd.none )
 
-            Just (StopSignal data) ->
-                updateData StopSignal data
-
             Just (GoNoGo data) ->
                 updateData GoNoGo data
 
@@ -626,9 +641,6 @@ handleDirectionIndicationUpdate n model =
         case model.playingGame of
             Nothing ->
                 ( model, Cmd.none )
-
-            Just (StopSignal data) ->
-                updateData StopSignal data
 
             Just (GoNoGo data) ->
                 updateData GoNoGo data
@@ -802,3 +814,65 @@ gngInstructions =
             , pressAnyKey
             ]
         ]
+
+
+
+-- NEW GAME ENGINE
+
+
+handleInput : Game.Input -> Model -> ( Model, Cmd Msg )
+handleInput input model =
+    case model.playingGameNew of
+        Nothing ->
+            ( model, Cmd.none )
+
+        Just game ->
+            case Game.Card.step input game of
+                ( Game.Card.Complete state, cmd ) ->
+                    ( { model | playingGameNew = Nothing }, cmd )
+
+                ( Game.Card.Continue _ newGame, cmd ) ->
+                    ( { model | playingGameNew = Just newGame }, cmd )
+
+
+getFullImagePathsNew : String -> Maybe (List Entity.Ugimage) -> Maybe (List Game.Image)
+getFullImagePathsNew prefix =
+    Maybe.map
+        (List.filterMap .gimage
+            >> List.map
+                (\gimage ->
+                    { url = prefix ++ "/repo/" ++ gimage.path
+                    , id = gimage.id
+                    }
+                )
+        )
+
+
+pressesNew : number -> Model -> ( Model, Cmd Msg )
+pressesNew keyCode model =
+    let
+        ( newModel1, cmd1 ) =
+            handleInput Game.Indication model
+
+        ( newModel2, cmd2 ) =
+            case keyCode of
+                99 ->
+                    handleInput (Game.Direction Game.Left) newModel1
+
+                109 ->
+                    handleInput (Game.Direction Game.Right) newModel1
+
+                _ ->
+                    ( newModel1, Cmd.none )
+    in
+        ( newModel2, Cmd.batch [ cmd1, cmd2 ] )
+
+
+handleIntIndicationUpdateNew : Int -> Model -> ( Model, Cmd Msg )
+handleIntIndicationUpdateNew n model =
+    handleInput (Game.Select n) model
+
+
+handleTimeUpdateNew : Time -> Model -> ( Model, Cmd Msg )
+handleTimeUpdateNew t model =
+    handleInput (Game.Tick t) model

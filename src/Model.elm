@@ -13,7 +13,7 @@ import Json.Decode.Pipeline as JP
 
 -- games
 
-import StopSignal
+import GameManager
 import GoNoGo
 import DotProbe
 import VisualSearch
@@ -45,7 +45,8 @@ type alias Model =
     , stopsignalGame : Maybe Entity.Game
     , respondsignalGame : Maybe Entity.Game
     , visualsearchGame : Maybe Entity.Game
-    , playingGame : Maybe (Game.Game Msg)
+    , playingGameNew : Maybe (Game.Game Msg)
+    , playingGame : Maybe Game
     , ugimgsets : Maybe (List Entity.Ugimgset)
     , adminModel : AdminModel
     }
@@ -57,8 +58,7 @@ type alias AdminModel =
 
 
 type Game
-    = StopSignal (GameManager.GameData StopSignal.Settings StopSignal.Trial Msg)
-    | GoNoGo (GameManager.GameData GoNoGo.Settings GoNoGo.Trial Msg)
+    = GoNoGo (GameManager.GameData GoNoGo.Settings GoNoGo.Trial Msg)
     | DotProbe (GameManager.GameData DotProbe.Settings DotProbe.Trial Msg)
     | VisualSearch (GameManager.GameData VisualSearch.Settings VisualSearch.Trial Msg)
 
@@ -100,7 +100,8 @@ type Msg
     | InitGoNoGo
     | InitDotProbe
     | InitVisualSearch
-    | PlayGame (Game.Game Msg)
+    | PlayGameNew (Game.Game Msg)
+    | PlayGame Game
     | StopGame
     | AuthResp (Result Http.Error Entity.Auth)
     | UserResp (Result Http.Error Entity.User)
