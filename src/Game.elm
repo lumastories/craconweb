@@ -6,6 +6,12 @@ import Random.Extra
 import Time exposing (Time)
 
 
+type GameState msg
+    = NotPlaying
+    | Playing (Game msg)
+    | Finished State
+
+
 type alias Game msg =
     Card.Card State Layout Input msg
 
@@ -240,3 +246,16 @@ emptyState time =
     , log = []
     , trialResult = Nothing
     }
+
+
+isPlaying : GameState msg -> Bool
+isPlaying gameState =
+    case gameState of
+        Playing _ ->
+            True
+
+        NotPlaying ->
+            False
+
+        Finished _ ->
+            False

@@ -45,7 +45,7 @@ type alias Model =
     , stopsignalGame : Maybe Entity.Game
     , respondsignalGame : Maybe Entity.Game
     , visualsearchGame : Maybe Entity.Game
-    , playingGameNew : Maybe (Game.Game Msg)
+    , gameState : Game.GameState Msg
     , playingGame : Maybe Game
     , ugimgsets : Maybe (List Entity.Ugimgset)
     , adminModel : AdminModel

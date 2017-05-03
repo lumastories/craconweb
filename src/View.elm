@@ -1,6 +1,7 @@
 module View exposing (view)
 
 import Game.View as Game
+import Game
 import GameManager
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -395,8 +396,8 @@ game : Model -> String -> Msg -> Html Msg
 game model title msg =
     let
         title_ =
-            case ( model.playingGame, model.playingGameNew ) of
-                ( Nothing, Nothing ) ->
+            case ( model.playingGame, model.gameState ) of
+                ( Nothing, Game.NotPlaying ) ->
                     h1 [ class "title is-1" ] [ text title ]
 
                 _ ->
@@ -408,7 +409,7 @@ game model title msg =
                 [ title_
                 , case model.activeRoute of
                     R.GameRouteSs ->
-                        Game.view model.playingGameNew msg
+                        Game.view model.gameState msg
 
                     _ ->
                         gameView model.playingGame msg

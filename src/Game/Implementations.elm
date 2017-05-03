@@ -109,7 +109,7 @@ stopSignalTrial { borderDelay, totalDuration, goTrial, gameDuration, redCrossDur
             Just (Single borderType image)
 
         redCross =
-            Just (RedCross Dashed)
+            Just (RedCross borderType)
     in
         complete { state | trialResult = Nothing, trialStart = state.currTime }
             |> andThen (log (BeginDisplay borderless))

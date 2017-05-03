@@ -4,6 +4,7 @@ import Api
 import Empty
 import Keyboard
 import Model as M
+import Game
 import Navigation
 import Routing as R
 import Update
@@ -27,14 +28,14 @@ subscriptions : M.Model -> Sub M.Msg
 subscriptions model =
     Sub.batch
         [ Keyboard.presses M.Presses
-        , ticker model.playingGame model.playingGameNew
+        , ticker model.playingGame model.gameState
         , Port.status M.SetStatus
         ]
 
 
-ticker : Maybe a -> Maybe b -> Sub M.Msg
-ticker playingGame playingGameNew =
-    if Maybe.Extra.isJust playingGame || Maybe.Extra.isJust playingGameNew then
+ticker : Maybe a -> Game.GameState M.Msg -> Sub M.Msg
+ticker playingGame gameState =
+    if Maybe.Extra.isJust playingGame || Game.isPlaying gameState then
         Time.every Time.millisecond M.NewCurrentTime
     else
         Sub.none
@@ -88,7 +89,7 @@ init flags location =
             , respondsignalGame = Nothing
             , visualsearchGame = Nothing
             , playingGame = Nothing
-            , playingGameNew = Nothing
+            , gameState = Game.NotPlaying
             , ugimgsets = Nothing
             , adminModel = { tmpUserRecord = Empty.emptyUserRecord }
             }

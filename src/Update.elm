@@ -170,7 +170,7 @@ update msg model =
                 | activeRoute = R.parseLocation location
                 , isMenuActive = False
                 , playingGame = Nothing
-                , playingGameNew = Nothing
+                , gameState = Game.NotPlaying
               }
             , Cmd.none
             )
@@ -255,13 +255,13 @@ update msg model =
             )
 
         PlayGameNew game ->
-            handleInput Game.Initialize { model | playingGameNew = Just game }
+            handleInput Game.Initialize { model | gameState = Game.Playing game }
 
         PlayGame game ->
             ( { model | playingGame = Just game }, Cmd.none )
 
         StopGame ->
-            ( { model | playingGame = Nothing, playingGameNew = Nothing }, Cmd.none )
+            ( { model | playingGame = Nothing, gameState = Game.NotPlaying }, Cmd.none )
 
         -- TODO fetch configuration from the model
         InitStopSignal ->
@@ -824,17 +824,20 @@ gngInstructions =
 
 handleInput : Game.Input -> Model -> ( Model, Cmd Msg )
 handleInput input model =
-    case model.playingGameNew of
-        Nothing ->
+    case model.gameState of
+        Game.NotPlaying ->
             ( model, Cmd.none )
 
-        Just game ->
+        Game.Playing game ->
             case Game.Card.step input game of
                 ( Game.Card.Complete state, cmd ) ->
-                    ( { model | playingGameNew = Nothing }, cmd )
+                    ( { model | gameState = Game.Finished state }, cmd )
 
                 ( Game.Card.Continue _ newGame, cmd ) ->
-                    ( { model | playingGameNew = Just newGame }, cmd )
+                    ( { model | gameState = Game.Playing newGame }, cmd )
+
+        Game.Finished _ ->
+            ( model, Cmd.none )
 
 
 getFullImagePathsNew : String -> Maybe (List Entity.Ugimage) -> Maybe (List Game.Image)

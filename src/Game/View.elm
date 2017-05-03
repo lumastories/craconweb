@@ -9,10 +9,10 @@ import Markdown
 import Ui.Card
 
 
-view : Maybe (Game.Game msg) -> msg -> Html msg
-view playingGame msg =
-    case playingGame of
-        Just game ->
+view : Game.GameState msg -> msg -> Html msg
+view gameState msg =
+    case gameState of
+        Game.Playing game ->
             let
                 state =
                     game |> Game.unwrap
@@ -47,7 +47,10 @@ view playingGame msg =
                             border borderType [ redCross ]
                     ]
 
-        Nothing ->
+        Game.Finished state ->
+            Ui.Card.middleBlock [ text <| toString state.log ]
+
+        Game.NotPlaying ->
             div []
                 [ a
                     [ class "button is-info is-large"
