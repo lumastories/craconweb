@@ -10,6 +10,7 @@ import Game
         , LogEntry(..)
         , State
         , andThen
+        , andThenCheckTimeout
         , emptyState
         , segment
         , log
@@ -19,6 +20,7 @@ import Game
         , timeout
         , resultTimeout
         , startSession
+        , showRedCross
         )
 import Random exposing (Generator)
 import Random.List
@@ -34,9 +36,10 @@ stopSignalInit :
     , seedInt : Int
     , currentTime : Time
     , gameDuration : Time
+    , redCrossDuration : Time
     }
     -> Game msg
-stopSignalInit { borderDelay, totalDuration, infoString, responseImages, nonResponseImages, seedInt, currentTime, gameDuration } =
+stopSignalInit { borderDelay, totalDuration, infoString, responseImages, nonResponseImages, seedInt, currentTime, gameDuration, redCrossDuration } =
     let
         gos =
             responseImages
@@ -46,6 +49,7 @@ stopSignalInit { borderDelay, totalDuration, infoString, responseImages, nonResp
                         , totalDuration = totalDuration
                         , goTrial = True
                         , gameDuration = gameDuration
+                        , redCrossDuration = redCrossDuration
                         }
                     )
 
@@ -57,6 +61,7 @@ stopSignalInit { borderDelay, totalDuration, infoString, responseImages, nonResp
                         , totalDuration = totalDuration
                         , goTrial = False
                         , gameDuration = gameDuration
+                        , redCrossDuration = redCrossDuration
                         }
                     )
 
@@ -73,7 +78,7 @@ stopSignalInit { borderDelay, totalDuration, infoString, responseImages, nonResp
             |> Random.map
                 (\trials ->
                     (info infoString :: startSession :: log (BeginSession seedInt) :: trials)
-                        |> List.foldl (Game.andThen isTimeout) (Game.Card.complete (emptyState currentTime))
+                        |> List.foldl (andThenCheckTimeout isTimeout) (Game.Card.complete (emptyState currentTime))
                 )
             |> (\generator -> Random.step generator (Random.initialSeed seedInt))
             |> Tuple.first
@@ -83,12 +88,13 @@ stopSignalTrial :
     { borderDelay : Time
     , totalDuration : Time
     , gameDuration : Time
+    , redCrossDuration : Time
     , goTrial : Bool
     }
     -> Image
     -> State
     -> Game msg
-stopSignalTrial { borderDelay, totalDuration, goTrial, gameDuration } image state =
+stopSignalTrial { borderDelay, totalDuration, goTrial, gameDuration, redCrossDuration } image state =
     let
         borderType =
             if goTrial then
@@ -101,16 +107,20 @@ stopSignalTrial { borderDelay, totalDuration, goTrial, gameDuration } image stat
 
         bordered =
             Just (Single borderType image)
+
+        redCross =
+            Just (RedCross Dashed)
     in
         complete { state | trialResult = Nothing, trialStart = state.currTime }
-            |> andThen (always False) (log (BeginDisplay borderless))
-            |> andThen (always False) (segment [ onIndication False, timeout borderDelay ] borderless)
-            |> andThen (always False) (log (BeginDisplay bordered))
-            |> andThen (always False)
+            |> andThen (log (BeginDisplay borderless))
+            |> andThen (segment [ onIndication False, timeout borderDelay ] borderless)
+            |> andThen (log (BeginDisplay bordered))
+            |> andThen
                 (segment
                     [ onIndication goTrial
-                    , resultTimeout (not goTrial) totalDuration
+                    , resultTimeout (not goTrial) (totalDuration)
                     ]
                     bordered
                 )
-            |> andThen (always False) (segment [ timeout totalDuration ] bordered)
+            |> andThen (segment [ timeout (totalDuration) ] bordered)
+            |> andThen (segment [ showRedCross, timeout redCrossDuration ] redCross)

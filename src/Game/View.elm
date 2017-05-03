@@ -25,7 +25,8 @@ view playingGame msg =
                         |> Maybe.withDefault ""
             in
                 div []
-                    [ text timer
+                    [ p [] [ text timer ]
+                    , p [] [ text <| toString state.trialResult ]
                     , case Game.Card.layout game of
                         Nothing ->
                             text ""
@@ -41,6 +42,10 @@ view playingGame msg =
 
                         Just (Game.SelectGrid borderType rows cols images) ->
                             border borderType [ text (toString (rows * cols)) ]
+
+                        Just (Game.RedCross borderType) ->
+                            border borderType [ redCross ]
+                    , p [] [ text <| toString state.log ]
                     ]
 
         Nothing ->
@@ -70,3 +75,8 @@ border borderType =
 
         Dashed ->
             div [ class "dashedBorder" ]
+
+
+redCross : Html msg
+redCross =
+    div [ class "redCross" ] [ text "X" ]

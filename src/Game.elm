@@ -32,6 +32,7 @@ type Layout
     | Single BorderType Image
     | LeftRight BorderType Image Image
     | SelectGrid BorderType Int Int (List Image)
+    | RedCross BorderType
 
 
 type BorderType
@@ -97,9 +98,14 @@ segment logics layout state =
             )
 
 
-andThen : (State -> Bool) -> (State -> Game msg) -> Game msg -> Game msg
-andThen isTimeout =
+andThenCheckTimeout : (State -> Bool) -> (State -> Game msg) -> Game msg -> Game msg
+andThenCheckTimeout isTimeout =
     Card.andThen isTimeout Initialize
+
+
+andThen : (State -> Game msg) -> Game msg -> Game msg
+andThen =
+    Card.andThen (always False) Initialize
 
 
 oneOf : List Logic -> Logic
@@ -129,7 +135,7 @@ log logEntry state =
 rest : Maybe Layout -> Time -> State -> Game msg
 rest layout expiration state =
     log (BeginDisplay layout) (startTrial state)
-        |> andThen (always False) (segment [ timeout expiration ] layout)
+        |> andThen (segment [ timeout expiration ] layout)
 
 
 addRests : Maybe Layout -> Time -> Time -> List (State -> Game msg) -> Generator (List (State -> Game msg))
@@ -201,6 +207,19 @@ resultTimeout desired expiration state input =
 
         ( _, ( True, newState ) ) ->
             ( True, newState )
+
+
+showRedCross : Logic
+showRedCross state input =
+    case (state.trialResult) of
+        Nothing ->
+            ( False, state )
+
+        Just True ->
+            ( False, state )
+
+        Just False ->
+            ( True, state )
 
 
 updateCurrTime : Logic

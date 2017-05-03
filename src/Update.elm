@@ -284,6 +284,7 @@ You will see pictures presented in either a dark blue or light gray border. Pres
                             , seedInt = 0
                             , currentTime = time
                             , gameDuration = 5 * Time.minute
+                            , redCrossDuration = 500 * Time.millisecond
                             }
                     )
                 |> Task.perform PlayGameNew
