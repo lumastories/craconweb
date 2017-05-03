@@ -283,7 +283,7 @@ You will see pictures presented in either a dark blue or light gray border. Pres
                             , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
                             , seedInt = 0
                             , currentTime = time
-                            , gameDuration = 5 * Time.minute
+                            , gameDuration = 1 * Time.minute
                             , redCrossDuration = 500 * Time.millisecond
                             }
                     )

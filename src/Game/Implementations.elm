@@ -118,9 +118,8 @@ stopSignalTrial { borderDelay, totalDuration, goTrial, gameDuration, redCrossDur
             |> andThen
                 (segment
                     [ onIndication goTrial
-                    , resultTimeout (not goTrial) (totalDuration)
+                    , resultTimeout (not goTrial) totalDuration
                     ]
                     bordered
                 )
-            |> andThen (segment [ timeout (totalDuration) ] bordered)
-            |> andThen (segment [ showRedCross, timeout redCrossDuration ] redCross)
+            |> andThen (segment [ showRedCross, timeout (totalDuration + redCrossDuration) ] redCross)

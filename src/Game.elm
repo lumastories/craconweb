@@ -211,7 +211,7 @@ resultTimeout desired expiration state input =
 
 showRedCross : Logic
 showRedCross state input =
-    case (state.trialResult) of
+    case Debug.log "showRedCross: state.trialResult" (state.trialResult) of
         Nothing ->
             ( False, state )
 

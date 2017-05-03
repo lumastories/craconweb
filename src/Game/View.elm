@@ -45,7 +45,6 @@ view playingGame msg =
 
                         Just (Game.RedCross borderType) ->
                             border borderType [ redCross ]
-                    , p [] [ text <| toString state.log ]
                     ]
 
         Nothing ->
