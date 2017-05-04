@@ -283,7 +283,7 @@ You will see pictures presented in either a dark blue or light gray border. Pres
                             , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
                             , seedInt = 0
                             , currentTime = time
-                            , gameDuration = 1 * Time.minute
+                            , gameDuration = 0.1 * Time.minute
                             , redCrossDuration = 500 * Time.millisecond
                             }
                     )
@@ -309,7 +309,7 @@ You will see pictures presented in either a dark blue or light gray border. Pres
                 gameSettings blocks currTime =
                     { blocks = blocks
                     , currTime = currTime
-                    , maxDuration = 5 * Time.minute
+                    , maxDuration = 0.1 * Time.minute
                     , settings = trialSettings
                     , instructionsView = gngInstructions
                     , trialRestView = Html.text ""

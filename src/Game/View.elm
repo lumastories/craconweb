@@ -1,12 +1,14 @@
-module Game.View exposing (view)
+module Game.View exposing (view, viewResult)
 
 import Game exposing (BorderType(..))
 import Game.Card
+import Game.Result
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Markdown
 import Ui.Card
+import Numeral
 
 
 view : Game.GameState msg -> msg -> Html msg
@@ -48,7 +50,10 @@ view gameState msg =
                     ]
 
         Game.Finished state ->
-            Ui.Card.middleBlock [ text <| toString state.log ]
+            viewResult
+                { percentCorrect = Game.Result.percentCorrect state
+                , averageResponseTimeInSecond = Game.Result.averageResponseTimeInMillisecond state
+                }
 
         Game.NotPlaying ->
             div []
@@ -58,6 +63,17 @@ view gameState msg =
                     ]
                     [ text "Start Game" ]
                 ]
+
+
+viewResult : { a | percentCorrect : Float, averageResponseTimeInSecond : Float } -> Html msg
+viewResult { percentCorrect, averageResponseTimeInSecond } =
+    Ui.Card.middleBlock
+        [ h1 [ class "title" ] [ text "Results" ]
+        , ul []
+            [ li [] [ text <| "Average Response Time: " ++ Numeral.format "0.00" averageResponseTimeInSecond ++ " milliseconds" ]
+            , li [] [ text <| "Percent Correct: " ++ Numeral.format "0.00" percentCorrect ++ "%" ]
+            ]
+        ]
 
 
 border : BorderType -> List (Html msg) -> Html msg
