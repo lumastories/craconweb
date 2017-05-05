@@ -111,7 +111,7 @@ stopSignalTrial { borderDelay, totalDuration, goTrial, gameDuration, redCrossDur
         redCross =
             Just (RedCross borderType)
     in
-        complete { state | trialResult = Nothing, trialStart = state.currTime }
+        log BeginTrial { state | trialResult = Nothing, trialStart = state.currTime }
             |> andThen (log (BeginDisplay borderless))
             |> andThen (segment [ onIndication False, timeout borderDelay ] borderless)
             |> andThen (log (BeginDisplay bordered))
@@ -123,3 +123,4 @@ stopSignalTrial { borderDelay, totalDuration, goTrial, gameDuration, redCrossDur
                     bordered
                 )
             |> andThen (segment [ showRedCross, timeout (totalDuration + redCrossDuration) ] redCross)
+            |> andThen (log EndTrial)

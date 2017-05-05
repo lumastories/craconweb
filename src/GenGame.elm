@@ -151,7 +151,7 @@ bounded low high x =
 
 
 type alias AggregatedReason =
-    { averageResponseTimeInSecond : Float
+    { averageResponseTimeResult : Result String Float
     , percentCorrect : Float
     }
 
@@ -178,13 +178,9 @@ aggregateReasons reasons =
 
 aggregateTally : CurrentTally -> AggregatedReason
 aggregateTally tally =
-    let
-        _ =
-            Debug.log "tally" tally
-    in
-        { averageResponseTimeInSecond = (tally.totalResponseTime / toFloat tally.responseTimeCount) / 1000.0
-        , percentCorrect = toFloat tally.totalCorrect / toFloat tally.totalTrials * 100
-        }
+    { averageResponseTimeResult = Ok <| (tally.totalResponseTime / toFloat tally.responseTimeCount) / 1000.0
+    , percentCorrect = toFloat tally.totalCorrect / toFloat tally.totalTrials * 100
+    }
 
 
 aggregator : Maybe Reason -> CurrentTally -> CurrentTally

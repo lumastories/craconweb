@@ -50,9 +50,9 @@ view gameState msg =
                     ]
 
         Game.Finished state ->
-            viewResult
+            viewResult (Just state)
                 { percentCorrect = Game.Result.percentCorrect state
-                , averageResponseTimeInSecond = Game.Result.averageResponseTimeInMillisecond state
+                , averageResponseTimeResult = Game.Result.averageResponseTimeInMillisecond state
                 }
 
         Game.NotPlaying ->
@@ -65,34 +65,43 @@ view gameState msg =
                 ]
 
 
-viewResult : { a | percentCorrect : Float, averageResponseTimeInSecond : Float } -> Html msg
-viewResult { percentCorrect, averageResponseTimeInSecond } =
-    Ui.Card.middleBlock
-        [ h1 [ class "title" ] [ text "Results" ]
-        , ul []
-            [ li [] [ text <| "Average Response Time: " ++ Numeral.format "0.00" averageResponseTimeInSecond ++ " milliseconds" ]
-            , li [] [ text <| "Percent Correct: " ++ Numeral.format "0.00" percentCorrect ++ "%" ]
+viewResult : Maybe Game.State -> { a | percentCorrect : Float, averageResponseTimeResult : Result String Float } -> Html msg
+viewResult state { percentCorrect, averageResponseTimeResult } =
+    let
+        averageResponseTime =
+            case averageResponseTimeResult of
+                Err error ->
+                    error
+
+                Ok result ->
+                    Numeral.format "0.00" result ++ " milliseconds"
+    in
+        Ui.Card.middleBlock
+            [ h1 [ class "title" ] [ text "Results" ]
+            , ul []
+                [ li [] [ text <| "Average Response Time: " ++ averageResponseTime ]
+                , li [] [ text <| "Percent Correct: " ++ Numeral.format "0.00" percentCorrect ++ "%" ]
+                ]
             ]
-        ]
 
 
 border : BorderType -> List (Html msg) -> Html msg
 border borderType =
     case borderType of
         None ->
-            div []
+            div [ class "imageBox" ]
 
         Grey ->
-            div [ class "greyBorder" ]
+            div [ class "imageBox greyBorder" ]
 
         Blue ->
-            div [ class "blueBorder" ]
+            div [ class "imageBox blueBorder" ]
 
         Black ->
-            div [ class "solidBorder" ]
+            div [ class "imageBox solidBorder" ]
 
         Dashed ->
-            div [ class "dashedBorder" ]
+            div [ class "imageBox dashedBorder" ]
 
 
 redCross : Html msg

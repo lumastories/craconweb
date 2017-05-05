@@ -15,9 +15,56 @@ filterResults state =
         |> List.reverse
 
 
-averageResponseTimeInMillisecond : Game.State -> Float
+averageResponseTimeInMillisecond : Game.State -> Result String Float
 averageResponseTimeInMillisecond state =
-    0.1123
+    let
+        f log ( maybeStartTime, responseTimes ) =
+            case maybeStartTime of
+                Nothing ->
+                    case log of
+                        Game.BeginDisplay (Just (Game.Single _ _)) timestamp ->
+                            ( Just timestamp, responseTimes )
+
+                        Game.BeginDisplay (Just (Game.LeftRight _ _ _)) timestamp ->
+                            ( Just timestamp, responseTimes )
+
+                        Game.BeginDisplay (Just (Game.SelectGrid _ _ _ _)) timestamp ->
+                            ( Just timestamp, responseTimes )
+
+                        _ ->
+                            ( Nothing, responseTimes )
+
+                Just beginTime ->
+                    case log of
+                        Game.AcceptIndication _ responseTime ->
+                            ( Nothing, (responseTime - beginTime) :: responseTimes )
+
+                        Game.AcceptDirection _ _ responseTime ->
+                            ( Nothing, (responseTime - beginTime) :: responseTimes )
+
+                        Game.AcceptSelection _ _ responseTime ->
+                            ( Nothing, (responseTime - beginTime) :: responseTimes )
+
+                        Game.EndTrial _ ->
+                            ( Nothing, responseTimes )
+
+                        _ ->
+                            ( Just beginTime, responseTimes )
+
+        responseTimes =
+            state.log
+                |> Debug.log "log"
+                |> List.foldr f ( Nothing, [] )
+                |> Tuple.second
+                |> Debug.log "responseTimes"
+
+        totalResponses =
+            responseTimes |> List.length
+    in
+        if totalResponses == 0 then
+            Err "No Response"
+        else
+            Ok <| List.sum responseTimes / toFloat totalResponses
 
 
 percentCorrect : Game.State -> Float

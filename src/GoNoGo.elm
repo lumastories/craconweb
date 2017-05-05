@@ -265,6 +265,6 @@ viewReport : List (Maybe GenGame.Reason) -> Html msg
 viewReport gameReasons =
     gameReasons
         |> GenGame.aggregateReasons
-        |> Game.View.viewResult
+        |> Game.View.viewResult Nothing
         |> List.singleton
         |> Card.middleBlock
