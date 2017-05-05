@@ -86,6 +86,7 @@ type alias JwtPayload =
 type Msg
     = UpdateLocation String
     | OnUpdateLocation Navigation.Location
+    | GroupChanged (Maybe String)
     | SetStatus String
     | UpdateEmail String
     | UpdatePassword String
