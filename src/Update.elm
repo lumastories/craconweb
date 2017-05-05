@@ -144,24 +144,17 @@ update msg model =
                     ]
                 )
 
+        MesResp (Ok meStatements) ->
+            ( { model | adminModel = up_meStatements model.adminModel meStatements }, Cmd.none )
+
         RegisterUserResp (Ok newUser) ->
-            let
-                users_ =
-                    [ newUser ] ++ model.users
-
-                adminModel_ =
-                    model.adminModel
-
-                adminModel__ =
-                    { adminModel_ | tmpUserRecord = Empty.emptyUserRecord }
-            in
-                ( { model
-                    | loading = Nothing
-                    , users = users_
-                    , adminModel = adminModel__
-                  }
-                , Navigation.newUrl R.adminPath
-                )
+            ( { model
+                | loading = Nothing
+                , users = [ newUser ] ++ model.users
+                , adminModel = up_tmpUserRecord model.adminModel Empty.emptyUserRecord
+              }
+            , Navigation.newUrl R.adminPath
+            )
 
         -- SHARED
         ResetNotifications ->
@@ -425,14 +418,7 @@ You will see pictures presented in either a dark blue or light gray border. Pres
                 |> andThen (handleIntIndicationUpdateNew n)
 
         MainMenuToggle ->
-            let
-                active =
-                    if model.isMenuActive then
-                        False
-                    else
-                        True
-            in
-                ( { model | isMenuActive = active }, Cmd.none )
+            ( { model | isMenuActive = not model.isMenuActive }, Cmd.none )
 
         NewCurrentTime t ->
             handleTimeUpdate t model
@@ -484,6 +470,9 @@ You will see pictures presented in either a dark blue or light gray border. Pres
             (httpErrorState model err)
 
         RoleResp (Err err) ->
+            (httpErrorState model err)
+
+        MesResp (Err err) ->
             (httpErrorState model err)
 
 

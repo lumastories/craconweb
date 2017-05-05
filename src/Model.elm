@@ -54,6 +54,23 @@ type alias Model =
 
 type alias AdminModel =
     { tmpUserRecord : Entity.UserRecord
+    , meStatements : Maybe (List MeStatement)
+    }
+
+
+up_meStatements : AdminModel -> List MeStatement -> AdminModel
+up_meStatements am mes =
+    { am | meStatements = Just mes }
+
+
+up_tmpUserRecord : AdminModel -> Entity.UserRecord -> AdminModel
+up_tmpUserRecord am tur =
+    { am | tmpUserRecord = tur }
+
+
+type alias MeStatement =
+    { essay : String
+    , public : Bool
     }
 
 
@@ -110,6 +127,7 @@ type Msg
     | UsersResp (Result Http.Error (List Entity.User))
     | RegisterUserResp (Result Http.Error Entity.User)
     | GroupResp (Result Http.Error Entity.Group)
+    | MesResp (Result Http.Error (List MeStatement))
     | RoleResp (Result Http.Error Entity.Role)
     | FillerResp (Result ValuationsError (List Entity.Ugimage))
     | ValidResp (Result ValuationsError (List Entity.Ugimage))

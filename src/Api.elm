@@ -53,6 +53,12 @@ adminOnly httpsrv token =
     , Task.attempt M.RoleResp (fetchRole httpsrv token "user")
     , Task.attempt M.GroupResp (fetchGroup httpsrv token "control_a")
     , Task.attempt M.GroupResp (fetchGroup httpsrv token "experimental_a")
+    , Task.attempt M.MesResp
+        (Task.succeed
+            [ { essay = "test", public = True }
+            , { essay = "foo", public = False }
+            ]
+        )
     ]
 
 

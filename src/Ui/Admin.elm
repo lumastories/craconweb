@@ -11,9 +11,10 @@ import Entity
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onSubmit, onCheck, onInput)
-import Model exposing (Model, Msg(..))
+import Model exposing (Model, Msg(..), AdminModel)
 import Routing as R
 import Ui.Parts as Parts
+import Ui.Card as C
 import Dropdown exposing (Options)
 
 
@@ -37,10 +38,34 @@ basicAdminPage glitching children =
 mesPage : Model -> Html Msg
 mesPage model =
     basicAdminPage model.glitching
-        [ h1 [ class "title" ] [ text "Motivational Enhancement Statements" ]
-        , p [] [ text "Read and approve motiviational enhancement statements" ]
-        , p [] [ text "TODO - list MES, add approval toggle buttons" ]
-        , backButton
+        [ backButton
+        , h1 [ class "title" ] [ text "Motivational Enhancement Statements" ]
+        , p [ class "subtitle" ] [ text "Read and approve statements" ]
+        , hr [] []
+        , mesTable model.adminModel
+        ]
+
+
+mesTable : AdminModel -> Html Msg
+mesTable am =
+    case am.meStatements of
+        Just meStatements ->
+            meStatements
+                |> List.map (\ms -> tr [] [ td [] [ text ms.essay ], td [] [ text <| toString ms.public ] ])
+                |> mesTableHelper
+
+        Nothing ->
+            C.middleBlock [ p [] [ text "No statements yet! Check back later." ] ]
+
+
+mesTableHelper : List (Html Msg) -> Html Msg
+mesTableHelper rows =
+    table [ class "table is-bordered is-striped is-narrow" ]
+        [ thead []
+            [ tr []
+                [ th [] [ text "Essay" ], th [] [ text "Public?" ] ]
+            ]
+        , tbody [] rows
         ]
 
 

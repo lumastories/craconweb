@@ -91,7 +91,10 @@ init flags location =
             , playingGame = Nothing
             , gameState = Game.NotPlaying
             , ugimgsets = Nothing
-            , adminModel = { tmpUserRecord = Empty.emptyUserRecord }
+            , adminModel =
+                { tmpUserRecord = Empty.emptyUserRecord
+                , meStatements = Nothing
+                }
             }
     in
         ( baseModel, commands_ )
