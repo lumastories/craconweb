@@ -48,12 +48,37 @@ type alias Model =
     , gameState : Game.GameState Msg
     , playingGame : Maybe Game
     , ugimgsets : Maybe (List Entity.Ugimgset)
+    , mesQuery : Maybe String
     , adminModel : AdminModel
     }
 
 
 type alias AdminModel =
     { tmpUserRecord : Entity.UserRecord
+    , meStatements : Maybe (List MeStatement)
+    }
+
+
+up_meStatements : AdminModel -> List MeStatement -> AdminModel
+up_meStatements am mes =
+    { am | meStatements = Just mes }
+
+
+up_tmpUserRecord : AdminModel -> Entity.UserRecord -> AdminModel
+up_tmpUserRecord am tur =
+    { am | tmpUserRecord = tur }
+
+
+type alias MeStatement =
+    { id : String
+    , essay : String
+    , public : Bool
+    }
+
+
+type alias Base =
+    { url : String
+    , token : String
     }
 
 
@@ -110,6 +135,8 @@ type Msg
     | UsersResp (Result Http.Error (List Entity.User))
     | RegisterUserResp (Result Http.Error Entity.User)
     | GroupResp (Result Http.Error Entity.Group)
+    | MesResp (Result Http.Error (List MeStatement))
+    | PutMesResp (Result Http.Error String)
     | RoleResp (Result Http.Error Entity.Role)
     | FillerResp (Result ValuationsError (List Entity.Ugimage))
     | ValidResp (Result ValuationsError (List Entity.Ugimage))
@@ -118,6 +145,8 @@ type Msg
     | SetRegistration String String
     | TryUpdateUser
     | EditUserAccount String String
+    | MesPublish String
+    | MesUnPublish String
 
 
 ugimgsetsDecoder : JD.Decoder (List Entity.Ugimgset)

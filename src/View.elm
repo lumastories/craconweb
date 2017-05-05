@@ -602,5 +602,8 @@ view model =
 
                 R.EditUserRoute userid ->
                     Admin.editUserPage model userid
+
+                R.MesRoute ->
+                    Admin.mesPage model
     in
         div [] [ page ]

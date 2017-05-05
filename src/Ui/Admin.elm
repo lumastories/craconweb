@@ -1,13 +1,20 @@
-module Ui.Admin exposing (adminPage, registerPage, editUserPage)
+module Ui.Admin
+    exposing
+        ( adminPage
+        , registerPage
+        , editUserPage
+        , mesPage
+        )
 
 import Access as A
 import Entity
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onSubmit, onCheck, onInput)
-import Model exposing (Model, Msg(..))
+import Model exposing (Model, Msg(..), AdminModel)
 import Routing as R
 import Ui.Parts as Parts
+import Ui.Card as C
 import Dropdown exposing (Options)
 
 
@@ -28,6 +35,58 @@ basicAdminPage glitching children =
         ]
 
 
+mesPage : Model -> Html Msg
+mesPage model =
+    basicAdminPage model.glitching
+        [ backButton
+        , h1 [ class "title" ] [ text "Motivational Enhancement Statements" ]
+        , p [ class "subtitle" ] [ text "Read and approve statements" ]
+        , hr [] []
+        , mesTable model.adminModel
+        ]
+
+
+publishButton : Bool -> String -> Html Msg
+publishButton public id =
+    case public of
+        True ->
+            a
+                [ class "button is-danger is-outlined"
+                , MesUnPublish id |> onClick
+                ]
+                [ text "Unpublish" ]
+
+        False ->
+            a
+                [ class "button is-success is-outlined"
+                , MesPublish id |> onClick
+                ]
+                [ text "Publish!" ]
+
+
+mesTable : AdminModel -> Html Msg
+mesTable am =
+    case am.meStatements of
+        Just meStatements ->
+            meStatements
+                |> List.map (\ms -> tr [] [ td [] [ text ms.essay ], td [] [ publishButton ms.public ms.id ] ])
+                |> mesTableHelper
+
+        Nothing ->
+            C.middleBlock [ p [] [ text "No statements yet! Check back later." ] ]
+
+
+mesTableHelper : List (Html Msg) -> Html Msg
+mesTableHelper rows =
+    table [ class "table is-bordered is-striped" ]
+        [ thead []
+            [ tr []
+                [ th [] [ text "Essay" ], th [] [ text "Actions" ] ]
+            ]
+        , tbody [] rows
+        ]
+
+
 adminTop : Maybe Entity.User -> Html Msg
 adminTop user =
     div [ class "columns" ]
@@ -37,6 +96,7 @@ adminTop user =
         , div [ class "column" ]
             [ div [ class "block is-pulled-right" ]
                 [ bButton "Register User" R.registerPath "is-success"
+                , bButton "Approve MES" R.mesPath "is-link"
                 , bButton "Go to games" R.homePath "is-link"
                 , a ([ class "button is-link", onClick Logout ])
                     [ text "Logout" ]
@@ -366,7 +426,12 @@ editButtons =
                 [ text "Upload"
                 ]
             ]
-        , button
-            ([ class "button is-link" ] ++ (Parts.linkAttrs R.adminPath))
-            [ text "Go back" ]
+        , backButton
         ]
+
+
+backButton : Html Msg
+backButton =
+    button
+        ([ class "button is-link" ] ++ (Parts.linkAttrs R.adminPath))
+        [ text "Go back" ]

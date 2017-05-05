@@ -1,8 +1,6 @@
 module Api
     exposing
-        ( jwtDecoded
-        , okyToky
-        , isAdmin
+        ( fetchAll
         , fetchGame
         , fetchUser
         , fetchUsers
@@ -10,7 +8,10 @@ module Api
         , fetchRole
         , createUserRecord
         , createAuthRecord
-        , fetchAll
+        , updateMesStatus
+        , jwtDecoded
+        , okyToky
+        , isAdmin
         )
 
 import Entity
@@ -20,6 +21,13 @@ import Jwt
 import Time
 import Model as M
 import Json.Decode as JD
+
+
+{-
+   The Api module is primarily for
+   fetching, updating and creating
+   server side resources
+-}
 
 
 fetchAll : String -> M.JwtPayload -> String -> Cmd M.Msg
@@ -53,6 +61,14 @@ adminOnly httpsrv token =
     , Task.attempt M.RoleResp (fetchRole httpsrv token "user")
     , Task.attempt M.GroupResp (fetchGroup httpsrv token "control_a")
     , Task.attempt M.GroupResp (fetchGroup httpsrv token "experimental_a")
+    , Task.attempt M.MesResp
+        (Task.succeed
+            [ { id = "123", essay = "I like food so much. It is so lovely, yes yes yes, oh boy! GIMME FOOD. I like to eat. hooray! This is my personal statement", public = True }
+            , { id = "124", essay = "Motivation is so important, blablabl, I am loving this program, i like to eat but only healthy things, oh yeah!! woohoo!", public = False }
+            , { id = "125", essay = "Motivation is so important, blablabl, I am loving this program, i like to eat but only healthy things, oh yeah!! woohoo!", public = False }
+            , { id = "126", essay = "Motivation is so important, blablabl, I am loving this program, i like to eat but only healthy things, oh yeah!! woohoo!", public = True }
+            ]
+        )
     ]
 
 
@@ -79,6 +95,35 @@ defaultHeaders jwtencoded =
                     (Http.header "Authorization" ("Bearer " ++ jwtencoded)) :: headers
     in
         authHeaders
+
+
+updateMesStatus : String -> String -> String -> Bool -> Task Http.Error String
+updateMesStatus httpsrv token id isPublic =
+    putRequest (httpsrv ++ "/mesanswer/" ++ id) token Http.emptyBody (JD.succeed "what will it return?")
+
+
+fetchMesAnswers : M.Base -> Task Http.Error (List M.MeStatement)
+fetchMesAnswers b =
+    getRequest b.token (b.url ++ "/mesanswers") meStatementsDecoder
+
+
+meStatementsDecoder : JD.Decoder (List M.MeStatement)
+meStatementsDecoder =
+    JD.succeed []
+
+
+putRequest : String -> String -> Http.Body -> JD.Decoder a -> Task Http.Error a
+putRequest url_ token body_ decoder =
+    Http.request
+        { method = "PUT"
+        , headers = defaultHeaders token
+        , url = url_
+        , body = body_
+        , expect = Http.expectJson decoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
+        |> Http.toTask
 
 
 createAuthRecord :
@@ -283,6 +328,11 @@ getRequest token endpoint jsonDecoder =
 isAdmin : M.JwtPayload -> Bool
 isAdmin jwt =
     List.map .name jwt.roles |> List.member "admin"
+
+
+isStaff : M.JwtPayload -> Bool
+isStaff jwt =
+    List.map .name jwt.roles |> List.member "staff"
 
 
 okyToky : Time.Time -> String -> Result String M.JwtPayload
