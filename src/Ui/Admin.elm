@@ -8,6 +8,7 @@ import Html.Events exposing (onClick, onSubmit, onCheck, onInput)
 import Model exposing (Model, Msg(..))
 import Routing as R
 import Ui.Parts as Parts
+import Dropdown exposing (Options)
 
 
 adminPage : Model -> Html Msg
@@ -15,6 +16,32 @@ adminPage model =
     basicAdminPage model.glitching
         [ adminTop model.user
         , usersTable model
+        ]
+
+
+basicAdminPage : Maybe String -> List (Html Msg) -> Html Msg
+basicAdminPage glitching children =
+    section [ class "section" ]
+        [ div
+            [ class "container" ]
+            ([ Parts.notification glitching "is-warning" ] ++ children)
+        ]
+
+
+adminTop : Maybe Entity.User -> Html Msg
+adminTop user =
+    div [ class "columns" ]
+        [ div [ class "column" ]
+            [ h1 [ class "title" ] [ text "Users" ]
+            ]
+        , div [ class "column" ]
+            [ div [ class "block is-pulled-right" ]
+                [ bButton "Register User" R.registerPath "is-success"
+                , bButton "Go to games" R.homePath "is-link"
+                , a ([ class "button is-link", onClick Logout ])
+                    [ text "Logout" ]
+                ]
+            ]
         ]
 
 
@@ -42,23 +69,6 @@ editUserPage model userid =
             editUser404
 
 
-adminTop : Maybe Entity.User -> Html Msg
-adminTop user =
-    div [ class "columns" ]
-        [ div [ class "column" ]
-            [ h1 [ class "title" ] [ text "Users" ]
-            ]
-        , div [ class "column" ]
-            [ div [ class "block is-pulled-right" ]
-                [ bButton "Register User" R.registerPath "is-success"
-                , bButton "Go to games" R.homePath "is-link"
-                , a ([ class "button is-link", onClick Logout ])
-                    [ text "Logout" ]
-                ]
-            ]
-        ]
-
-
 usersTable : Model -> Html Msg
 usersTable model =
     table [ class "table is-bordered is-striped is-narrow" ]
@@ -68,6 +78,7 @@ usersTable model =
                 , th [] [ text "Last Name" ]
                 , th [] [ text "Username" ]
                 , th [] [ text "Email" ]
+                , th [] [ text "Group" ]
                 , th [] [ text "Actions" ]
                 ]
             ]
@@ -84,6 +95,7 @@ userRows users =
                 , td [] [ text user.lastName ]
                 , td [] [ text user.username ]
                 , td [] [ text user.email ]
+                , td [] [ text user.groupId ]
                 , td []
                     [ iconButton "Edit"
                         (R.editPath ++ user.id)
@@ -94,16 +106,6 @@ userRows users =
     in
         users
             |> List.map row
-
-
-basicAdminPage : Maybe String -> List (Html Msg) -> Html Msg
-basicAdminPage glitching children =
-    section [ class "section" ]
-        [ div
-            [ class "container" ]
-            children
-        , Parts.notification glitching "is-warning"
-        ]
 
 
 iconButton : String -> String -> String -> String -> Html Msg
@@ -205,7 +207,7 @@ firstLastReg : Html Msg
 firstLastReg =
     div [ class "columns" ]
         [ div [ class "column" ]
-            [ label_ "First Name"
+            [ label_ "First Name *"
             , textInput "firstName" ""
             ]
         , div [ class "column" ]
@@ -219,41 +221,48 @@ userEmailPassReg : Html Msg
 userEmailPassReg =
     div [ class "columns" ]
         [ div [ class "column" ]
-            [ label_ "Username"
+            [ label_ "Username *"
             , textInput "username" "joey123"
             ]
         , div [ class "column" ]
-            [ label_ "Email"
+            [ label_ "Email *"
             , emailInput "email" "joe@example.com"
             ]
         , div [ class "column" ]
-            [ label_ "Password"
+            [ label_ "Password *"
             , textInput "password" "longfancyphrase"
             ]
         ]
 
 
-toGroup : String -> String -> Bool -> Msg
-toGroup groupIdCon_ groupIdExp_ bool =
-    if bool then
-        SetRegistration "exp" groupIdExp_
-    else
-        SetRegistration "con" groupIdCon_
+dropdownOptions : Maybe String -> Maybe String -> Options Msg
+dropdownOptions groupIdExp groupIdCon =
+    let
+        defaultOptions =
+            Dropdown.defaultOptions GroupChanged
 
-
-groupDropDown : Maybe String -> Maybe String -> Html Msg
-groupDropDown groupIdExp groupIdCon =
-    case ( groupIdExp, groupIdCon ) of
-        ( Just groupIdExp_, Just groupIdCon_ ) ->
-            p [ class "control" ]
-                [ label []
-                    [ input [ type_ "checkbox", value groupIdExp_, onCheck (toGroup groupIdCon_ groupIdExp_) ] []
-                    , text " Experimental"
+        items_ =
+            case ( groupIdExp, groupIdCon ) of
+                ( Just e, Just c ) ->
+                    [ { value = e, text = "Experimental", enabled = True }
+                    , { value = c, text = "Control", enabled = True }
                     ]
-                ]
 
-        _ ->
-            p [] []
+                _ ->
+                    []
+    in
+        { defaultOptions
+            | items = items_
+            , emptyItem = Just { value = "0", text = "Select a group...", enabled = True }
+        }
+
+
+groupsDropDown : Model -> Html Msg
+groupsDropDown model =
+    Dropdown.dropdown
+        (dropdownOptions model.groupIdExp model.groupIdCon)
+        []
+        (Just model.adminModel.tmpUserRecord.groupId)
 
 
 registerUserForm : Model -> Html Msg
@@ -262,7 +271,18 @@ registerUserForm model =
         [ onSubmit TryRegisterUser ]
         [ firstLastReg
         , userEmailPassReg
-        , groupDropDown model.groupIdExp model.groupIdCon
+        , div [ class "field" ]
+            [ label
+                [ class "label" ]
+                [ text "Group *" ]
+            , p
+                [ class "control" ]
+                [ span
+                    [ class "select" ]
+                    [ groupsDropDown model
+                    ]
+                ]
+            ]
         , hr []
             []
         , regButtons model.loading

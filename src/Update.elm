@@ -36,6 +36,19 @@ import Game.Implementations
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        GroupChanged groupId_ ->
+            let
+                ( adminModel, user ) =
+                    ( model.adminModel, model.adminModel.tmpUserRecord )
+
+                user_ =
+                    { user | groupId = (Maybe.withDefault "" groupId_) }
+
+                adminModel_ =
+                    { adminModel | tmpUserRecord = user_ }
+            in
+                ( { model | adminModel = adminModel_ }, Cmd.none )
+
         TryUpdateUser ->
             ( model
             , Port.upload
@@ -117,16 +130,19 @@ update msg model =
             model ! []
 
         TryRegisterUser ->
-            ( { model | loading = Just "loading..." }
-            , Cmd.batch
-                [ Task.attempt RegisterUserResp
-                    (Api.createUserRecord
-                        model.httpsrv
-                        model.jwtencoded
-                        model.adminModel.tmpUserRecord
-                    )
-                ]
-            )
+            if (missing model.adminModel.tmpUserRecord) then
+                ( { model | glitching = Just "* Please fill out required fields." }, Cmd.none )
+            else
+                ( { model | loading = Just "loading..." }
+                , Cmd.batch
+                    [ Task.attempt RegisterUserResp
+                        (Api.createUserRecord
+                            model.httpsrv
+                            model.jwtencoded
+                            model.adminModel.tmpUserRecord
+                        )
+                    ]
+                )
 
         RegisterUserResp (Ok newUser) ->
             let
@@ -815,6 +831,17 @@ gngInstructions =
             , text ". Go as fast as you can, but don't sacrifice accuracy for speed."
             , pressAnyKey
             ]
+        ]
+
+
+missing : Entity.UserRecord -> Bool
+missing ur =
+    List.member ""
+        [ ur.username
+        , ur.email
+        , ur.firstName
+        , ur.groupId
+        , ur.password
         ]
 
 
