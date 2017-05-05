@@ -152,10 +152,33 @@ update msg model =
             )
 
         MesPublish id ->
-            model ! []
+            ( model
+            , Task.attempt PutMesResp
+                (Api.updateMesStatus
+                    model.httpsrv
+                    model.jwtencoded
+                    id
+                    True
+                )
+            )
 
         MesUnPublish id ->
-            model ! []
+            ( model
+            , Task.attempt PutMesResp
+                (Api.updateMesStatus
+                    model.httpsrv
+                    model.jwtencoded
+                    id
+                    False
+                )
+            )
+
+        PutMesResp (Ok r) ->
+            let
+                l =
+                    Debug.log "change publicity of MES" r
+            in
+                model ! []
 
         RegisterUserResp (Ok newUser) ->
             ( { model
@@ -484,6 +507,9 @@ You will see pictures presented in either a dark blue or light gray border. Pres
             (httpErrorState model err)
 
         MesResp (Err err) ->
+            (httpErrorState model err)
+
+        PutMesResp (Err err) ->
             (httpErrorState model err)
 
 

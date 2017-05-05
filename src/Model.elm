@@ -136,6 +136,7 @@ type Msg
     | RegisterUserResp (Result Http.Error Entity.User)
     | GroupResp (Result Http.Error Entity.Group)
     | MesResp (Result Http.Error (List MeStatement))
+    | PutMesResp (Result Http.Error String)
     | RoleResp (Result Http.Error Entity.Role)
     | FillerResp (Result ValuationsError (List Entity.Ugimage))
     | ValidResp (Result ValuationsError (List Entity.Ugimage))

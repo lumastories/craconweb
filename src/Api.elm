@@ -1,8 +1,6 @@
 module Api
     exposing
-        ( jwtDecoded
-        , okyToky
-        , isAdmin
+        ( fetchAll
         , fetchGame
         , fetchUser
         , fetchUsers
@@ -10,7 +8,10 @@ module Api
         , fetchRole
         , createUserRecord
         , createAuthRecord
-        , fetchAll
+        , updateMesStatus
+        , jwtDecoded
+        , okyToky
+        , isAdmin
         )
 
 import Entity
@@ -20,6 +21,13 @@ import Jwt
 import Time
 import Model as M
 import Json.Decode as JD
+
+
+{-
+   The Api module is primarily for
+   fetching, updating and creating
+   server side resources
+-}
 
 
 fetchAll : String -> M.JwtPayload -> String -> Cmd M.Msg
