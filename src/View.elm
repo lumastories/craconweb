@@ -1,5 +1,7 @@
 module View exposing (view)
 
+import Game.View as Game
+import Game
 import GameManager
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -394,8 +396,8 @@ game : Model -> String -> Msg -> Html Msg
 game model title msg =
     let
         title_ =
-            case model.playingGame of
-                Nothing ->
+            case ( model.playingGame, model.gameState ) of
+                ( Nothing, Game.NotPlaying ) ->
                     h1 [ class "title is-1" ] [ text title ]
 
                 _ ->
@@ -405,38 +407,19 @@ game model title msg =
             [ div
                 [ class "container" ]
                 [ title_
-                , gameView model.playingGame msg
+                , case model.activeRoute of
+                    R.GameRouteSs ->
+                        Game.view model.gameState msg
+
+                    _ ->
+                        gameView model.playingGame msg
                 ]
             ]
-
-
-visualSearchGame : Model -> Html Msg
-visualSearchGame model =
-    game model "Visual Search" InitVisualSearch
-
-
-dotProbeGame : Model -> Html Msg
-dotProbeGame model =
-    game model "Dot Probe" InitDotProbe
-
-
-goNoGoGame : Model -> Html Msg
-goNoGoGame model =
-    game model "Go/No Go" InitGoNoGo
-
-
-stopSignalGame : Model -> Html Msg
-stopSignalGame model =
-    game model "Stop Signal" InitStopSignal
 
 
 gameView : Maybe Model.Game -> Msg -> Html Msg
 gameView playingGame msg =
     case playingGame of
-        Just (StopSignal data) ->
-            div []
-                [ GameManager.view data ]
-
         Just (GoNoGo data) ->
             div []
                 [ GameManager.view data ]
@@ -457,6 +440,26 @@ gameView playingGame msg =
                     ]
                     [ text "Start Game" ]
                 ]
+
+
+visualSearchGame : Model -> Html Msg
+visualSearchGame model =
+    game model "Visual Search" InitVisualSearch
+
+
+dotProbeGame : Model -> Html Msg
+dotProbeGame model =
+    game model "Dot Probe" InitDotProbe
+
+
+goNoGoGame : Model -> Html Msg
+goNoGoGame model =
+    game model "Go/No Go" InitGoNoGo
+
+
+stopSignalGame : Model -> Html Msg
+stopSignalGame model =
+    game model "Stop Signal" InitStopSignal
 
 
 instructionsPage : Model -> Html Msg

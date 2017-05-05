@@ -22,6 +22,7 @@ import Random.List
 import Time exposing (Time)
 import Ui.Card as Card
 import Numeral
+import Game.View
 
 
 type alias Trial =
@@ -264,15 +265,6 @@ viewReport : List (Maybe GenGame.Reason) -> Html msg
 viewReport gameReasons =
     gameReasons
         |> GenGame.aggregateReasons
-        |> viewAggregatedReasons
+        |> Game.View.viewResult Nothing
+        |> List.singleton
         |> Card.middleBlock
-
-
-viewAggregatedReasons : GenGame.AggregatedReason -> List (Html msg)
-viewAggregatedReasons aggregation =
-    [ Html.h1 [ class "title" ] [ text "Results" ]
-    , Html.ul []
-        [ Html.li [] [ text <| "Average Response Time: " ++ Numeral.format "0,0.00" aggregation.averageResponseTimeInSecond ++ " seconds" ]
-        , Html.li [] [ text <| "Percent Correct: " ++ Numeral.format "0.00" aggregation.percentCorrect ++ "%" ]
-        ]
-    ]

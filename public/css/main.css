@@ -97,7 +97,9 @@ Redhtml {
     border: 2px dashed #000;
     overflow: hidden;
 }
-
+.imageBox { 
+    text-align: center
+}
 .blueBorder{
     border:5px solid blue;
 }

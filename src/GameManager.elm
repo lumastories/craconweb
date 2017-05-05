@@ -270,11 +270,7 @@ view data =
             data.instructionsView
 
         Report :: blocks ->
-            let
-                l =
-                    Debug.log "reportView" data
-            in
-                data.reportView data.results
+            data.reportView data.results
 
         (BlockActive block) :: blocks ->
             case block of

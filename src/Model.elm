@@ -1,8 +1,8 @@
 module Model exposing (..)
 
 import Entity
+import Game
 import Http
-import GameManager
 import Navigation
 import Routing
 import Time
@@ -13,7 +13,7 @@ import Json.Decode.Pipeline as JP
 
 -- games
 
-import StopSignal
+import GameManager
 import GoNoGo
 import DotProbe
 import VisualSearch
@@ -45,6 +45,7 @@ type alias Model =
     , stopsignalGame : Maybe Entity.Game
     , respondsignalGame : Maybe Entity.Game
     , visualsearchGame : Maybe Entity.Game
+    , gameState : Game.GameState Msg
     , playingGame : Maybe Game
     , ugimgsets : Maybe (List Entity.Ugimgset)
     , adminModel : AdminModel
@@ -57,8 +58,7 @@ type alias AdminModel =
 
 
 type Game
-    = StopSignal (GameManager.GameData StopSignal.Settings StopSignal.Trial Msg)
-    | GoNoGo (GameManager.GameData GoNoGo.Settings GoNoGo.Trial Msg)
+    = GoNoGo (GameManager.GameData GoNoGo.Settings GoNoGo.Trial Msg)
     | DotProbe (GameManager.GameData DotProbe.Settings DotProbe.Trial Msg)
     | VisualSearch (GameManager.GameData VisualSearch.Settings VisualSearch.Trial Msg)
 
@@ -101,6 +101,7 @@ type Msg
     | InitGoNoGo
     | InitDotProbe
     | InitVisualSearch
+    | PlayGameNew (Game.Game Msg)
     | PlayGame Game
     | StopGame
     | AuthResp (Result Http.Error Entity.Auth)

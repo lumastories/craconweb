@@ -4,12 +4,14 @@ import Api
 import Empty
 import Keyboard
 import Model as M
+import Game
 import Navigation
 import Routing as R
 import Update
 import View
 import Port
 import Time
+import Maybe.Extra
 
 
 main : Program Flags M.Model M.Msg
@@ -26,16 +28,17 @@ subscriptions : M.Model -> Sub M.Msg
 subscriptions model =
     Sub.batch
         [ Keyboard.presses M.Presses
-        , ticker model.playingGame
+        , ticker model.playingGame model.gameState
         , Port.status M.SetStatus
         ]
 
 
-ticker : Maybe a -> Sub M.Msg
-ticker playingGame =
-    playingGame
-        |> Maybe.map (\_ -> Time.every Time.millisecond M.NewCurrentTime)
-        |> Maybe.withDefault Sub.none
+ticker : Maybe a -> Game.GameState M.Msg -> Sub M.Msg
+ticker playingGame gameState =
+    if Maybe.Extra.isJust playingGame || Game.isPlaying gameState then
+        Time.every Time.millisecond M.NewCurrentTime
+    else
+        Sub.none
 
 
 init : Flags -> Navigation.Location -> ( M.Model, Cmd M.Msg )
@@ -86,6 +89,7 @@ init flags location =
             , respondsignalGame = Nothing
             , visualsearchGame = Nothing
             , playingGame = Nothing
+            , gameState = Game.NotPlaying
             , ugimgsets = Nothing
             , adminModel = { tmpUserRecord = Empty.emptyUserRecord }
             }

@@ -4,6 +4,7 @@ import Entity
 import Model
 import Navigation
 import Routing
+import Game
 
 
 emptyModel : Model.Model -> Model.Model
@@ -19,6 +20,7 @@ emptyModel model =
         , loading = Nothing
         , glitching = Nothing
         , playingGame = Nothing
+        , gameState = Game.NotPlaying
     }
 
 
