@@ -51,6 +51,7 @@ type Route
     | AdminRoute
     | RegisterRoute
     | EditUserRoute String
+    | MesRoute
 
 
 homePath : String
@@ -98,6 +99,11 @@ instructionsPath =
     "/instructions"
 
 
+mesPath : String
+mesPath =
+    "/mes"
+
+
 editPath : String
 editPath =
     "/edit/"
@@ -122,4 +128,5 @@ matchers =
         , map AdminRoute (s "admin")
         , map RegisterRoute (s "register")
         , map EditUserRoute (s "edit" </> string)
+        , map MesRoute (s "mes")
         ]

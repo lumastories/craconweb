@@ -1,4 +1,10 @@
-module Ui.Admin exposing (adminPage, registerPage, editUserPage)
+module Ui.Admin
+    exposing
+        ( adminPage
+        , registerPage
+        , editUserPage
+        , mesPage
+        )
 
 import Access as A
 import Entity
@@ -28,6 +34,16 @@ basicAdminPage glitching children =
         ]
 
 
+mesPage : Model -> Html Msg
+mesPage model =
+    basicAdminPage model.glitching
+        [ h1 [ class "title" ] [ text "Motivational Enhancement Statements" ]
+        , p [] [ text "Read and approve motiviational enhancement statements" ]
+        , p [] [ text "TODO - list MES, add approval toggle buttons" ]
+        , backButton
+        ]
+
+
 adminTop : Maybe Entity.User -> Html Msg
 adminTop user =
     div [ class "columns" ]
@@ -37,6 +53,7 @@ adminTop user =
         , div [ class "column" ]
             [ div [ class "block is-pulled-right" ]
                 [ bButton "Register User" R.registerPath "is-success"
+                , bButton "Approve MES" R.mesPath "is-link"
                 , bButton "Go to games" R.homePath "is-link"
                 , a ([ class "button is-link", onClick Logout ])
                     [ text "Logout" ]
@@ -366,7 +383,12 @@ editButtons =
                 [ text "Upload"
                 ]
             ]
-        , button
-            ([ class "button is-link" ] ++ (Parts.linkAttrs R.adminPath))
-            [ text "Go back" ]
+        , backButton
         ]
+
+
+backButton : Html Msg
+backButton =
+    button
+        ([ class "button is-link" ] ++ (Parts.linkAttrs R.adminPath))
+        [ text "Go back" ]
