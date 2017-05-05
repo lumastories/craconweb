@@ -91,7 +91,17 @@ defaultHeaders jwtencoded =
 
 updateMesStatus : String -> String -> String -> Bool -> Task Http.Error String
 updateMesStatus httpsrv token id isPublic =
-    putRequest (httpsrv ++ "/need_endpoint/" ++ id) token Http.emptyBody (JD.succeed "what will it return?")
+    putRequest (httpsrv ++ "/mesanswer/" ++ id) token Http.emptyBody (JD.succeed "what will it return?")
+
+
+fetchMesAnswers : M.Base -> Task Http.Error (List M.MeStatement)
+fetchMesAnswers b =
+    getRequest b.token (b.url ++ "/mesanswers") meStatementsDecoder
+
+
+meStatementsDecoder : JD.Decoder (List M.MeStatement)
+meStatementsDecoder =
+    JD.succeed []
 
 
 putRequest : String -> String -> Http.Body -> JD.Decoder a -> Task Http.Error a
@@ -310,6 +320,11 @@ getRequest token endpoint jsonDecoder =
 isAdmin : M.JwtPayload -> Bool
 isAdmin jwt =
     List.map .name jwt.roles |> List.member "admin"
+
+
+isStaff : M.JwtPayload -> Bool
+isStaff jwt =
+    List.map .name jwt.roles |> List.member "staff"
 
 
 okyToky : Time.Time -> String -> Result String M.JwtPayload

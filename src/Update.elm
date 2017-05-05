@@ -20,7 +20,6 @@ import Time exposing (Time)
 -- Game Modules
 
 import GameManager as GM
-import StopSignal
 import GoNoGo
 import DotProbe
 import VisualSearch

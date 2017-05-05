@@ -48,6 +48,7 @@ type alias Model =
     , gameState : Game.GameState Msg
     , playingGame : Maybe Game
     , ugimgsets : Maybe (List Entity.Ugimgset)
+    , mesQuery : Maybe String
     , adminModel : AdminModel
     }
 
@@ -72,6 +73,12 @@ type alias MeStatement =
     { id : String
     , essay : String
     , public : Bool
+    }
+
+
+type alias Base =
+    { url : String
+    , token : String
     }
 
 

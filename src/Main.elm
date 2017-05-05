@@ -91,6 +91,7 @@ init flags location =
             , playingGame = Nothing
             , gameState = Game.NotPlaying
             , ugimgsets = Nothing
+            , mesQuery = Nothing
             , adminModel =
                 { tmpUserRecord = Empty.emptyUserRecord
                 , meStatements = Nothing
