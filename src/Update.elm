@@ -145,13 +145,25 @@ update msg model =
                 )
 
         MesResp (Ok meStatements) ->
-            ( { model | adminModel = up_meStatements model.adminModel meStatements }, Cmd.none )
+            ( { model
+                | adminModel =
+                    up_meStatements model.adminModel meStatements
+              }
+            , Cmd.none
+            )
+
+        MesPublish id ->
+            model ! []
+
+        MesUnPublish id ->
+            model ! []
 
         RegisterUserResp (Ok newUser) ->
             ( { model
                 | loading = Nothing
                 , users = [ newUser ] ++ model.users
-                , adminModel = up_tmpUserRecord model.adminModel Empty.emptyUserRecord
+                , adminModel =
+                    up_tmpUserRecord model.adminModel Empty.emptyUserRecord
               }
             , Navigation.newUrl R.adminPath
             )

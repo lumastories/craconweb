@@ -69,7 +69,8 @@ up_tmpUserRecord am tur =
 
 
 type alias MeStatement =
-    { essay : String
+    { id : String
+    , essay : String
     , public : Bool
     }
 
@@ -136,6 +137,8 @@ type Msg
     | SetRegistration String String
     | TryUpdateUser
     | EditUserAccount String String
+    | MesPublish String
+    | MesUnPublish String
 
 
 ugimgsetsDecoder : JD.Decoder (List Entity.Ugimgset)

@@ -46,12 +46,30 @@ mesPage model =
         ]
 
 
+publishButton : Bool -> String -> Html Msg
+publishButton public id =
+    case public of
+        True ->
+            a
+                [ class "button is-danger is-outlined"
+                , MesUnPublish id |> onClick
+                ]
+                [ text "Unpublish" ]
+
+        False ->
+            a
+                [ class "button is-success is-outlined"
+                , MesPublish id |> onClick
+                ]
+                [ text "Publish!" ]
+
+
 mesTable : AdminModel -> Html Msg
 mesTable am =
     case am.meStatements of
         Just meStatements ->
             meStatements
-                |> List.map (\ms -> tr [] [ td [] [ text ms.essay ], td [] [ text <| toString ms.public ] ])
+                |> List.map (\ms -> tr [] [ td [] [ text ms.essay ], td [] [ publishButton ms.public ms.id ] ])
                 |> mesTableHelper
 
         Nothing ->
@@ -60,10 +78,10 @@ mesTable am =
 
 mesTableHelper : List (Html Msg) -> Html Msg
 mesTableHelper rows =
-    table [ class "table is-bordered is-striped is-narrow" ]
+    table [ class "table is-bordered is-striped" ]
         [ thead []
             [ tr []
-                [ th [] [ text "Essay" ], th [] [ text "Public?" ] ]
+                [ th [] [ text "Essay" ], th [] [ text "Actions" ] ]
             ]
         , tbody [] rows
         ]
