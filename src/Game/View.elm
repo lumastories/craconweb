@@ -100,22 +100,22 @@ viewResult state { percentCorrect, averageResponseTimeResult } =
 
 
 border : BorderType -> List (Html msg) -> Html msg
-border borderType =
+border borderType content =
     case borderType of
         None ->
-            div [ class "imageBox" ]
+            div [ class "gameWrapper" ] [ div [ class "imageBox sized" ] content ]
 
         Grey ->
-            div [ class "imageBox greyBorder" ]
+            div [ class "gameWrapper" ] [ div [ class "imageBox greyBorder sized" ] content ]
 
         Blue ->
-            div [ class "imageBox blueBorder" ]
+            div [ class "gameWrapper" ] [ div [ class "imageBox blueBorder sized" ] content ]
 
         Black ->
-            div [ class "imageBox solidBorder" ]
+            div [ class "gameWrapper" ] [ div [ class "imageBox solidBorder sized" ] content ]
 
         Dashed ->
-            div [ class "imageBox dashedBorder" ]
+            div [ class "gameWrapper" ] [ div [ class "imageBox dashedBorder sized" ] content ]
 
 
 redCross : Html msg

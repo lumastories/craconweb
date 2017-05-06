@@ -94,7 +94,7 @@ goNoGoInit { totalDuration, infoString, responseImages, nonResponseImages, fille
             |> Random.map
                 (\trials ->
                     (info infoString :: startSession :: log (BeginSession seedInt) :: trials)
-                        |> List.foldl (andThenCheckTimeout isTimeout) (Game.Card.complete (emptyState currentTime))
+                        |> List.foldl (andThenCheckTimeout isTimeout) (Game.Card.complete (emptyState seedInt currentTime))
                 )
             |> (\generator -> Random.step generator (Random.initialSeed seedInt))
             |> Tuple.first
@@ -190,7 +190,7 @@ stopSignalInit { borderDelay, totalDuration, infoString, responseImages, nonResp
             |> Random.map
                 (\trials ->
                     (info infoString :: startSession :: log (BeginSession seedInt) :: trials)
-                        |> List.foldl (andThenCheckTimeout isTimeout) (Game.Card.complete (emptyState currentTime))
+                        |> List.foldl (andThenCheckTimeout isTimeout) (Game.Card.complete (emptyState seedInt currentTime))
                 )
             |> (\generator -> Random.step generator (Random.initialSeed seedInt))
             |> Tuple.first

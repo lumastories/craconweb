@@ -255,14 +255,14 @@ updateCurrTime state input =
             ( True, state )
 
 
-emptyState : Time -> State
-emptyState time =
+emptyState : Int -> Time -> State
+emptyState initialSeed time =
     { sessionStart = Nothing
     , trialStart = time
     , currTime = time
     , log = []
     , trialResult = Nothing
-    , currentSeed = Random.initialSeed <| round time
+    , currentSeed = Random.initialSeed initialSeed
     }
 
 
