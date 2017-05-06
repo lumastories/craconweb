@@ -27,9 +27,9 @@ view gameState msg =
                         |> Maybe.withDefault ""
             in
                 div []
-                    [ p [] [ text timer ]
-                    , p [] [ text <| toString state.trialResult ]
-                    , case Game.Card.layout game of
+                    -- [ p [] [ text timer ]
+                    -- , p [] [ text <| toString state.trialResult ]
+                    [ case Game.Card.layout game of
                         Nothing ->
                             text ""
 
