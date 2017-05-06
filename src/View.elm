@@ -101,15 +101,20 @@ navBar model =
         ]
 
 
-isAdmin : Visitor -> Bool
-isAdmin visitor =
+isPowerful : Visitor -> Bool
+isPowerful visitor =
     case visitor of
         LoggedIn jwt ->
             List.map .name jwt.roles
-                |> List.member "admin"
+                |> isAdminOrStaff
 
         _ ->
             False
+
+
+isAdminOrStaff : List String -> Bool
+isAdminOrStaff roles =
+    (List.member "admin" roles) || (List.member "staff" roles)
 
 
 navToggler : Bool -> Html Msg
@@ -124,7 +129,7 @@ navToggler activeMenu =
 
 adminLink : Visitor -> Html Msg
 adminLink visitor =
-    case isAdmin visitor of
+    case isPowerful visitor of
         True ->
             navLink "Admin" R.adminPath False
 

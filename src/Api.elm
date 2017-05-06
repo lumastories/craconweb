@@ -32,7 +32,7 @@ import Json.Decode as JD
 
 fetchAll : String -> M.JwtPayload -> String -> Cmd M.Msg
 fetchAll httpsrv jwt token =
-    case isAdmin jwt of
+    case (isAdmin jwt) || (isStaff jwt) of
         True ->
             Cmd.batch <|
                 (adminOnly httpsrv token)
