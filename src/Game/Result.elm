@@ -39,10 +39,10 @@ averageResponseTimeInMillisecond state =
                         Game.AcceptIndication _ responseTime ->
                             ( Nothing, (responseTime - beginTime) :: responseTimes )
 
-                        Game.AcceptDirection _ _ responseTime ->
+                        Game.AcceptDirection _ responseTime ->
                             ( Nothing, (responseTime - beginTime) :: responseTimes )
 
-                        Game.AcceptSelection _ _ responseTime ->
+                        Game.AcceptSelection _ responseTime ->
                             ( Nothing, (responseTime - beginTime) :: responseTimes )
 
                         Game.EndTrial _ ->
@@ -106,11 +106,11 @@ isCorrect gameEntry =
         Game.AcceptIndication noGoTrial _ ->
             noGoTrial
 
-        Game.AcceptDirection expected answer _ ->
-            expected == answer
+        Game.AcceptDirection { desired, actual } _ ->
+            desired == actual
 
-        Game.AcceptSelection expected answer _ ->
-            expected == answer
+        Game.AcceptSelection { desired, actual } _ ->
+            desired == actual
 
         Game.Timeout goTrial _ ->
             goTrial
@@ -140,10 +140,10 @@ isResult gameEntry =
         Game.AcceptIndication _ _ ->
             True
 
-        Game.AcceptDirection _ _ _ ->
+        Game.AcceptDirection _ _ ->
             True
 
-        Game.AcceptSelection _ _ _ ->
+        Game.AcceptSelection _ _ ->
             True
 
         Game.Timeout _ _ ->

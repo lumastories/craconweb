@@ -335,40 +335,63 @@ You will see pictures presented in either a dark blue or light gray border. Pres
 
         -- TODO fetch configuration from the model
         InitGoNoGo ->
-            let
-                trialSettings =
-                    { blockCount = 10000
-                    , responseCount = 40
-                    , nonResponseCount = 40
-                    , fillerCount = 20
-                    , pictureDuration = 1750 * Time.millisecond
-                    , durationIncrement = -20 * Time.millisecond
-                    , minDuration = 1250 * Time.millisecond
-                    , maxDuration = 2000 * Time.millisecond
-                    , redCross = 500 * Time.millisecond
-                    }
+            ( model
+            , Time.now
+                |> Task.map
+                    (\time ->
+                        Game.Implementations.goNoGoInit
+                            { totalDuration = 1250 * Time.millisecond
+                            , infoString = """
+<h3 class="title">Instructions</h3>
+<p>You will see pictures either on the left or right side of the screen, surrounded by a solid or dashed border. Press <span class="highlight"><strong>c</strong></span> when the picture is on the left side of the screen or <span class="highlight"><strong>m</strong></span> when the picture is on the right side of the screen. BUT only if you see a <span style="border: 1px solid rgb(0, 0, 0); padding: 2px;">solid border</span> around the picture. Do not press if you see a <span style="border: 1px dashed rgb(0, 0, 0); padding: 2px;">dashed border</span>. Go as fast as you can, but don't sacrifice accuracy for speed.<div>
+<br>
+<br>
+<strong>Press any key to continue.</strong></div>
+</p>
+                            """
+                            , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
+                            , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
+                            , fillerImages = (getFullImagePathsNew model.filesrv model.ugimages_f |> Maybe.withDefault [])
+                            , seedInt = 0
+                            , currentTime = time
+                            , gameDuration = 5 * Time.minute
+                            , redCrossDuration = 500 * Time.millisecond
+                            }
+                    )
+                |> Task.perform PlayGameNew
+            )
 
-                --<| Maybe.withDefault "" <| Maybe.map .instruct model.gonogoGame
-                gameSettings blocks currTime =
-                    { blocks = blocks
-                    , currTime = currTime
-                    , maxDuration = 0.1 * Time.minute
-                    , settings = trialSettings
-                    , instructionsView = gngInstructions
-                    , trialRestView = Html.text ""
-                    , trialRestDuration = 500 * Time.millisecond
-                    , trialRestJitter = 0
-                    , blockRestView = always (Html.text "Implement a block rest view.")
-                    , blockRestDuration = 1500 * Time.millisecond
-                    , reportView = GoNoGo.viewReport
-                    , trialFuns = GoNoGo.trialFuns
-                    }
-
-                getImages =
-                    getFullImagePaths model.filesrv
-            in
-                applyImages GoNoGo model gameSettings (GoNoGo.init trialSettings)
-
+        -- let
+        --     trialSettings =
+        --         { blockCount = 10000
+        --         , responseCount = 40
+        --         , nonResponseCount = 40
+        --         , fillerCount = 20
+        --         , pictureDuration = 1750 * Time.millisecond
+        --         , durationIncrement = -20 * Time.millisecond
+        --         , minDuration = 1250 * Time.millisecond
+        --         , maxDuration = 2000 * Time.millisecond
+        --         , redCross = 500 * Time.millisecond
+        --         }
+        --     --<| Maybe.withDefault "" <| Maybe.map .instruct model.gonogoGame
+        --     gameSettings blocks currTime =
+        --         { blocks = blocks
+        --         , currTime = currTime
+        --         , maxDuration = 0.1 * Time.minute
+        --         , settings = trialSettings
+        --         , instructionsView = gngInstructions
+        --         , trialRestView = Html.text ""
+        --         , trialRestDuration = 500 * Time.millisecond
+        --         , trialRestJitter = 0
+        --         , blockRestView = always (Html.text "Implement a block rest view.")
+        --         , blockRestDuration = 1500 * Time.millisecond
+        --         , reportView = GoNoGo.viewReport
+        --         , trialFuns = GoNoGo.trialFuns
+        --         }
+        --     getImages =
+        --         getFullImagePaths model.filesrv
+        -- in
+        --     applyImages GoNoGo model gameSettings (GoNoGo.init trialSettings)
         -- TODO fetch configuration from the model
         InitDotProbe ->
             let
@@ -611,9 +634,6 @@ handleTimeUpdate time model =
             Nothing ->
                 ( model, Cmd.none )
 
-            Just (GoNoGo data) ->
-                updateData GoNoGo data
-
             Just (DotProbe data) ->
                 updateData DotProbe data
 
@@ -635,9 +655,6 @@ handleIndicationUpdate model =
         case model.playingGame of
             Nothing ->
                 ( model, Cmd.none )
-
-            Just (GoNoGo data) ->
-                updateData GoNoGo data
 
             Just (DotProbe data) ->
                 updateData DotProbe data
@@ -661,9 +678,6 @@ handleIntIndicationUpdate n model =
             Nothing ->
                 ( model, Cmd.none )
 
-            Just (GoNoGo data) ->
-                updateData GoNoGo data
-
             Just (DotProbe data) ->
                 updateData DotProbe data
 
@@ -685,9 +699,6 @@ handleDirectionIndicationUpdate n model =
         case model.playingGame of
             Nothing ->
                 ( model, Cmd.none )
-
-            Just (GoNoGo data) ->
-                updateData GoNoGo data
 
             Just (DotProbe data) ->
                 updateData DotProbe data

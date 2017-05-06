@@ -36,6 +36,7 @@ type Direction
 type Layout
     = Info BorderType String
     | Single BorderType Image
+    | LeftOrRight BorderType Direction Image
     | LeftRight BorderType Image Image
     | SelectGrid BorderType Int Int (List Image)
     | RedCross BorderType
@@ -63,8 +64,8 @@ type LogEntry
     | BeginDisplay (Maybe Layout) Time
     | PlaySound Time
     | AcceptIndication Bool Time
-    | AcceptDirection Direction Direction Time
-    | AcceptSelection Int Int Time
+    | AcceptDirection { desired : Direction, actual : Direction } Time
+    | AcceptSelection { desired : Int, actual : Int } Time
     | Timeout Bool Time
 
 
@@ -74,6 +75,7 @@ type alias State =
     , currTime : Time
     , log : List LogEntry
     , trialResult : Maybe Bool
+    , currentSeed : Random.Seed
     }
 
 
@@ -192,6 +194,21 @@ onIndication desired state input =
             ( True, state )
 
 
+onDirection : Bool -> Direction -> Logic
+onDirection desired desiredDirection state input =
+    case ( input, state.trialResult ) of
+        ( Direction actualDirection, Nothing ) ->
+            ( False
+            , { state
+                | log = AcceptDirection { desired = desiredDirection, actual = actualDirection } state.currTime :: state.log
+                , trialResult = Debug.log "trialResult" Just (desired && desiredDirection == actualDirection)
+              }
+            )
+
+        _ ->
+            ( True, state )
+
+
 timeout : Time -> Logic
 timeout expiration state _ =
     ( state.trialStart + expiration > state.currTime, state )
@@ -245,6 +262,7 @@ emptyState time =
     , currTime = time
     , log = []
     , trialResult = Nothing
+    , currentSeed = Random.initialSeed <| round time
     }
 
 
@@ -259,3 +277,15 @@ isPlaying gameState =
 
         Finished _ ->
             False
+
+
+leftOrRight : Generator Direction
+leftOrRight =
+    Random.bool
+        |> Random.map
+            (\bool ->
+                if bool then
+                    Left
+                else
+                    Right
+            )

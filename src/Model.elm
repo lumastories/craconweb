@@ -83,8 +83,7 @@ type alias Base =
 
 
 type Game
-    = GoNoGo (GameManager.GameData GoNoGo.Settings GoNoGo.Trial Msg)
-    | DotProbe (GameManager.GameData DotProbe.Settings DotProbe.Trial Msg)
+    = DotProbe (GameManager.GameData DotProbe.Settings DotProbe.Trial Msg)
     | VisualSearch (GameManager.GameData VisualSearch.Settings VisualSearch.Trial Msg)
 
 

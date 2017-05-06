@@ -411,6 +411,9 @@ game model title msg =
                     R.GameRouteSs ->
                         Game.view model.gameState msg
 
+                    R.GameRouteGn ->
+                        Game.view model.gameState msg
+
                     _ ->
                         gameView model.playingGame msg
                 ]
@@ -420,10 +423,6 @@ game model title msg =
 gameView : Maybe Model.Game -> Msg -> Html Msg
 gameView playingGame msg =
     case playingGame of
-        Just (GoNoGo data) ->
-            div []
-                [ GameManager.view data ]
-
         Just (DotProbe data) ->
             div []
                 [ GameManager.view data ]

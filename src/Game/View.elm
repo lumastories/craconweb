@@ -40,7 +40,21 @@ view gameState msg =
                             border borderType [ img [ src image.url ] [] ]
 
                         Just (Game.LeftRight borderType lImage rImage) ->
-                            border borderType [ text (lImage.url ++ rImage.url) ]
+                            border borderType [ img [ src lImage.url ] [], img [ src rImage.url ] [] ]
+
+                        Just (Game.LeftOrRight borderType direction image) ->
+                            border borderType
+                                [ img
+                                    [ src image.url
+                                    , case direction of
+                                        Game.Left ->
+                                            class "is-pulled-left squeezed"
+
+                                        Game.Right ->
+                                            class "is-pulled-right squeezed"
+                                    ]
+                                    []
+                                ]
 
                         Just (Game.SelectGrid borderType rows cols images) ->
                             border borderType [ text (toString (rows * cols)) ]
