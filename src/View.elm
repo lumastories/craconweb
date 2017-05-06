@@ -11,6 +11,7 @@ import Entity
 import Ui.Card as Card
 import Ui.Admin as Admin
 import Ui.Parts as Parts
+import List.Extra
 
 
 bigLogo : String -> Html Msg
@@ -181,10 +182,23 @@ isActive active =
         ""
 
 
+basicPage : Model -> List (Html Msg) -> Html Msg
+basicPage model children =
+    section []
+        [ mesQueryModal model.mesQuery
+        , navBar model
+        , section
+            [ class "section" ]
+            children
+        , Parts.notification model.glitching "is-danger"
+        ]
+
+
 homePage : Model -> Html Msg
 homePage model =
     div []
-        [ navBar model
+        [ mesQueryModal model.mesQuery
+        , navBar model
         , homePageBody model
         , Parts.notification model.glitching "is-danger"
         ]
@@ -278,15 +292,45 @@ homePageGameCard gameSlug src_ title about =
         ]
 
 
-basicPage : Model -> List (Html Msg) -> Html Msg
-basicPage model children =
-    section []
-        [ navBar model
-        , section
-            [ class "section" ]
-            children
-        , Parts.notification model.glitching "is-danger"
-        ]
+mesQueryModal : Maybe String -> Html Msg
+mesQueryModal q =
+    case q of
+        Nothing ->
+            text ""
+
+        Just q ->
+            div
+                [ class <| "modal is-active" ]
+                [ div
+                    [ class "modal-background" ]
+                    []
+                , div
+                    [ class "modal-content" ]
+                    [ Card.middleBlock
+                        [ div
+                            [ class "field" ]
+                            [ label
+                                [ class "label" ]
+                                [ text q ]
+                            , p
+                                [ class "control" ]
+                                [ textarea
+                                    [ class "textarea"
+                                    , placeholder "Answer question here"
+                                    , onInput UpdateMesAnswer
+                                    ]
+                                    []
+                                ]
+                            , br [] []
+                            , button
+                                [ class "button is-primary is-large is-pulled-right"
+                                , onClick TrySubmitMesAnswer
+                                ]
+                                [ text "Share" ]
+                            ]
+                        ]
+                    ]
+                ]
 
 
 accessDeniedPage : Model -> Html Msg
@@ -521,24 +565,46 @@ toStyle styles =
             |> List.map toTuple
 
 
+statementsPage : Model -> Html Msg
+statementsPage model =
+    basicPage model
+        (statements model.statements)
+
+
+statements : Maybe (List MeStatement) -> List (Html Msg)
+statements meStatements =
+    case meStatements of
+        Nothing ->
+            [ Card.middleBlock
+                [ h1 [ class "title" ] [ text "Statements" ]
+                , p [] [ text """Coming soon! You will be able to see personal
+                            statements from other members of the study about their journey to better
+                            health and some of the choices they made that helped them get there!""" ]
+                ]
+            ]
+
+        Just meStatements ->
+            [ h1 [ class "title" ] [ text "Statements" ] ]
+                ++ (List.map (div [ class "columns" ]) (List.map statement meStatements |> List.Extra.greedyGroupsOf 4))
+
+
+statement : MeStatement -> Html Msg
+statement mes =
+    div [ class "column" ]
+        [ blockquote []
+            [ i [ class "fa fa-quote-left" ] []
+            , p [] [ text mes.essay ]
+            , i [ class "fa fa-quote-right" ] []
+            ]
+        ]
+
+
 
 {-
 
    ADMIN VIEWS
 
 -}
-
-
-statementsPage : Model -> Html Msg
-statementsPage model =
-    basicPage model
-        [ Card.middleBlock
-            [ h1 [ class "title" ] [ text "Statements" ]
-            , p [] [ text """Coming soon! You will be able to see personal
-                statements from other members of the study about their journey to better
-                health and some of the choices they made that helped them get there!""" ]
-            ]
-        ]
 
 
 view : Model -> Html Msg

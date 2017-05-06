@@ -21,6 +21,7 @@ import Jwt
 import Time
 import Model as M
 import Json.Decode as JD
+import Mock
 
 
 {-
@@ -62,13 +63,7 @@ adminOnly httpsrv token =
     , Task.attempt M.GroupResp (fetchGroup httpsrv token "control_a")
     , Task.attempt M.GroupResp (fetchGroup httpsrv token "experimental_a")
     , Task.attempt M.MesResp
-        (Task.succeed
-            [ { id = "123", essay = "I like food so much. It is so lovely, yes yes yes, oh boy! GIMME FOOD. I like to eat. hooray! This is my personal statement", public = True }
-            , { id = "124", essay = "Motivation is so important, blablabl, I am loving this program, i like to eat but only healthy things, oh yeah!! woohoo!", public = False }
-            , { id = "125", essay = "Motivation is so important, blablabl, I am loving this program, i like to eat but only healthy things, oh yeah!! woohoo!", public = False }
-            , { id = "126", essay = "Motivation is so important, blablabl, I am loving this program, i like to eat but only healthy things, oh yeah!! woohoo!", public = True }
-            ]
-        )
+        (Task.succeed Mock.statements)
     ]
 
 

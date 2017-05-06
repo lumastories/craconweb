@@ -28,6 +28,12 @@ import Game.Implementations.VisualSearch
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        UpdateMesAnswer a ->
+            ( { model | mesAnswer = Just a }, Cmd.none )
+
+        TrySubmitMesAnswer ->
+            ( { model | mesQuery = Nothing }, Cmd.none )
+
         GroupChanged groupId_ ->
             let
                 ( adminModel, user ) =

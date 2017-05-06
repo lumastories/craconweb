@@ -40,7 +40,9 @@ type alias Model =
     , gameState : Game.GameState Msg
     , ugimgsets : Maybe (List Entity.Ugimgset)
     , mesQuery : Maybe String
+    , mesAnswer : Maybe String
     , adminModel : AdminModel
+    , statements : Maybe (List MeStatement)
     }
 
 
@@ -131,6 +133,8 @@ type Msg
     | EditUserAccount String String
     | MesPublish String
     | MesUnPublish String
+    | UpdateMesAnswer String
+    | TrySubmitMesAnswer
 
 
 ugimgsetsDecoder : JD.Decoder (List Entity.Ugimgset)

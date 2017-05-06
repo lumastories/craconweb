@@ -1,15 +1,33 @@
-Redhtml {
+html {
     background:#fff;
+}
+
+blockquote {
+  background: #d5f4f4;
+  border-left: 10px solid #91e3e3;
+  margin: 1.5em 10px;
+  padding: 0.5em 10px;
+}
+
+blockquote p {
+  display: inline;
+  color:#061a1a;
+}
+
+blockquote i {
+    color: #91e3e3;
+    margin-left: .4em;
+    margin-right: .3em;
 }
 
 .green-grow {
     border: 3px solid green;
-    transition: all .2s ease-in-out;
+    transition: all .1s ease-in-out;
     transform: scale(2);
 }
 .red-shrink {
     border: 3px solid red;
-    transition: all .2s ease-in-out;
+    transition: all .1s ease-in-out;
     transform: scale(.5);
 }
 
