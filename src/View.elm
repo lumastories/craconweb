@@ -306,28 +306,26 @@ mesQueryModal q =
                     []
                 , div
                     [ class "modal-content" ]
-                    [ Card.middleBlock
-                        [ div
-                            [ class "field" ]
-                            [ label
-                                [ class "label" ]
-                                [ text q ]
-                            , p
-                                [ class "control" ]
-                                [ textarea
-                                    [ class "textarea"
-                                    , placeholder "Answer question here"
-                                    , onInput UpdateMesAnswer
-                                    ]
-                                    []
+                    [ div
+                        [ class "field" ]
+                        [ label
+                            [ class "label white title is-3" ]
+                            [ text q ]
+                        , p
+                            [ class "control" ]
+                            [ textarea
+                                [ class "textarea"
+                                , placeholder "Answer question here"
+                                , onInput UpdateMesAnswer
                                 ]
-                            , br [] []
-                            , button
-                                [ class "button is-primary is-large is-pulled-right"
-                                , onClick TrySubmitMesAnswer
-                                ]
-                                [ text "Share" ]
+                                []
                             ]
+                        , br [] []
+                        , button
+                            [ class "button is-primary is-large"
+                            , onClick TrySubmitMesAnswer
+                            ]
+                            [ text "Share" ]
                         ]
                     ]
                 ]
