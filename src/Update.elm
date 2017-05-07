@@ -29,7 +29,8 @@ import VisualSearch
 
 import Game
 import Game.Card
-import Game.Implementations
+import Game.Implementations.GoNoGo
+import Game.Implementations.StopSignal
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -312,7 +313,7 @@ update msg model =
             , Time.now
                 |> Task.map
                     (\time ->
-                        Game.Implementations.stopSignalInit
+                        Game.Implementations.StopSignal.init
                             { borderDelay = 100 * Time.millisecond
                             , totalDuration = 1000 * Time.millisecond
                             , infoString = """
@@ -339,7 +340,7 @@ You will see pictures presented in either a dark blue or light gray border. Pres
             , Time.now
                 |> Task.map
                     (\time ->
-                        Game.Implementations.goNoGoInit
+                        Game.Implementations.GoNoGo.init
                             { totalDuration = 1250 * Time.millisecond
                             , infoString = """
 <h3 class="title">Instructions</h3>
