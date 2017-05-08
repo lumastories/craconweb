@@ -39,6 +39,7 @@ type alias Model =
     , visualsearchGame : Maybe Entity.Game
     , gameState : Game.GameState Msg
     , ugimgsets : Maybe (List Entity.Ugimgset)
+    , mesQuerys : Maybe (List MesQuery)
     , mesQuery : Maybe String
     , mesAnswer : Maybe String
     , adminModel : AdminModel
@@ -67,6 +68,22 @@ type alias MeStatement =
     , essay : String
     , public : Bool
     }
+
+
+meStatementsDecoder : JD.Decoder (List MeStatement)
+meStatementsDecoder =
+    JD.succeed []
+
+
+type alias MesQuery =
+    { id : String
+    , content : String
+    }
+
+
+meQueriesDecoder : JD.Decoder (List MesQuery)
+meQueriesDecoder =
+    JD.succeed []
 
 
 type alias Base =
@@ -123,6 +140,7 @@ type Msg
     | GroupResp (Result Http.Error Entity.Group)
     | MesResp (Result Http.Error (List MeStatement))
     | PutMesResp (Result Http.Error String)
+    | MesQResp (Result Http.Error (List MesQuery))
     | RoleResp (Result Http.Error Entity.Role)
     | FillerResp (Result ValuationsError (List Entity.Ugimage))
     | ValidResp (Result ValuationsError (List Entity.Ugimage))

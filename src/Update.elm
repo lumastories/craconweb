@@ -28,6 +28,12 @@ import Game.Implementations.VisualSearch
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        MesQResp (Ok mesqs) ->
+            model ! []
+
+        MesQResp (Err err) ->
+            model ! []
+
         UpdateMesAnswer a ->
             ( { model | mesAnswer = Just a }, Cmd.none )
 
@@ -398,7 +404,17 @@ update msg model =
             (httpErrorState model err)
 
         MesResp (Err err) ->
-            (httpErrorState model err)
+            case err of
+                Http.BadStatus st ->
+                    case st.status.code of
+                        404 ->
+                            model ! []
+
+                        _ ->
+                            (httpErrorState model err)
+
+                _ ->
+                    (httpErrorState model err)
 
         PutMesResp (Err err) ->
             (httpErrorState model err)

@@ -53,6 +53,7 @@ shared httpsrv token sub =
     , Task.attempt M.GameResp (fetchGame httpsrv token "respondsignal")
     , Task.attempt M.GameResp (fetchGame httpsrv token "visualsearch")
     , Task.attempt M.UserResp (fetchUser httpsrv token sub)
+    , Task.attempt M.MesQResp (fetchMesQuerys { url = httpsrv, token = token })
     ]
 
 
@@ -62,8 +63,7 @@ adminOnly httpsrv token =
     , Task.attempt M.RoleResp (fetchRole httpsrv token "user")
     , Task.attempt M.GroupResp (fetchGroup httpsrv token "control_a")
     , Task.attempt M.GroupResp (fetchGroup httpsrv token "experimental_a")
-    , Task.attempt M.MesResp
-        (Task.succeed Mock.statements)
+    , Task.attempt M.MesResp (fetchMesAnswers { url = httpsrv, token = token })
     ]
 
 
@@ -99,12 +99,12 @@ updateMesStatus httpsrv token id isPublic =
 
 fetchMesAnswers : M.Base -> Task Http.Error (List M.MeStatement)
 fetchMesAnswers b =
-    getRequest b.token (b.url ++ "/mesanswers") meStatementsDecoder
+    getRequest b.token (b.url ++ "/mesanswers?createdEach=true&publicEach=true") M.meStatementsDecoder
 
 
-meStatementsDecoder : JD.Decoder (List M.MeStatement)
-meStatementsDecoder =
-    JD.succeed []
+fetchMesQuerys : M.Base -> Task Http.Error (List M.MesQuery)
+fetchMesQuerys b =
+    getRequest b.token (b.url ++ "/mesquerys") M.meQueriesDecoder
 
 
 putRequest : String -> String -> Http.Body -> JD.Decoder a -> Task Http.Error a
