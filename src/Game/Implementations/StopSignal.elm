@@ -23,7 +23,7 @@ import Game
         , timeout
         , resultTimeout
         , startSession
-        , showRedCross
+        , trialFailed
         , leftOrRight
         , onDirection
         )
@@ -127,5 +127,6 @@ trial { borderDelay, totalDuration, goTrial, gameDuration, redCrossDuration } im
                     ]
                     bordered
                 )
-            |> andThen (segment [ showRedCross, timeout (totalDuration + redCrossDuration) ] redCross)
+            |> andThen (log DisplayRedCross)
+            |> andThen (segment [ trialFailed, timeout (totalDuration + redCrossDuration) ] redCross)
             |> andThen (log EndTrial)

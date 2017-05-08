@@ -103,6 +103,12 @@ isCorrect gameEntry =
         Game.PlaySound _ ->
             False
 
+        Game.DisplayRedCross _ ->
+            False
+
+        Game.DisplayFixation _ ->
+            False
+
         Game.AcceptIndication noGoTrial _ ->
             noGoTrial
 
@@ -135,6 +141,12 @@ isResult gameEntry =
             False
 
         Game.PlaySound _ ->
+            False
+
+        Game.DisplayRedCross _ ->
+            False
+
+        Game.DisplayFixation _ ->
             False
 
         Game.AcceptIndication _ _ ->

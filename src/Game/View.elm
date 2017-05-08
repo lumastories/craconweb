@@ -37,30 +37,22 @@ view gameState msg =
                             Ui.Card.middleBlock [ Markdown.toHtml [] string ]
 
                         Just (Game.Single borderType image) ->
-                            border borderType [ img [ src image.url ] [] ]
+                            viewSingleLayout borderType image
 
                         Just (Game.LeftRight borderType lImage rImage) ->
-                            border borderType [ img [ src lImage.url ] [], img [ src rImage.url ] [] ]
+                            viewLeftRightLayout borderType lImage rImage
 
                         Just (Game.LeftOrRight borderType direction image) ->
-                            border borderType
-                                [ img
-                                    [ src image.url
-                                    , case direction of
-                                        Game.Left ->
-                                            class "is-pulled-left squeezed"
-
-                                        Game.Right ->
-                                            class "is-pulled-right squeezed"
-                                    ]
-                                    []
-                                ]
+                            viewLeftOrRightLayout borderType direction image
 
                         Just (Game.SelectGrid borderType rows cols images) ->
-                            border borderType [ text (toString (rows * cols)) ]
+                            viewSelectGridLayout borderType rows cols images
 
                         Just (Game.RedCross borderType) ->
-                            border borderType [ redCross ]
+                            viewRedCross borderType
+
+                        Just (Game.Fixation borderType) ->
+                            viewFixation borderType
                     ]
 
         Game.Finished state ->
@@ -103,21 +95,80 @@ border : BorderType -> List (Html msg) -> Html msg
 border borderType content =
     case borderType of
         None ->
-            div [ class "gameWrapper" ] [ div [ class "imageBox sized" ] content ]
+            div [ class "imageBox sized" ] content
 
         Grey ->
-            div [ class "gameWrapper" ] [ div [ class "imageBox greyBorder sized" ] content ]
+            div [ class "imageBox greyBorder sized" ] content
 
         Blue ->
-            div [ class "gameWrapper" ] [ div [ class "imageBox blueBorder sized" ] content ]
+            div [ class "imageBox blueBorder sized" ] content
 
         Black ->
-            div [ class "gameWrapper" ] [ div [ class "imageBox solidBorder sized" ] content ]
+            div [ class "imageBox solidBorder sized" ] content
 
         Dashed ->
-            div [ class "gameWrapper" ] [ div [ class "imageBox dashedBorder sized" ] content ]
+            div [ class "imageBox dashedBorder sized" ] content
 
 
-redCross : Html msg
-redCross =
-    div [ class "redCross" ] [ text "X" ]
+viewRedCross : BorderType -> Html msg
+viewRedCross borderType =
+    border borderType [ div [ class "redCross" ] [ text "X" ] ]
+
+
+viewFixation : BorderType -> Html msg
+viewFixation borderType =
+    gameWrapper
+        [ border borderType
+            [ div
+                [ class "columns is-mobile" ]
+                [ div
+                    [ class "column" ]
+                    [ div [ class "fixationCross" ] [ text "+" ] ]
+                ]
+            ]
+        ]
+
+
+gameWrapper : List (Html msg) -> Html msg
+gameWrapper game =
+    div [ class "gameWrapper" ] game
+
+
+viewSingleLayout : BorderType -> Game.Image -> Html msg
+viewSingleLayout borderType image =
+    gameWrapper [ border borderType [ img [ src image.url ] [] ] ]
+
+
+viewLeftRightLayout : BorderType -> Game.Image -> Game.Image -> Html msg
+viewLeftRightLayout borderType lImage rImage =
+    gameWrapper
+        [ border borderType
+            [ div [ class "columns is-mobile" ]
+                [ div [ class "column" ] [ img [ src lImage.url ] [] ]
+                , div [ class "column" ] [ img [ src rImage.url ] [] ]
+                ]
+            ]
+        ]
+
+
+viewLeftOrRightLayout : BorderType -> Game.Direction -> Game.Image -> Html msg
+viewLeftOrRightLayout borderType direction image =
+    gameWrapper
+        [ border borderType
+            [ img
+                [ src image.url
+                , case direction of
+                    Game.Left ->
+                        class "is-pulled-left squeezed"
+
+                    Game.Right ->
+                        class "is-pulled-right squeezed"
+                ]
+                []
+            ]
+        ]
+
+
+viewSelectGridLayout : BorderType -> Int -> Int -> List Game.Image -> Html msg
+viewSelectGridLayout borderType rows cols images =
+    border borderType [ text (toString (rows * cols)) ]
