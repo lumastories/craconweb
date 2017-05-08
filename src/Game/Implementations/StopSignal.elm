@@ -118,7 +118,8 @@ trial { borderDelay, totalDuration, goTrial, gameDuration, redCrossDuration } im
     in
         log BeginTrial { state | trialResult = Nothing, trialStart = state.currTime }
             |> andThen (log (BeginDisplay borderless))
-            |> andThen (segment [ onIndication False, timeout borderDelay ] borderless)
+            |> andThen (segment [ timeout borderDelay ] borderless)
+            |> andThen (log BeginInput)
             |> andThen (log (BeginDisplay bordered))
             |> andThen
                 (segment

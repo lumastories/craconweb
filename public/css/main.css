@@ -76,7 +76,6 @@ Redhtml {
     text-align: center;
     font-size: 4em;
     margin: 2em auto;
-
 }
 
 .vsImg {
@@ -109,15 +108,10 @@ Redhtml {
 .whiteBorder{
     border:5px solid white;
 }
-
-.probeLeft {
-    font-size:2rem;
+.probe {
+    font-size: 4em;
+    margin: 2em auto;
 }
-.probeRight {
-    float:right;
-    font-size:2rem;
-}
-
 .rightSide {
     padding:1em;
 }

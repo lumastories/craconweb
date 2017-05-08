@@ -124,6 +124,7 @@ trial { totalDuration, goTrial, gameDuration, redCrossDuration } image state =
     in
         log BeginTrial { state | trialResult = Nothing, trialStart = state.currTime, currentSeed = nextSeed }
             |> andThen (log (BeginDisplay bordered))
+            |> andThen (log BeginInput)
             |> andThen
                 (segment
                     [ onDirection goTrial direction

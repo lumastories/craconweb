@@ -9,6 +9,8 @@ import Html.Events exposing (..)
 import Markdown
 import Ui.Card
 import Numeral
+import Svg exposing (Svg, svg, circle)
+import Svg.Attributes as Svg exposing (cy, cx, r)
 
 
 view : Game.GameState msg -> msg -> Html msg
@@ -53,6 +55,9 @@ view gameState msg =
 
                         Just (Game.Fixation borderType) ->
                             viewFixation borderType
+
+                        Just (Game.Probe borderType direction) ->
+                            viewProbe borderType direction
                     ]
 
         Game.Finished state ->
@@ -127,6 +132,40 @@ viewFixation borderType =
                 ]
             ]
         ]
+
+
+viewProbe : BorderType -> Game.Direction -> Html msg
+viewProbe borderType direction =
+    gameWrapper
+        [ border borderType
+            [ div
+                [ class "columns is-mobile" ]
+                (case direction of
+                    Game.Left ->
+                        [ div
+                            [ class "column" ]
+                            [ div [ class "probe" ] [ probe ] ]
+                        , div
+                            [ class "column" ]
+                            [ text "" ]
+                        ]
+
+                    Game.Right ->
+                        [ div
+                            [ class "column" ]
+                            [ text "" ]
+                        , div
+                            [ class "column" ]
+                            [ div [ class "probe" ] [ probe ] ]
+                        ]
+                )
+            ]
+        ]
+
+
+probe : Svg msg
+probe =
+    svg [ Svg.width "20", Svg.height "20" ] [ circle [ cx "10", cy "10", r "10" ] [] ]
 
 
 gameWrapper : List (Html msg) -> Html msg

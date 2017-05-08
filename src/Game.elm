@@ -41,6 +41,7 @@ type Layout
     | SelectGrid BorderType Int Int (List Image)
     | RedCross BorderType
     | Fixation BorderType
+    | Probe BorderType Direction
 
 
 type BorderType
@@ -65,7 +66,9 @@ type LogEntry
     | BeginDisplay (Maybe Layout) Time
     | DisplayRedCross Time
     | DisplayFixation Time
+    | DisplayProbe Direction Time
     | PlaySound Time
+    | BeginInput Time
     | AcceptIndication Bool Time
     | AcceptDirection { desired : Direction, actual : Direction } Time
     | AcceptSelection { desired : Int, actual : Int } Time

@@ -9,6 +9,7 @@ import Game
         , BorderType(..)
         , LogEntry(..)
         , State
+        , onDirection
         , andThen
         , andThenCheckTimeout
         , emptyState
@@ -103,4 +104,7 @@ trial { fixationDuration, imageDuration, goTrial, gameDuration, goImage, noGoIma
             |> andThen (segment [ timeout fixationDuration ] (Just (Fixation borderless)))
             |> andThen (log (BeginDisplay trial))
             |> andThen (segment [ timeout (fixationDuration + imageDuration) ] trial)
+            |> andThen (log (DisplayProbe direction))
+            |> andThen (log BeginInput)
+            |> andThen (segment [ onDirection True direction ] (Just (Probe borderless direction)))
             |> andThen (log EndTrial)
