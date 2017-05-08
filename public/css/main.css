@@ -97,7 +97,8 @@ Redhtml {
     overflow: hidden;
 }
 .imageBox { 
-    text-align: center
+    text-align: center;
+    overflow: hidden;
 }
 .blueBorder{
     border:5px solid blue;
@@ -109,6 +110,7 @@ Redhtml {
     border:5px solid white;
 }
 .probe {
+    text-align: center;
     font-size: 4em;
     margin: 2em auto;
 }

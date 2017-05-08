@@ -117,55 +117,9 @@ border borderType content =
 
 viewRedCross : BorderType -> Html msg
 viewRedCross borderType =
-    border borderType [ div [ class "redCross" ] [ text "X" ] ]
-
-
-viewFixation : BorderType -> Html msg
-viewFixation borderType =
     gameWrapper
-        [ border borderType
-            [ div
-                [ class "columns is-mobile" ]
-                [ div
-                    [ class "column" ]
-                    [ div [ class "fixationCross" ] [ text "+" ] ]
-                ]
-            ]
+        [ border borderType [ div [ class "redCross" ] [ text "X" ] ]
         ]
-
-
-viewProbe : BorderType -> Game.Direction -> Html msg
-viewProbe borderType direction =
-    gameWrapper
-        [ border borderType
-            [ div
-                [ class "columns is-mobile" ]
-                (case direction of
-                    Game.Left ->
-                        [ div
-                            [ class "column" ]
-                            [ div [ class "probe" ] [ probe ] ]
-                        , div
-                            [ class "column" ]
-                            [ text "" ]
-                        ]
-
-                    Game.Right ->
-                        [ div
-                            [ class "column" ]
-                            [ text "" ]
-                        , div
-                            [ class "column" ]
-                            [ div [ class "probe" ] [ probe ] ]
-                        ]
-                )
-            ]
-        ]
-
-
-probe : Svg msg
-probe =
-    svg [ Svg.width "20", Svg.height "20" ] [ circle [ cx "10", cy "10", r "10" ] [] ]
 
 
 gameWrapper : List (Html msg) -> Html msg
@@ -175,19 +129,7 @@ gameWrapper game =
 
 viewSingleLayout : BorderType -> Game.Image -> Html msg
 viewSingleLayout borderType image =
-    gameWrapper [ border borderType [ img [ src image.url ] [] ] ]
-
-
-viewLeftRightLayout : BorderType -> Game.Image -> Game.Image -> Html msg
-viewLeftRightLayout borderType lImage rImage =
-    gameWrapper
-        [ border borderType
-            [ div [ class "columns is-mobile" ]
-                [ div [ class "column" ] [ img [ src lImage.url ] [] ]
-                , div [ class "column" ] [ img [ src rImage.url ] [] ]
-                ]
-            ]
-        ]
+    gameWrapper [ border borderType [ img [ src image.url, class "squeezed" ] [] ] ]
 
 
 viewLeftOrRightLayout : BorderType -> Game.Direction -> Game.Image -> Html msg
@@ -211,3 +153,55 @@ viewLeftOrRightLayout borderType direction image =
 viewSelectGridLayout : BorderType -> Int -> Int -> List Game.Image -> Html msg
 viewSelectGridLayout borderType rows cols images =
     border borderType [ text (toString (rows * cols)) ]
+
+
+
+-- DOT PROBE
+
+
+viewLeftRightLayout : BorderType -> Game.Image -> Game.Image -> Html msg
+viewLeftRightLayout borderType lImage rImage =
+    div [ class "columns is-mobile" ]
+        [ div [ class "column" ] [ img [ src lImage.url ] [] ]
+        , div [ class "column" ] [ img [ src rImage.url ] [] ]
+        ]
+
+
+viewFixation : BorderType -> Html msg
+viewFixation borderType =
+    div
+        [ class "columns is-mobile" ]
+        [ div
+            [ class "column" ]
+            [ div [ class "fixationCross" ] [ text "+" ] ]
+        ]
+
+
+viewProbe : BorderType -> Game.Direction -> Html msg
+viewProbe borderType direction =
+    div
+        [ class "columns is-mobile" ]
+        (case direction of
+            Game.Left ->
+                [ div
+                    [ class "column" ]
+                    [ div [ class "probe" ] [ probe ] ]
+                , div
+                    [ class "column" ]
+                    [ text "" ]
+                ]
+
+            Game.Right ->
+                [ div
+                    [ class "column" ]
+                    [ text "" ]
+                , div
+                    [ class "column" ]
+                    [ div [ class "probe" ] [ probe ] ]
+                ]
+        )
+
+
+probe : Svg msg
+probe =
+    svg [ Svg.width "20", Svg.height "20" ] [ circle [ cx "10", cy "10", r "10" ] [] ]
