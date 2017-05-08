@@ -28,10 +28,13 @@ import Game.Implementations.VisualSearch
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        MesQResp (Ok mesqs) ->
+        NextQueryResp (Ok q) ->
+            ( { model | mesQuery = Just q.content }, Cmd.none )
+
+        NextQueryResp (Err e) ->
             model ! []
 
-        MesQResp (Err err) ->
+        MesQuerysResp _ ->
             model ! []
 
         UpdateMesAnswer a ->

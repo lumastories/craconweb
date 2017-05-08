@@ -52,7 +52,7 @@ shared httpsrv token sub =
     , Task.attempt M.GameResp (fetchGame httpsrv token "respondsignal")
     , Task.attempt M.GameResp (fetchGame httpsrv token "visualsearch")
     , Task.attempt M.UserResp (fetchUser httpsrv token sub)
-    , Task.attempt M.MesQResp (fetchMesQuerys { url = httpsrv, token = token })
+    , Task.attempt M.MesQuerysResp (fetchMesQuerys { url = httpsrv, token = token })
     ]
 
 
@@ -71,7 +71,14 @@ userOnly httpsrv token sub =
     [ Task.attempt M.FillerResp (fetchFiller httpsrv token sub)
     , Task.attempt M.ValidResp (fetchValid httpsrv token sub)
     , Task.attempt M.InvalidResp (fetchInvalid httpsrv token sub)
+    , Task.attempt M.NextQueryResp (calcNextQuery { url = httpsrv, token = token } sub)
     ]
+
+
+calcNextQuery : M.Base -> String -> Task Http.Error M.MesQuery
+calcNextQuery b sub =
+    -- TODO: chain mesanswers request with this to determinine which queries to display
+    getRequest b.token (b.url ++ "/mesquery/1") M.mesQueryDecoder
 
 
 defaultHeaders : String -> List Http.Header
@@ -101,9 +108,14 @@ fetchMesAnswers b =
     getRequest b.token (b.url ++ "/mesanswers?userEach=true&createdEach=true&publicEach=true&public=true") M.mesAnswersDecoder
 
 
+fetchMesAnswersByUser : M.Base -> String -> Task Http.Error (List M.MesAnswer)
+fetchMesAnswersByUser b sub =
+    getRequest b.token (b.url ++ "/mesanswers?userId=" ++ sub ++ "&createdEach=true&publicEach=true") M.mesAnswersDecoder
+
+
 fetchMesQuerys : M.Base -> Task Http.Error (List M.MesQuery)
 fetchMesQuerys b =
-    getRequest b.token (b.url ++ "/mesquerys") M.meQueriesDecoder
+    getRequest b.token (b.url ++ "/mesquerys") M.mesQuerysDecoder
 
 
 putRequest : String -> String -> Http.Body -> JD.Decoder a -> Task Http.Error a

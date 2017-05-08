@@ -89,8 +89,15 @@ type alias MesQuery =
     }
 
 
-meQueriesDecoder : JD.Decoder (List MesQuery)
-meQueriesDecoder =
+mesQueryDecoder : JD.Decoder MesQuery
+mesQueryDecoder =
+    JP.decode MesQuery
+        |> JP.required "id" JD.string
+        |> JP.required "content" JD.string
+
+
+mesQuerysDecoder : JD.Decoder (List MesQuery)
+mesQuerysDecoder =
     JD.succeed []
 
 
@@ -148,7 +155,8 @@ type Msg
     | GroupResp (Result Http.Error Entity.Group)
     | MesResp (Result Http.Error (List MesAnswer))
     | PutMesResp (Result Http.Error String)
-    | MesQResp (Result Http.Error (List MesQuery))
+    | MesQuerysResp (Result Http.Error (List MesQuery))
+    | NextQueryResp (Result Http.Error MesQuery)
     | RoleResp (Result Http.Error Entity.Role)
     | FillerResp (Result ValuationsError (List Entity.Ugimage))
     | ValidResp (Result ValuationsError (List Entity.Ugimage))

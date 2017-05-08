@@ -570,8 +570,8 @@ statementsPage model =
 
 
 statements : Maybe (List MesAnswer) -> List (Html Msg)
-statements meStatements =
-    case meStatements of
+statements mesAnswers =
+    case mesAnswers of
         Nothing ->
             [ Card.middleBlock
                 [ h1 [ class "title" ] [ text "Statements" ]
@@ -581,9 +581,9 @@ statements meStatements =
                 ]
             ]
 
-        Just meStatements ->
+        Just mesAnswers ->
             [ h1 [ class "title" ] [ text "Statements" ] ]
-                ++ (List.map (div [ class "columns" ]) (List.map statement meStatements |> List.Extra.greedyGroupsOf 4))
+                ++ (List.map (div [ class "columns" ]) (List.map statement mesAnswers |> List.Extra.greedyGroupsOf 4))
 
 
 statement : MesAnswer -> Html Msg
