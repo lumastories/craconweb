@@ -95,7 +95,7 @@ init flags location =
             , mesAnswer = Nothing
             , adminModel =
                 { tmpUserRecord = Empty.emptyUserRecord
-                , meStatements = Nothing
+                , mesAnswers = Nothing
                 }
             }
     in

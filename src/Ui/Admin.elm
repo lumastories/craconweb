@@ -66,9 +66,9 @@ publishButton public id =
 
 mesTable : AdminModel -> Html Msg
 mesTable am =
-    case am.meStatements of
-        Just meStatements ->
-            meStatements
+    case am.mesAnswers of
+        Just mesAnswers ->
+            mesAnswers
                 |> List.map (\ms -> tr [] [ td [] [ text ms.essay ], td [] [ publishButton ms.public ms.id ] ])
                 |> mesTableHelper
 

@@ -21,7 +21,6 @@ import Jwt
 import Time
 import Model as M
 import Json.Decode as JD
-import Mock
 
 
 {-
@@ -97,9 +96,9 @@ updateMesStatus httpsrv token id isPublic =
     putRequest (httpsrv ++ "/mesanswer/" ++ id) token Http.emptyBody (JD.succeed "what will it return?")
 
 
-fetchMesAnswers : M.Base -> Task Http.Error (List M.MeStatement)
+fetchMesAnswers : M.Base -> Task Http.Error (List M.MesAnswer)
 fetchMesAnswers b =
-    getRequest b.token (b.url ++ "/mesanswers?createdEach=true&publicEach=true") M.meStatementsDecoder
+    getRequest b.token (b.url ++ "/mesanswers?userEach=true&createdEach=true&publicEach=true&public=true") M.mesAnswersDecoder
 
 
 fetchMesQuerys : M.Base -> Task Http.Error (List M.MesQuery)

@@ -569,7 +569,7 @@ statementsPage model =
         (statements model.statements)
 
 
-statements : Maybe (List MeStatement) -> List (Html Msg)
+statements : Maybe (List MesAnswer) -> List (Html Msg)
 statements meStatements =
     case meStatements of
         Nothing ->
@@ -586,7 +586,7 @@ statements meStatements =
                 ++ (List.map (div [ class "columns" ]) (List.map statement meStatements |> List.Extra.greedyGroupsOf 4))
 
 
-statement : MeStatement -> Html Msg
+statement : MesAnswer -> Html Msg
 statement mes =
     div [ class "column" ]
         [ blockquote []

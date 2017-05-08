@@ -43,19 +43,19 @@ type alias Model =
     , mesQuery : Maybe String
     , mesAnswer : Maybe String
     , adminModel : AdminModel
-    , statements : Maybe (List MeStatement)
+    , statements : Maybe (List MesAnswer)
     }
 
 
 type alias AdminModel =
     { tmpUserRecord : Entity.UserRecord
-    , meStatements : Maybe (List MeStatement)
+    , mesAnswers : Maybe (List MesAnswer)
     }
 
 
-up_meStatements : AdminModel -> List MeStatement -> AdminModel
-up_meStatements am mes =
-    { am | meStatements = Just mes }
+up_mesAnswers : AdminModel -> List MesAnswer -> AdminModel
+up_mesAnswers am mes =
+    { am | mesAnswers = Just mes }
 
 
 up_tmpUserRecord : AdminModel -> Entity.UserRecord -> AdminModel
@@ -63,16 +63,24 @@ up_tmpUserRecord am tur =
     { am | tmpUserRecord = tur }
 
 
-type alias MeStatement =
+type alias MesAnswer =
     { id : String
     , essay : String
     , public : Bool
     }
 
 
-meStatementsDecoder : JD.Decoder (List MeStatement)
-meStatementsDecoder =
-    JD.succeed []
+mesAnswersDecoder : JD.Decoder (List MesAnswer)
+mesAnswersDecoder =
+    JD.field "mesanswers" (JD.list mesAnswerDecoder)
+
+
+mesAnswerDecoder : JD.Decoder MesAnswer
+mesAnswerDecoder =
+    JP.decode MesAnswer
+        |> JP.required "id" (JD.string)
+        |> JP.required "content" (JD.string)
+        |> JP.hardcoded True
 
 
 type alias MesQuery =
@@ -138,7 +146,7 @@ type Msg
     | UsersResp (Result Http.Error (List Entity.User))
     | RegisterUserResp (Result Http.Error Entity.User)
     | GroupResp (Result Http.Error Entity.Group)
-    | MesResp (Result Http.Error (List MeStatement))
+    | MesResp (Result Http.Error (List MesAnswer))
     | PutMesResp (Result Http.Error String)
     | MesQResp (Result Http.Error (List MesQuery))
     | RoleResp (Result Http.Error Entity.Role)
