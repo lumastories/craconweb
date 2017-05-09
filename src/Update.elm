@@ -3,7 +3,6 @@ module Update exposing (update)
 import Api
 import Empty
 import Entity
-import GenGame
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
@@ -11,18 +10,9 @@ import Model exposing (..)
 import Navigation
 import Navigation
 import Port
-import Random exposing (Generator)
 import Routing as R
 import Task exposing (Task)
 import Time exposing (Time)
-
-
--- Game Modules
-
-import GameManager as GM
-import GoNoGo
-import DotProbe
-import VisualSearch
 
 
 -- NEW GAME ENGINES
@@ -32,6 +22,7 @@ import Game.Card
 import Game.Implementations.GoNoGo
 import Game.Implementations.StopSignal
 import Game.Implementations.DotProbe
+import Game.Implementations.VisualSearch
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -214,7 +205,6 @@ update msg model =
             ( { model
                 | activeRoute = R.parseLocation location
                 , isMenuActive = False
-                , playingGame = Nothing
                 , gameState = Game.NotPlaying
               }
             , Cmd.none
@@ -299,14 +289,11 @@ update msg model =
             , Cmd.none
             )
 
-        PlayGameNew game ->
+        PlayGame game ->
             handleInput Game.Initialize { model | gameState = Game.Playing game }
 
-        PlayGame game ->
-            ( { model | playingGame = Just game }, Cmd.none )
-
         StopGame ->
-            ( { model | playingGame = Nothing, gameState = Game.NotPlaying }, Cmd.none )
+            ( { model | gameState = Game.NotPlaying }, Cmd.none )
 
         -- TODO fetch configuration from the model
         InitStopSignal ->
@@ -320,55 +307,9 @@ update msg model =
         InitDotProbe ->
             initDotProbe model
 
-        -- let
-        --     trialSettings =
-        --         { blockCount = 10000
-        --         , fixationCross = 500 * Time.millisecond
-        --         , pictures = 500
-        --         }
-        --     gameSettings blocks currTime =
-        --         { blocks = blocks
-        --         , currTime = currTime
-        --         , maxDuration = 5 * Time.minute
-        --         , settings = trialSettings
-        --         , instructionsView = dpInstructions
-        --         , trialRestView = Html.text ""
-        --         , trialRestDuration = 0
-        --         , trialRestJitter = 0
-        --         , blockRestView = always (Html.text "Implement a block rest view.")
-        --         , blockRestDuration = 1500 * Time.millisecond
-        --         , reportView = always (Html.text "Implement a report view.")
-        --         , trialFuns = DotProbe.trialFuns
-        --         }
-        -- in
-        --     applyImages DotProbe model gameSettings (\v i _ -> DotProbe.init trialSettings v i)
         -- TODO fetch configuration from the model
         InitVisualSearch ->
-            let
-                trialSettings =
-                    { picturesPerTrial = 16
-                    , blockTrialCount = 10000
-                    , fixationCross = 500
-                    , selectionGrid = 3000
-                    , animation = 1000
-                    }
-
-                gameSettings blocks currTime =
-                    { blocks = blocks
-                    , currTime = currTime
-                    , maxDuration = 5 * Time.minute
-                    , settings = trialSettings
-                    , instructionsView = vsInstructions
-                    , trialRestView = Html.text ""
-                    , trialRestDuration = 0
-                    , trialRestJitter = 0
-                    , blockRestView = always (Html.text "Implement a block rest view.")
-                    , blockRestDuration = 1500 * Time.millisecond
-                    , reportView = always (Html.text "Implement a report view.")
-                    , trialFuns = VisualSearch.trialFuns IntIndication
-                    }
-            in
-                applyImages VisualSearch model gameSettings (\v i _ -> VisualSearch.init trialSettings v i)
+            initVisualSearch model
 
         GameResp (Ok game) ->
             case game.slug of
@@ -392,18 +333,15 @@ update msg model =
 
         Presses keyCode ->
             presses keyCode model
-                |> andThen (pressesNew keyCode)
 
         IntIndication n ->
             handleIntIndicationUpdate n model
-                |> andThen (handleIntIndicationUpdateNew n)
 
         MainMenuToggle ->
             ( { model | isMenuActive = not model.isMenuActive }, Cmd.none )
 
         NewCurrentTime t ->
             handleTimeUpdate t model
-                |> andThen (handleTimeUpdateNew t)
 
         RoleResp (Ok role) ->
             ( { model | userRole = role }, Cmd.none )
@@ -460,6 +398,7 @@ update msg model =
             (httpErrorState model err)
 
 
+initStopSignal : Model -> ( Model, Cmd Msg )
 initStopSignal model =
     ( model
     , Time.now
@@ -483,7 +422,7 @@ You will see pictures presented in either a dark blue or light gray border. Pres
                     , redCrossDuration = 500 * Time.millisecond
                     }
             )
-        |> Task.perform PlayGameNew
+        |> Task.perform PlayGame
     )
 
 
@@ -502,7 +441,7 @@ initGoNoGo model =
 <br>
 <strong>Press any key to continue.</strong></div>
 </p>
-                            """
+"""
                     , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
                     , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
                     , fillerImages = (getFullImagePathsNew model.filesrv model.ugimages_f |> Maybe.withDefault [])
@@ -512,7 +451,7 @@ initGoNoGo model =
                     , redCrossDuration = 500 * Time.millisecond
                     }
             )
-        |> Task.perform PlayGameNew
+        |> Task.perform PlayGame
     )
 
 
@@ -526,7 +465,6 @@ initDotProbe model =
                     { fixationDuration = 500 * Time.millisecond
                     , imageDuration = 500 * Time.millisecond
                     , infoString = """
-
 <h3 class="title">Instructions</h3>
 You will see pictures on the left and right side of the screen, followed by a dot on the left or right side of the screen. Press the <span class="highlight"><strong>c</strong></span> if the dot is on the left side of the screen or <span class="highlight"><strong>m</strong></span> when the dot is on the right side of the screen. Go as fast as you can, but don't sacrifice accuracy for speed.<div>
 <br>
@@ -541,61 +479,37 @@ You will see pictures on the left and right side of the screen, followed by a do
                     , gameDuration = 5 * Time.minute
                     }
             )
-        |> Task.perform PlayGameNew
+        |> Task.perform PlayGame
     )
 
 
-andThen : (Model -> ( Model, Cmd Msg )) -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
-andThen f ( model, cmd ) =
-    let
-        ( updatedModel, cmd1 ) =
-            f model
-    in
-        ( updatedModel, Cmd.batch [ cmd, cmd1 ] )
-
-
-presses : Int -> Model -> ( Model, Cmd Msg )
-presses keyCode model =
-    let
-        ( indModel, indCmd ) =
-            handleIndicationUpdate model
-
-        ( keyModel, keyCmd ) =
-            case keyCode of
-                99 ->
-                    handleDirectionIndicationUpdate GenGame.Left indModel
-
-                109 ->
-                    handleDirectionIndicationUpdate GenGame.Right indModel
-
-                32 ->
-                    handleDirectionIndicationUpdate GenGame.Right indModel
-
-                _ ->
-                    ( indModel, Cmd.none )
-    in
-        ( keyModel, Cmd.batch [ indCmd, keyCmd ] )
-
-
-applyImages :
-    (GM.GameData settings trial Msg -> Game)
-    -> Model
-    -> (List (List trial) -> Time -> GM.InitConfig settings trial Msg)
-    -> (List String -> List String -> List String -> Generator (List (List trial)))
-    -> ( Model, Cmd Msg )
-applyImages gameConstructor model gameSettings fun =
-    let
-        getImages =
-            getFullImagePaths model.filesrv
-    in
-        Maybe.map3
-            (\v i f ->
-                ( model, handleGameInit gameConstructor (fun v i f) gameSettings )
+initVisualSearch : Model -> ( Model, Cmd Msg )
+initVisualSearch model =
+    ( model
+    , Time.now
+        |> Task.map
+            (\time ->
+                Game.Implementations.VisualSearch.init
+                    { fixationDuration = 500 * Time.millisecond
+                    , imageDuration = 3000 * Time.millisecond
+                    , zoomDuration = 1000 * Time.millisecond
+                    , infoString = """
+<h3 class="title">Instructions</h3>
+You will see a grid of images. Select the target image as quickly as you can.
+<br>
+<br>
+<strong>Press any key to continue.</strong>
+</div>
+"""
+                    , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
+                    , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
+                    , seedInt = 0
+                    , currentTime = time
+                    , gameDuration = 5 * Time.minute
+                    }
             )
-            (getImages model.ugimages_v)
-            (getImages model.ugimages_i)
-            (getImages model.ugimages_f)
-            |> Maybe.withDefault ( model, Cmd.none )
+        |> Task.perform PlayGame
+    )
 
 
 getFullImagePaths : String -> Maybe (List Entity.Ugimage) -> Maybe (List String)
@@ -608,100 +522,6 @@ preloadUgImages prefix images =
     getFullImagePaths prefix (Just images)
         |> Maybe.withDefault []
         |> Port.preload
-
-
-handleGameInit :
-    (GM.GameData settings trial Msg -> Game)
-    -> Generator (List (List trial))
-    -> (List (List trial) -> Time -> GM.InitConfig settings trial Msg)
-    -> Cmd Msg
-handleGameInit gameConstructor blockGenerator gameF =
-    Task.map2
-        (\blocks currTime ->
-            gameF blocks currTime
-                |> GM.init
-                |> GenGame.generatorToTask
-        )
-        (GenGame.generatorToTask blockGenerator)
-        Time.now
-        |> Task.andThen identity
-        |> Task.perform (PlayGame << gameConstructor)
-
-
-handleTimeUpdate : Time -> Model -> ( Model, Cmd Msg )
-handleTimeUpdate time model =
-    let
-        updateData gameConstructor data =
-            case GM.updateTime time data of
-                ( GM.Running newData, cmd ) ->
-                    ( { model | playingGame = Just (gameConstructor newData) }, cmd )
-
-                ( GM.Results newData, cmd ) ->
-                    ( { model | playingGame = Nothing }, cmd )
-    in
-        case model.playingGame of
-            Nothing ->
-                ( model, Cmd.none )
-
-            Just (VisualSearch data) ->
-                updateData VisualSearch data
-
-
-handleIndicationUpdate : Model -> ( Model, Cmd Msg )
-handleIndicationUpdate model =
-    let
-        updateData gameConstructor data =
-            case GM.updateIndication data of
-                ( GM.Running newData, cmd ) ->
-                    ( { model | playingGame = Just (gameConstructor newData) }, cmd )
-
-                ( GM.Results newData, cmd ) ->
-                    ( { model | playingGame = Nothing }, cmd )
-    in
-        case model.playingGame of
-            Nothing ->
-                ( model, Cmd.none )
-
-            Just (VisualSearch data) ->
-                updateData VisualSearch data
-
-
-handleIntIndicationUpdate : Int -> Model -> ( Model, Cmd Msg )
-handleIntIndicationUpdate n model =
-    let
-        updateData gameConstructor data =
-            case GM.updateIntIndication n data of
-                ( GM.Running newData, cmd ) ->
-                    ( { model | playingGame = Just (gameConstructor newData) }, cmd )
-
-                ( GM.Results newData, cmd ) ->
-                    ( { model | playingGame = Nothing }, cmd )
-    in
-        case model.playingGame of
-            Nothing ->
-                ( model, Cmd.none )
-
-            Just (VisualSearch data) ->
-                updateData VisualSearch data
-
-
-handleDirectionIndicationUpdate : GenGame.Direction -> Model -> ( Model, Cmd Msg )
-handleDirectionIndicationUpdate n model =
-    let
-        updateData gameConstructor data =
-            case GM.updateDirectionIndication n data of
-                ( GM.Running newData, cmd ) ->
-                    ( { model | playingGame = Just (gameConstructor newData) }, cmd )
-
-                ( GM.Results newData, cmd ) ->
-                    ( { model | playingGame = Nothing }, cmd )
-    in
-        case model.playingGame of
-            Nothing ->
-                ( model, Cmd.none )
-
-            Just (VisualSearch data) ->
-                updateData VisualSearch data
 
 
 isAdmin : Visitor -> Bool
@@ -914,8 +734,8 @@ getFullImagePathsNew prefix =
         )
 
 
-pressesNew : number -> Model -> ( Model, Cmd Msg )
-pressesNew keyCode model =
+presses : number -> Model -> ( Model, Cmd Msg )
+presses keyCode model =
     let
         ( newModel1, cmd1 ) =
             handleInput Game.Indication model
@@ -934,11 +754,11 @@ pressesNew keyCode model =
         ( newModel2, Cmd.batch [ cmd1, cmd2 ] )
 
 
-handleIntIndicationUpdateNew : Int -> Model -> ( Model, Cmd Msg )
-handleIntIndicationUpdateNew n model =
+handleIntIndicationUpdate : Int -> Model -> ( Model, Cmd Msg )
+handleIntIndicationUpdate n model =
     handleInput (Game.Select n) model
 
 
-handleTimeUpdateNew : Time -> Model -> ( Model, Cmd Msg )
-handleTimeUpdateNew t model =
+handleTimeUpdate : Time -> Model -> ( Model, Cmd Msg )
+handleTimeUpdate t model =
     handleInput (Game.Tick t) model

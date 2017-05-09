@@ -19,7 +19,6 @@ emptyModel model =
         , authRecord = emptyAuthRecord
         , loading = Nothing
         , glitching = Nothing
-        , playingGame = Nothing
         , gameState = Game.NotPlaying
     }
 

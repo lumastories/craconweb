@@ -116,7 +116,7 @@ trial { borderDelay, totalDuration, goTrial, gameDuration, redCrossDuration } im
         redCross =
             Just (RedCross borderType)
     in
-        log BeginTrial { state | trialResult = Nothing, trialStart = state.currTime }
+        log BeginTrial { state | trialResult = Game.NoResult, trialStart = state.currTime }
             |> andThen (log (BeginDisplay borderless))
             |> andThen (segment [ timeout borderDelay ] borderless)
             |> andThen (log BeginInput)

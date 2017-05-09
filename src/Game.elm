@@ -38,7 +38,7 @@ type Layout
     | Single BorderType Image
     | LeftOrRight BorderType Direction Image
     | LeftRight BorderType Image Image
-    | SelectGrid BorderType Int Int (List Image)
+    | SelectGrid BorderType { columns : Int, images : List Image, goIndex : Int }
     | RedCross BorderType
     | Fixation BorderType
     | Probe BorderType Direction
@@ -78,11 +78,18 @@ type LogEntry
 type alias State =
     { sessionStart : Maybe Time
     , trialStart : Time
+    , segmentStart : Time
     , currTime : Time
     , log : List LogEntry
-    , trialResult : Maybe Bool
+    , trialResult : Result
     , currentSeed : Random.Seed
     }
+
+
+type Result
+    = NoResult
+    | BoolResult Bool
+    | SelectResult { result : Bool, answer : Maybe Int }
 
 
 type alias Logic =
@@ -114,12 +121,17 @@ segment logics layout state =
 
 andThenCheckTimeout : (State -> Bool) -> (State -> Game msg) -> Game msg -> Game msg
 andThenCheckTimeout isTimeout =
-    Card.andThen isTimeout Initialize
+    Card.andThen isTimeout resetSegmentStart Initialize
 
 
 andThen : (State -> Game msg) -> Game msg -> Game msg
 andThen =
-    Card.andThen (always False) Initialize
+    Card.andThen (always False) resetSegmentStart Initialize
+
+
+resetSegmentStart : State -> State
+resetSegmentStart state =
+    { state | segmentStart = state.currTime }
 
 
 oneOf : List Logic -> Logic
@@ -167,7 +179,7 @@ startSession state =
 
 startTrial : State -> State
 startTrial state =
-    { state | trialStart = state.currTime, trialResult = Nothing }
+    { state | trialStart = state.currTime, trialResult = NoResult }
 
 
 info : String -> State -> Game msg
@@ -188,11 +200,26 @@ advanceOnIndication state input =
 onIndication : Bool -> Logic
 onIndication desired state input =
     case ( input, state.trialResult ) of
-        ( Indication, Nothing ) ->
+        ( Indication, NoResult ) ->
             ( True
             , { state
                 | log = AcceptIndication desired state.currTime :: state.log
-                , trialResult = Just desired
+                , trialResult = BoolResult desired
+              }
+            )
+
+        _ ->
+            ( True, state )
+
+
+onSelect : Int -> Logic
+onSelect desiredIndex state input =
+    case ( input, state.trialResult ) of
+        ( Select actualIndex, NoResult ) ->
+            ( False
+            , { state
+                | log = AcceptSelection { desired = desiredIndex, actual = actualIndex } state.currTime :: state.log
+                , trialResult = SelectResult { result = desiredIndex == actualIndex, answer = Just actualIndex }
               }
             )
 
@@ -203,11 +230,11 @@ onIndication desired state input =
 onDirection : Bool -> Direction -> Logic
 onDirection desired desiredDirection state input =
     case ( input, state.trialResult ) of
-        ( Direction actualDirection, Nothing ) ->
+        ( Direction actualDirection, NoResult ) ->
             ( False
             , { state
                 | log = AcceptDirection { desired = desiredDirection, actual = actualDirection } state.currTime :: state.log
-                , trialResult = Debug.log "trialResult" Just (desired && desiredDirection == actualDirection)
+                , trialResult = BoolResult (desired && desiredDirection == actualDirection)
               }
             )
 
@@ -220,18 +247,47 @@ timeout expiration state _ =
     ( state.trialStart + expiration > state.currTime, state )
 
 
-resultTimeout : Bool -> Time -> Logic
-resultTimeout desired expiration state input =
+timeoutFromSegmentStart : Time -> Logic
+timeoutFromSegmentStart expiration state _ =
+    ( state.segmentStart + expiration > state.currTime, state )
+
+
+selectTimeout : Time -> Logic
+selectTimeout expiration state input =
     case ( state.trialResult, timeout expiration state input ) of
-        ( Nothing, ( False, newState ) ) ->
+        ( NoResult, ( False, newState ) ) ->
             ( False
             , { state
-                | log = Timeout desired state.currTime :: newState.log
-                , trialResult = Just desired
+                | log = Timeout False state.currTime :: newState.log
+                , trialResult = SelectResult { result = False, answer = Nothing }
               }
             )
 
-        ( Just _, ( False, newState ) ) ->
+        ( BoolResult _, ( False, newState ) ) ->
+            ( False, newState )
+
+        ( SelectResult _, ( False, newState ) ) ->
+            ( False, newState )
+
+        ( _, ( True, newState ) ) ->
+            ( True, newState )
+
+
+resultTimeout : Bool -> Time -> Logic
+resultTimeout desired expiration state input =
+    case ( state.trialResult, timeout expiration state input ) of
+        ( NoResult, ( False, newState ) ) ->
+            ( False
+            , { state
+                | log = Timeout desired state.currTime :: newState.log
+                , trialResult = BoolResult desired
+              }
+            )
+
+        ( BoolResult _, ( False, newState ) ) ->
+            ( False, newState )
+
+        ( SelectResult _, ( False, newState ) ) ->
             ( False, newState )
 
         ( _, ( True, newState ) ) ->
@@ -241,13 +297,32 @@ resultTimeout desired expiration state input =
 trialFailed : Logic
 trialFailed state input =
     case state.trialResult of
-        Nothing ->
+        NoResult ->
             ( False, state )
 
-        Just True ->
+        BoolResult True ->
             ( False, state )
 
-        Just False ->
+        BoolResult False ->
+            ( True, state )
+
+        SelectResult { result } ->
+            ( not result, state )
+
+
+showZoom : Logic
+showZoom state input =
+    case state.trialResult of
+        NoResult ->
+            ( False, state )
+
+        BoolResult True ->
+            ( False, state )
+
+        BoolResult False ->
+            ( False, state )
+
+        SelectResult _ ->
             ( True, state )
 
 
@@ -265,9 +340,10 @@ emptyState : Int -> Time -> State
 emptyState initialSeed time =
     { sessionStart = Nothing
     , trialStart = time
+    , segmentStart = time
     , currTime = time
     , log = []
-    , trialResult = Nothing
+    , trialResult = NoResult
     , currentSeed = Random.initialSeed initialSeed
     }
 

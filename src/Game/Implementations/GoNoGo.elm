@@ -122,7 +122,7 @@ trial { totalDuration, goTrial, gameDuration, redCrossDuration } image state =
         redCross =
             Just (RedCross borderType)
     in
-        log BeginTrial { state | trialResult = Nothing, trialStart = state.currTime, currentSeed = nextSeed }
+        log BeginTrial { state | trialResult = Game.NoResult, trialStart = state.currTime, currentSeed = nextSeed }
             |> andThen (log (BeginDisplay bordered))
             |> andThen (log BeginInput)
             |> andThen

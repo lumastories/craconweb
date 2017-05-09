@@ -47,10 +47,8 @@ averageResponseTimeInMillisecond state =
 
         responseTimes =
             state.log
-                |> Debug.log "log"
                 |> List.foldr f ( Nothing, [] )
                 |> Tuple.second
-                |> Debug.log "responseTimes"
 
         totalResponses =
             responseTimes |> List.length

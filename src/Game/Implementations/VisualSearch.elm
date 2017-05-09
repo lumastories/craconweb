@@ -1,4 +1,4 @@
-module Game.Implementations.DotProbe exposing (init)
+module Game.Implementations.VisualSearch exposing (init)
 
 import Game.Card exposing (complete)
 import Game
@@ -17,15 +17,18 @@ import Game
         , log
         , addRests
         , info
-        , onIndication
         , timeout
-        , resultTimeout
+        , timeoutFromSegmentStart
+        , selectTimeout
         , startSession
         , leftOrRight
+        , onSelect
+        , showZoom
         )
 import Random exposing (Generator)
 import Random.List
 import Time exposing (Time)
+import List.Extra
 
 
 init :
@@ -37,24 +40,23 @@ init :
     , seedInt : Int
     , currentTime : Time
     , gameDuration : Time
+    , zoomDuration : Time
     }
     -> Game msg
-init { fixationDuration, imageDuration, infoString, responseImages, nonResponseImages, seedInt, currentTime, gameDuration } =
+init { fixationDuration, imageDuration, zoomDuration, infoString, responseImages, nonResponseImages, seedInt, currentTime, gameDuration } =
     let
         trials =
-            List.map2
-                (\goImage noGoImage ->
-                    trial
+            responseImages
+                |> List.map
+                    (trial
                         { fixationDuration = fixationDuration
                         , imageDuration = imageDuration
+                        , zoomDuration = zoomDuration
                         , goTrial = True
                         , gameDuration = gameDuration
-                        , goImage = goImage
-                        , noGoImage = noGoImage
+                        , noGoImages = nonResponseImages
                         }
-                )
-                responseImages
-                nonResponseImages
+                    )
 
         isTimeout state =
             state.sessionStart
@@ -76,35 +78,38 @@ init { fixationDuration, imageDuration, infoString, responseImages, nonResponseI
 trial :
     { fixationDuration : Time
     , imageDuration : Time
+    , zoomDuration : Time
     , gameDuration : Time
     , goTrial : Bool
-    , goImage : Image
-    , noGoImage : Image
+    , noGoImages : List Image
     }
+    -> Image
     -> State
     -> Game msg
-trial { fixationDuration, imageDuration, goTrial, gameDuration, goImage, noGoImage } state =
+trial { fixationDuration, imageDuration, zoomDuration, goTrial, gameDuration, noGoImages } goImage state =
     let
-        ( direction, nextSeed ) =
-            Random.step Game.leftOrRight state.currentSeed
+        ( noGoImagesShuffled, newSeed ) =
+            Random.step (Random.List.shuffle noGoImages) state.currentSeed
 
-        borderless =
-            None
+        ( images, nextSeed ) =
+            Random.step (Random.List.shuffle (goImage :: (List.take 15 noGoImagesShuffled))) newSeed
+
+        goIndex =
+            case List.Extra.elemIndex goImage images of
+                Just index ->
+                    index
+
+                Nothing ->
+                    Debug.crash "goImage is not in the list for some reason"
 
         trial =
-            case direction of
-                Game.Left ->
-                    Just (LeftRight borderless goImage noGoImage)
-
-                Game.Right ->
-                    Just (LeftRight borderless noGoImage goImage)
+            Just (SelectGrid None { columns = 4, images = images, goIndex = goIndex })
     in
         log BeginTrial { state | trialResult = Game.NoResult, trialStart = state.currTime, currentSeed = nextSeed }
             |> andThen (log DisplayFixation)
-            |> andThen (segment [ timeout fixationDuration ] (Just (Fixation borderless)))
+            |> andThen (segment [ timeout fixationDuration ] (Just (Fixation None)))
             |> andThen (log (BeginDisplay trial))
-            |> andThen (segment [ timeout (fixationDuration + imageDuration) ] trial)
-            |> andThen (log (DisplayProbe direction))
             |> andThen (log BeginInput)
-            |> andThen (segment [ onDirection True direction ] (Just (Probe borderless direction)))
+            |> andThen (segment [ onSelect goIndex, selectTimeout (fixationDuration + imageDuration) ] trial)
+            |> andThen (segment [ timeoutFromSegmentStart zoomDuration ] trial)
             |> andThen (log EndTrial)
