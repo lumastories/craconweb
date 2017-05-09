@@ -8,6 +8,7 @@ module Api
         , fetchRole
         , createUserRecord
         , createAuthRecord
+        , createMesAnswer
         , updateMesStatus
         , jwtDecoded
         , okyToky
@@ -53,6 +54,7 @@ shared httpsrv token sub =
     , Task.attempt M.GameResp (fetchGame httpsrv token "visualsearch")
     , Task.attempt M.UserResp (fetchUser httpsrv token sub)
     , Task.attempt M.MesQuerysResp (fetchMesQuerys { url = httpsrv, token = token })
+    , Task.attempt M.PublicMesResp (fetchPublicMesAnswers { url = httpsrv, token = token })
     ]
 
 
@@ -103,9 +105,28 @@ updateMesStatus httpsrv token id isPublic =
     putRequest (httpsrv ++ "/mesanswer/" ++ id) token Http.emptyBody (JD.succeed "what will it return?")
 
 
+createMesAnswer : M.Base -> M.MesAnswer -> String -> Task Http.Error String
+createMesAnswer b answer sub =
+    Http.request
+        { method = "POST"
+        , headers = defaultHeaders b.token
+        , url = b.url ++ "/user/" ++ sub ++ "/mesquery/" ++ answer.queryId ++ "/mesanswer"
+        , body = Http.jsonBody <| M.mesAnswerEncoder answer
+        , expect = Http.expectString
+        , timeout = Nothing
+        , withCredentials = False
+        }
+        |> Http.toTask
+
+
 fetchMesAnswers : M.Base -> Task Http.Error (List M.MesAnswer)
 fetchMesAnswers b =
-    getRequest b.token (b.url ++ "/mesanswers?userEach=true&createdEach=true&publicEach=true&public=true") M.mesAnswersDecoder
+    getRequest b.token (b.url ++ "/mesanswers?userEach=true&createdEach=true&public=false") M.mesAnswersDecoder
+
+
+fetchPublicMesAnswers : M.Base -> Task Http.Error (List M.MesAnswer)
+fetchPublicMesAnswers b =
+    getRequest b.token (b.url ++ "/mesanswers?userEach=true&createdEach=true&publicEach=false&public=true") M.mesAnswersDecoder
 
 
 fetchMesAnswersByUser : M.Base -> String -> Task Http.Error (List M.MesAnswer)

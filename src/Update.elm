@@ -29,7 +29,9 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NextQueryResp (Ok q) ->
-            ( { model | mesQuery = Just q.content }, Cmd.none )
+            ( { model | mesQuery = Just q.content, mesAnswer = Just (newMesAnswerWithqueryId q.id) }
+            , Cmd.none
+            )
 
         NextQueryResp (Err e) ->
             model ! []
@@ -38,10 +40,32 @@ update msg model =
             model ! []
 
         UpdateMesAnswer a ->
-            ( { model | mesAnswer = Just a }, Cmd.none )
+            ( { model | mesAnswer = Maybe.map (up_essay a) model.mesAnswer }, Cmd.none )
 
         TrySubmitMesAnswer ->
-            ( { model | mesQuery = Nothing }, Cmd.none )
+            case model.mesAnswer of
+                Nothing ->
+                    model ! []
+
+                Just mesAns ->
+                    case model.visitor of
+                        Anon ->
+                            model ! []
+
+                        LoggedIn { sub } ->
+                            ( { model | mesQuery = Nothing }
+                            , Task.attempt MesPostResp
+                                (Api.createMesAnswer
+                                    { url = model.httpsrv
+                                    , token = model.jwtencoded
+                                    }
+                                    mesAns
+                                    sub
+                                )
+                            )
+
+        MesPostResp _ ->
+            model ! []
 
         GroupChanged groupId_ ->
             let
@@ -141,14 +165,12 @@ update msg model =
                 ( { model | glitching = Just "* Please fill out required fields." }, Cmd.none )
             else
                 ( { model | loading = Just "loading..." }
-                , Cmd.batch
-                    [ Task.attempt RegisterUserResp
-                        (Api.createUserRecord
-                            model.httpsrv
-                            model.jwtencoded
-                            model.adminModel.tmpUserRecord
-                        )
-                    ]
+                , Task.attempt RegisterUserResp
+                    (Api.createUserRecord
+                        model.httpsrv
+                        model.jwtencoded
+                        model.adminModel.tmpUserRecord
+                    )
                 )
 
         MesResp (Ok mesAnswers) ->
@@ -158,6 +180,12 @@ update msg model =
               }
             , Cmd.none
             )
+
+        PublicMesResp (Ok publicMes) ->
+            ( { model | statements = Just publicMes }, Cmd.none )
+
+        PublicMesResp (Err err) ->
+            model ! []
 
         MesPublish id ->
             ( model

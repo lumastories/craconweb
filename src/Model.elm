@@ -41,7 +41,7 @@ type alias Model =
     , ugimgsets : Maybe (List Entity.Ugimgset)
     , mesQuerys : Maybe (List MesQuery)
     , mesQuery : Maybe String
-    , mesAnswer : Maybe String
+    , mesAnswer : Maybe MesAnswer
     , adminModel : AdminModel
     , statements : Maybe (List MesAnswer)
     }
@@ -50,6 +50,18 @@ type alias Model =
 type alias AdminModel =
     { tmpUserRecord : Entity.UserRecord
     , mesAnswers : Maybe (List MesAnswer)
+    , tmpUserEdit : Maybe UserEdit
+    }
+
+
+type alias UserEdit =
+    { username : String
+    , firstName : String
+    , lastName : String
+    , email : String
+    , password : String
+    , groupId : String
+    , roleId : String
     }
 
 
@@ -67,7 +79,22 @@ type alias MesAnswer =
     { id : String
     , essay : String
     , public : Bool
+    , queryId : String
     }
+
+
+newMesAnswerWithqueryId : String -> MesAnswer
+newMesAnswerWithqueryId qId =
+    { id = ""
+    , essay = ""
+    , public = False
+    , queryId = qId
+    }
+
+
+up_essay : String -> MesAnswer -> MesAnswer
+up_essay essay ma =
+    { ma | essay = essay }
 
 
 mesAnswersDecoder : JD.Decoder (List MesAnswer)
@@ -75,12 +102,18 @@ mesAnswersDecoder =
     JD.field "mesanswers" (JD.list mesAnswerDecoder)
 
 
+mesAnswerEncoder : MesAnswer -> JE.Value
+mesAnswerEncoder mesAnswer =
+    JE.object [ ( "content", JE.string mesAnswer.essay ) ]
+
+
 mesAnswerDecoder : JD.Decoder MesAnswer
 mesAnswerDecoder =
     JP.decode MesAnswer
         |> JP.required "id" (JD.string)
         |> JP.required "content" (JD.string)
-        |> JP.hardcoded True
+        |> JP.hardcoded False
+        |> JP.required "mesQueryId" (JD.string)
 
 
 type alias MesQuery =
@@ -148,12 +181,14 @@ type Msg
     | PlayGame (Game.Game Msg)
     | StopGame
     | AuthResp (Result Http.Error Entity.Auth)
+    | PublicMesResp (Result Http.Error (List MesAnswer))
     | UserResp (Result Http.Error Entity.User)
     | GameResp (Result Http.Error Entity.Game)
     | UsersResp (Result Http.Error (List Entity.User))
     | RegisterUserResp (Result Http.Error Entity.User)
     | GroupResp (Result Http.Error Entity.Group)
     | MesResp (Result Http.Error (List MesAnswer))
+    | MesPostResp (Result Http.Error String)
     | PutMesResp (Result Http.Error String)
     | MesQuerysResp (Result Http.Error (List MesQuery))
     | NextQueryResp (Result Http.Error MesQuery)
