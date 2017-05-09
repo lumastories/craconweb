@@ -11,14 +11,6 @@ import Json.Encode as JE
 import Json.Decode.Pipeline as JP
 
 
--- games
-
-import GameManager
-import GoNoGo
-import DotProbe
-import VisualSearch
-
-
 type alias Model =
     { httpsrv : String
     , tasksrv : String
@@ -46,7 +38,6 @@ type alias Model =
     , respondsignalGame : Maybe Entity.Game
     , visualsearchGame : Maybe Entity.Game
     , gameState : Game.GameState Msg
-    , playingGame : Maybe Game
     , ugimgsets : Maybe (List Entity.Ugimgset)
     , mesQuery : Maybe String
     , adminModel : AdminModel
@@ -80,10 +71,6 @@ type alias Base =
     { url : String
     , token : String
     }
-
-
-type Game
-    = VisualSearch (GameManager.GameData VisualSearch.Settings VisualSearch.Trial Msg)
 
 
 type ValuationsError
@@ -124,8 +111,7 @@ type Msg
     | InitGoNoGo
     | InitDotProbe
     | InitVisualSearch
-    | PlayGameNew (Game.Game Msg)
-    | PlayGame Game
+    | PlayGame (Game.Game Msg)
     | StopGame
     | AuthResp (Result Http.Error Entity.Auth)
     | UserResp (Result Http.Error Entity.User)

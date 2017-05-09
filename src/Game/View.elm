@@ -11,10 +11,11 @@ import Ui.Card
 import Numeral
 import Svg exposing (Svg, svg, circle)
 import Svg.Attributes as Svg exposing (cy, cx, r)
+import List.Extra
 
 
-view : Game.GameState msg -> msg -> Html msg
-view gameState msg =
+view : { gameState : Game.GameState msg, initMsg : msg, intIndicationMsg : Int -> msg } -> Html msg
+view { gameState, initMsg, intIndicationMsg } =
     case gameState of
         Game.Playing game ->
             let
@@ -29,9 +30,9 @@ view gameState msg =
                         |> Maybe.withDefault ""
             in
                 div []
-                    -- [ p [] [ text timer ]
-                    -- , p [] [ text <| toString state.trialResult ]
-                    [ case Game.Card.layout game of
+                    [ p [] [ text timer ]
+                    , p [] [ text <| toString state.trialResult ]
+                    , case Game.Card.layout game of
                         Nothing ->
                             text ""
 
@@ -47,8 +48,15 @@ view gameState msg =
                         Just (Game.LeftOrRight borderType direction image) ->
                             viewLeftOrRightLayout borderType direction image
 
-                        Just (Game.SelectGrid borderType rows cols images) ->
-                            viewSelectGridLayout borderType rows cols images
+                        Just (Game.SelectGrid borderType { columns, images, goIndex }) ->
+                            viewSelectGridLayout
+                                { intIndicationMsg = intIndicationMsg
+                                , borderType = borderType
+                                , columns = columns
+                                , images = images
+                                , result = state.trialResult
+                                , goIndex = goIndex
+                                }
 
                         Just (Game.RedCross borderType) ->
                             viewRedCross borderType
@@ -70,7 +78,7 @@ view gameState msg =
             div []
                 [ a
                     [ class "button is-info is-large"
-                    , onClick msg
+                    , onClick initMsg
                     ]
                     [ text "Start Game" ]
                 ]
@@ -150,9 +158,70 @@ viewLeftOrRightLayout borderType direction image =
         ]
 
 
-viewSelectGridLayout : BorderType -> Int -> Int -> List Game.Image -> Html msg
-viewSelectGridLayout borderType rows cols images =
-    border borderType [ text (toString (rows * cols)) ]
+
+-- VISUAL SEARCH
+
+
+viewSelectGridLayout : { result : Game.Result, intIndicationMsg : Int -> msg, borderType : BorderType, columns : Int, images : List Game.Image, goIndex : Int } -> Html msg
+viewSelectGridLayout { result, intIndicationMsg, borderType, columns, images, goIndex } =
+    div [ class "columns is-mobile" ]
+        (List.Extra.groupsOf columns images
+            |> List.indexedMap
+                (\col images ->
+                    viewGridColumn
+                        { result = result
+                        , intIndicationMsg = intIndicationMsg
+                        , columnIndex = col
+                        , images = images
+                        , goIndex = goIndex
+                        }
+                )
+        )
+
+
+viewGridColumn : { result : Game.Result, intIndicationMsg : Int -> msg, columnIndex : Int, images : List Game.Image, goIndex : Int } -> Html msg
+viewGridColumn { result, intIndicationMsg, columnIndex, images, goIndex } =
+    div [ class "column" ]
+        (images
+            |> List.indexedMap
+                (viewGridRow
+                    { result = result
+                    , intIndicationMsg = intIndicationMsg
+                    , columnIndex = columnIndex
+                    , goIndex = goIndex
+                    }
+                )
+        )
+
+
+viewGridRow : { result : Game.Result, intIndicationMsg : Int -> msg, columnIndex : Int, goIndex : Int } -> Int -> Game.Image -> Html msg
+viewGridRow { result, intIndicationMsg, columnIndex, goIndex } rowIndex image =
+    let
+        index =
+            (columnIndex * 4) + rowIndex
+    in
+        img
+            [ src image.url
+            , onClick (intIndicationMsg index)
+            , case result of
+                Game.SelectResult { answer, result } ->
+                    if goIndex == index then
+                        class "vsImg green-grow"
+                    else
+                        case Maybe.map ((==) index) answer of
+                            Just True ->
+                                class "vsImg red-shrink"
+
+                            Just False ->
+                                class "vsImg"
+
+                            Nothing ->
+                                class "vsImg"
+
+                _ ->
+                    class "vsImg"
+            ]
+            []
 
 
 

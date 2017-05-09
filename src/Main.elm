@@ -11,7 +11,6 @@ import Update
 import View
 import Port
 import Time
-import Maybe.Extra
 
 
 main : Program Flags M.Model M.Msg
@@ -28,14 +27,14 @@ subscriptions : M.Model -> Sub M.Msg
 subscriptions model =
     Sub.batch
         [ Keyboard.presses M.Presses
-        , ticker model.playingGame model.gameState
+        , ticker model.gameState
         , Port.status M.SetStatus
         ]
 
 
-ticker : Maybe a -> Game.GameState M.Msg -> Sub M.Msg
-ticker playingGame gameState =
-    if Maybe.Extra.isJust playingGame || Game.isPlaying gameState then
+ticker : Game.GameState M.Msg -> Sub M.Msg
+ticker gameState =
+    if Game.isPlaying gameState then
         Time.every Time.millisecond M.NewCurrentTime
     else
         Sub.none
@@ -88,7 +87,6 @@ init flags location =
             , stopsignalGame = Nothing
             , respondsignalGame = Nothing
             , visualsearchGame = Nothing
-            , playingGame = Nothing
             , gameState = Game.NotPlaying
             , ugimgsets = Nothing
             , mesQuery = Nothing

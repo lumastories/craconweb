@@ -2,7 +2,6 @@ module View exposing (view)
 
 import Game.View as Game
 import Game
-import GameManager
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -393,11 +392,11 @@ settingsPage model =
 
 
 game : Model -> String -> Msg -> Html Msg
-game model title msg =
+game model title initMsg =
     let
         title_ =
-            case ( model.playingGame, model.gameState ) of
-                ( Nothing, Game.NotPlaying ) ->
+            case model.gameState of
+                Game.NotPlaying ->
                     h1 [ class "title is-1" ] [ text title ]
 
                 _ ->
@@ -409,35 +408,21 @@ game model title msg =
                 [ title_
                 , case model.activeRoute of
                     R.GameRouteSs ->
-                        Game.view model.gameState msg
+                        Game.view { gameState = model.gameState, initMsg = initMsg, intIndicationMsg = IntIndication }
 
                     R.GameRouteGn ->
-                        Game.view model.gameState msg
+                        Game.view { gameState = model.gameState, initMsg = initMsg, intIndicationMsg = IntIndication }
 
                     R.GameRouteDp ->
-                        Game.view model.gameState msg
+                        Game.view { gameState = model.gameState, initMsg = initMsg, intIndicationMsg = IntIndication }
+
+                    R.GameRouteVs ->
+                        Game.view { gameState = model.gameState, initMsg = initMsg, intIndicationMsg = IntIndication }
 
                     _ ->
-                        gameView model.playingGame msg
+                        text "Invalid Game"
                 ]
             ]
-
-
-gameView : Maybe Model.Game -> Msg -> Html Msg
-gameView playingGame msg =
-    case playingGame of
-        Just (VisualSearch data) ->
-            div []
-                [ GameManager.view data ]
-
-        Nothing ->
-            div []
-                [ a
-                    [ class "button is-info is-large"
-                    , onClick msg
-                    ]
-                    [ text "Start Game" ]
-                ]
 
 
 visualSearchGame : Model -> Html Msg

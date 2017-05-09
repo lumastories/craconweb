@@ -23,23 +23,27 @@ type Continuation a layout input msg
     | Complete a
 
 
-andThen : (a -> Bool) -> input -> (a -> Card a layout input msg) -> Card a layout input msg -> Card a layout input msg
-andThen isTimeout initialize f (Card card) =
+andThen : (state -> Bool) -> (state -> state) -> input -> (state -> Card state layout input msg) -> Card state layout input msg -> Card state layout input msg
+andThen isTimeout resetSegmentStart initialize f (Card card) =
     let
         newLogic input =
             case card.logic input of
-                ( Complete a, cmd1 ) ->
-                    if isTimeout a then
-                        ( Complete a, cmd1 )
+                ( Complete state, cmd1 ) ->
+                    if isTimeout state then
+                        ( Complete state, cmd1 )
                     else
                         let
                             ( continuation, cmd2 ) =
-                                step initialize (f a)
+                                step initialize (f (resetSegmentStart state))
                         in
                             ( continuation, Cmd.batch [ cmd1, cmd2 ] )
 
-                ( Continue a newCard, cmd ) ->
-                    ( Continue a (andThen isTimeout initialize f newCard), cmd )
+                ( Continue state newCard, cmd ) ->
+                    ( Continue
+                        state
+                        (andThen isTimeout resetSegmentStart initialize f newCard)
+                    , cmd
+                    )
     in
         Card { card | logic = newLogic }
 
