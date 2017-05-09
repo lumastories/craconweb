@@ -40,6 +40,8 @@ type Layout
     | LeftRight BorderType Image Image
     | SelectGrid BorderType Int Int (List Image)
     | RedCross BorderType
+    | Fixation BorderType
+    | Probe BorderType Direction
 
 
 type BorderType
@@ -62,7 +64,11 @@ type LogEntry
     | BeginTrial Time
     | EndTrial Time
     | BeginDisplay (Maybe Layout) Time
+    | DisplayRedCross Time
+    | DisplayFixation Time
+    | DisplayProbe Direction Time
     | PlaySound Time
+    | BeginInput Time
     | AcceptIndication Bool Time
     | AcceptDirection { desired : Direction, actual : Direction } Time
     | AcceptSelection { desired : Int, actual : Int } Time
@@ -232,8 +238,8 @@ resultTimeout desired expiration state input =
             ( True, newState )
 
 
-showRedCross : Logic
-showRedCross state input =
+trialFailed : Logic
+trialFailed state input =
     case state.trialResult of
         Nothing ->
             ( False, state )

@@ -22,13 +22,7 @@ averageResponseTimeInMillisecond state =
             case maybeStartTime of
                 Nothing ->
                     case log of
-                        Game.BeginDisplay (Just (Game.Single _ _)) timestamp ->
-                            ( Just timestamp, responseTimes )
-
-                        Game.BeginDisplay (Just (Game.LeftRight _ _ _)) timestamp ->
-                            ( Just timestamp, responseTimes )
-
-                        Game.BeginDisplay (Just (Game.SelectGrid _ _ _ _)) timestamp ->
+                        Game.BeginInput timestamp ->
                             ( Just timestamp, responseTimes )
 
                         _ ->
@@ -103,6 +97,18 @@ isCorrect gameEntry =
         Game.PlaySound _ ->
             False
 
+        Game.DisplayRedCross _ ->
+            False
+
+        Game.DisplayFixation _ ->
+            False
+
+        Game.DisplayProbe _ _ ->
+            False
+
+        Game.BeginInput _ ->
+            False
+
         Game.AcceptIndication noGoTrial _ ->
             noGoTrial
 
@@ -135,6 +141,18 @@ isResult gameEntry =
             False
 
         Game.PlaySound _ ->
+            False
+
+        Game.DisplayRedCross _ ->
+            False
+
+        Game.DisplayProbe _ _ ->
+            False
+
+        Game.BeginInput _ ->
+            False
+
+        Game.DisplayFixation _ ->
             False
 
         Game.AcceptIndication _ _ ->

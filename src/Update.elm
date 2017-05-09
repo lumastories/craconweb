@@ -29,7 +29,9 @@ import VisualSearch
 
 import Game
 import Game.Card
-import Game.Implementations
+import Game.Implementations.GoNoGo
+import Game.Implementations.StopSignal
+import Game.Implementations.DotProbe
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -308,116 +310,38 @@ update msg model =
 
         -- TODO fetch configuration from the model
         InitStopSignal ->
-            ( model
-            , Time.now
-                |> Task.map
-                    (\time ->
-                        Game.Implementations.stopSignalInit
-                            { borderDelay = 100 * Time.millisecond
-                            , totalDuration = 1000 * Time.millisecond
-                            , infoString = """
-<h3 class="title">Instructions</h3>
-You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a grey border. Go as fast as you can, but don't sacrifice accuracy for speed.
-<br>
-<br>
-**Press any key to continue.**
-                            """
-                            , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
-                            , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
-                            , seedInt = 0
-                            , currentTime = time
-                            , gameDuration = 5 * Time.minute
-                            , redCrossDuration = 500 * Time.millisecond
-                            }
-                    )
-                |> Task.perform PlayGameNew
-            )
+            initStopSignal model
 
         -- TODO fetch configuration from the model
         InitGoNoGo ->
-            ( model
-            , Time.now
-                |> Task.map
-                    (\time ->
-                        Game.Implementations.goNoGoInit
-                            { totalDuration = 1250 * Time.millisecond
-                            , infoString = """
-<h3 class="title">Instructions</h3>
-<p>You will see pictures either on the left or right side of the screen, surrounded by a solid or dashed border. Press <span class="highlight"><strong>c</strong></span> when the picture is on the left side of the screen or <span class="highlight"><strong>m</strong></span> when the picture is on the right side of the screen. BUT only if you see a <span style="border: 1px solid rgb(0, 0, 0); padding: 2px;">solid border</span> around the picture. Do not press if you see a <span style="border: 1px dashed rgb(0, 0, 0); padding: 2px;">dashed border</span>. Go as fast as you can, but don't sacrifice accuracy for speed.<div>
-<br>
-<br>
-<strong>Press any key to continue.</strong></div>
-</p>
-                            """
-                            , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
-                            , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
-                            , fillerImages = (getFullImagePathsNew model.filesrv model.ugimages_f |> Maybe.withDefault [])
-                            , seedInt = 0
-                            , currentTime = time
-                            , gameDuration = 5 * Time.minute
-                            , redCrossDuration = 500 * Time.millisecond
-                            }
-                    )
-                |> Task.perform PlayGameNew
-            )
+            initGoNoGo model
+
+        -- TODO fetch configuration from the model
+        InitDotProbe ->
+            initDotProbe model
 
         -- let
         --     trialSettings =
         --         { blockCount = 10000
-        --         , responseCount = 40
-        --         , nonResponseCount = 40
-        --         , fillerCount = 20
-        --         , pictureDuration = 1750 * Time.millisecond
-        --         , durationIncrement = -20 * Time.millisecond
-        --         , minDuration = 1250 * Time.millisecond
-        --         , maxDuration = 2000 * Time.millisecond
-        --         , redCross = 500 * Time.millisecond
+        --         , fixationCross = 500 * Time.millisecond
+        --         , pictures = 500
         --         }
-        --     --<| Maybe.withDefault "" <| Maybe.map .instruct model.gonogoGame
         --     gameSettings blocks currTime =
         --         { blocks = blocks
         --         , currTime = currTime
-        --         , maxDuration = 0.1 * Time.minute
+        --         , maxDuration = 5 * Time.minute
         --         , settings = trialSettings
-        --         , instructionsView = gngInstructions
+        --         , instructionsView = dpInstructions
         --         , trialRestView = Html.text ""
-        --         , trialRestDuration = 500 * Time.millisecond
+        --         , trialRestDuration = 0
         --         , trialRestJitter = 0
         --         , blockRestView = always (Html.text "Implement a block rest view.")
         --         , blockRestDuration = 1500 * Time.millisecond
-        --         , reportView = GoNoGo.viewReport
-        --         , trialFuns = GoNoGo.trialFuns
+        --         , reportView = always (Html.text "Implement a report view.")
+        --         , trialFuns = DotProbe.trialFuns
         --         }
-        --     getImages =
-        --         getFullImagePaths model.filesrv
         -- in
-        --     applyImages GoNoGo model gameSettings (GoNoGo.init trialSettings)
-        -- TODO fetch configuration from the model
-        InitDotProbe ->
-            let
-                trialSettings =
-                    { blockCount = 10000
-                    , fixationCross = 500 * Time.millisecond
-                    , pictures = 500
-                    }
-
-                gameSettings blocks currTime =
-                    { blocks = blocks
-                    , currTime = currTime
-                    , maxDuration = 5 * Time.minute
-                    , settings = trialSettings
-                    , instructionsView = dpInstructions
-                    , trialRestView = Html.text ""
-                    , trialRestDuration = 0
-                    , trialRestJitter = 0
-                    , blockRestView = always (Html.text "Implement a block rest view.")
-                    , blockRestDuration = 1500 * Time.millisecond
-                    , reportView = always (Html.text "Implement a report view.")
-                    , trialFuns = DotProbe.trialFuns
-                    }
-            in
-                applyImages DotProbe model gameSettings (\v i _ -> DotProbe.init trialSettings v i)
-
+        --     applyImages DotProbe model gameSettings (\v i _ -> DotProbe.init trialSettings v i)
         -- TODO fetch configuration from the model
         InitVisualSearch ->
             let
@@ -536,6 +460,91 @@ You will see pictures presented in either a dark blue or light gray border. Pres
             (httpErrorState model err)
 
 
+initStopSignal model =
+    ( model
+    , Time.now
+        |> Task.map
+            (\time ->
+                Game.Implementations.StopSignal.init
+                    { borderDelay = 100 * Time.millisecond
+                    , totalDuration = 1000 * Time.millisecond
+                    , infoString = """
+<h3 class="title">Instructions</h3>
+You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a grey border. Go as fast as you can, but don't sacrifice accuracy for speed.
+<br>
+<br>
+**Press any key to continue.**
+                            """
+                    , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
+                    , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
+                    , seedInt = 0
+                    , currentTime = time
+                    , gameDuration = 5 * Time.minute
+                    , redCrossDuration = 500 * Time.millisecond
+                    }
+            )
+        |> Task.perform PlayGameNew
+    )
+
+
+initGoNoGo : Model -> ( Model, Cmd Msg )
+initGoNoGo model =
+    ( model
+    , Time.now
+        |> Task.map
+            (\time ->
+                Game.Implementations.GoNoGo.init
+                    { totalDuration = 1250 * Time.millisecond
+                    , infoString = """
+<h3 class="title">Instructions</h3>
+<p>You will see pictures either on the left or right side of the screen, surrounded by a solid or dashed border. Press <span class="highlight"><strong>c</strong></span> when the picture is on the left side of the screen or <span class="highlight"><strong>m</strong></span> when the picture is on the right side of the screen. BUT only if you see a <span style="border: 1px solid rgb(0, 0, 0); padding: 2px;">solid border</span> around the picture. Do not press if you see a <span style="border: 1px dashed rgb(0, 0, 0); padding: 2px;">dashed border</span>. Go as fast as you can, but don't sacrifice accuracy for speed.<div>
+<br>
+<br>
+<strong>Press any key to continue.</strong></div>
+</p>
+                            """
+                    , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
+                    , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
+                    , fillerImages = (getFullImagePathsNew model.filesrv model.ugimages_f |> Maybe.withDefault [])
+                    , seedInt = 0
+                    , currentTime = time
+                    , gameDuration = 5 * Time.minute
+                    , redCrossDuration = 500 * Time.millisecond
+                    }
+            )
+        |> Task.perform PlayGameNew
+    )
+
+
+initDotProbe : Model -> ( Model, Cmd Msg )
+initDotProbe model =
+    ( model
+    , Time.now
+        |> Task.map
+            (\time ->
+                Game.Implementations.DotProbe.init
+                    { fixationDuration = 500 * Time.millisecond
+                    , imageDuration = 500 * Time.millisecond
+                    , infoString = """
+
+<h3 class="title">Instructions</h3>
+You will see pictures on the left and right side of the screen, followed by a dot on the left or right side of the screen. Press the <span class="highlight"><strong>c</strong></span> if the dot is on the left side of the screen or <span class="highlight"><strong>m</strong></span> when the dot is on the right side of the screen. Go as fast as you can, but don't sacrifice accuracy for speed.<div>
+<br>
+<br>
+<strong>Press any key to continue.</strong>
+</div>
+"""
+                    , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
+                    , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
+                    , seedInt = 0
+                    , currentTime = time
+                    , gameDuration = 5 * Time.minute
+                    }
+            )
+        |> Task.perform PlayGameNew
+    )
+
+
 andThen : (Model -> ( Model, Cmd Msg )) -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 andThen f ( model, cmd ) =
     let
@@ -634,9 +643,6 @@ handleTimeUpdate time model =
             Nothing ->
                 ( model, Cmd.none )
 
-            Just (DotProbe data) ->
-                updateData DotProbe data
-
             Just (VisualSearch data) ->
                 updateData VisualSearch data
 
@@ -655,9 +661,6 @@ handleIndicationUpdate model =
         case model.playingGame of
             Nothing ->
                 ( model, Cmd.none )
-
-            Just (DotProbe data) ->
-                updateData DotProbe data
 
             Just (VisualSearch data) ->
                 updateData VisualSearch data
@@ -678,9 +681,6 @@ handleIntIndicationUpdate n model =
             Nothing ->
                 ( model, Cmd.none )
 
-            Just (DotProbe data) ->
-                updateData DotProbe data
-
             Just (VisualSearch data) ->
                 updateData VisualSearch data
 
@@ -699,9 +699,6 @@ handleDirectionIndicationUpdate n model =
         case model.playingGame of
             Nothing ->
                 ( model, Cmd.none )
-
-            Just (DotProbe data) ->
-                updateData DotProbe data
 
             Just (VisualSearch data) ->
                 updateData VisualSearch data

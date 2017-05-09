@@ -9,6 +9,8 @@ import Html.Events exposing (..)
 import Markdown
 import Ui.Card
 import Numeral
+import Svg exposing (Svg, svg, circle)
+import Svg.Attributes as Svg exposing (cy, cx, r)
 
 
 view : Game.GameState msg -> msg -> Html msg
@@ -37,30 +39,25 @@ view gameState msg =
                             Ui.Card.middleBlock [ Markdown.toHtml [] string ]
 
                         Just (Game.Single borderType image) ->
-                            border borderType [ img [ src image.url ] [] ]
+                            viewSingleLayout borderType image
 
                         Just (Game.LeftRight borderType lImage rImage) ->
-                            border borderType [ img [ src lImage.url ] [], img [ src rImage.url ] [] ]
+                            viewLeftRightLayout borderType lImage rImage
 
                         Just (Game.LeftOrRight borderType direction image) ->
-                            border borderType
-                                [ img
-                                    [ src image.url
-                                    , case direction of
-                                        Game.Left ->
-                                            class "is-pulled-left squeezed"
-
-                                        Game.Right ->
-                                            class "is-pulled-right squeezed"
-                                    ]
-                                    []
-                                ]
+                            viewLeftOrRightLayout borderType direction image
 
                         Just (Game.SelectGrid borderType rows cols images) ->
-                            border borderType [ text (toString (rows * cols)) ]
+                            viewSelectGridLayout borderType rows cols images
 
                         Just (Game.RedCross borderType) ->
-                            border borderType [ redCross ]
+                            viewRedCross borderType
+
+                        Just (Game.Fixation borderType) ->
+                            viewFixation borderType
+
+                        Just (Game.Probe borderType direction) ->
+                            viewProbe borderType direction
                     ]
 
         Game.Finished state ->
@@ -103,21 +100,108 @@ border : BorderType -> List (Html msg) -> Html msg
 border borderType content =
     case borderType of
         None ->
-            div [ class "gameWrapper" ] [ div [ class "imageBox sized" ] content ]
+            div [ class "imageBox sized" ] content
 
         Grey ->
-            div [ class "gameWrapper" ] [ div [ class "imageBox greyBorder sized" ] content ]
+            div [ class "imageBox greyBorder sized" ] content
 
         Blue ->
-            div [ class "gameWrapper" ] [ div [ class "imageBox blueBorder sized" ] content ]
+            div [ class "imageBox blueBorder sized" ] content
 
         Black ->
-            div [ class "gameWrapper" ] [ div [ class "imageBox solidBorder sized" ] content ]
+            div [ class "imageBox solidBorder sized" ] content
 
         Dashed ->
-            div [ class "gameWrapper" ] [ div [ class "imageBox dashedBorder sized" ] content ]
+            div [ class "imageBox dashedBorder sized" ] content
 
 
-redCross : Html msg
-redCross =
-    div [ class "redCross" ] [ text "X" ]
+viewRedCross : BorderType -> Html msg
+viewRedCross borderType =
+    gameWrapper
+        [ border borderType [ div [ class "redCross" ] [ text "X" ] ]
+        ]
+
+
+gameWrapper : List (Html msg) -> Html msg
+gameWrapper game =
+    div [ class "gameWrapper" ] game
+
+
+viewSingleLayout : BorderType -> Game.Image -> Html msg
+viewSingleLayout borderType image =
+    gameWrapper [ border borderType [ img [ src image.url, class "squeezed" ] [] ] ]
+
+
+viewLeftOrRightLayout : BorderType -> Game.Direction -> Game.Image -> Html msg
+viewLeftOrRightLayout borderType direction image =
+    gameWrapper
+        [ border borderType
+            [ img
+                [ src image.url
+                , case direction of
+                    Game.Left ->
+                        class "is-pulled-left squeezed"
+
+                    Game.Right ->
+                        class "is-pulled-right squeezed"
+                ]
+                []
+            ]
+        ]
+
+
+viewSelectGridLayout : BorderType -> Int -> Int -> List Game.Image -> Html msg
+viewSelectGridLayout borderType rows cols images =
+    border borderType [ text (toString (rows * cols)) ]
+
+
+
+-- DOT PROBE
+
+
+viewLeftRightLayout : BorderType -> Game.Image -> Game.Image -> Html msg
+viewLeftRightLayout borderType lImage rImage =
+    div [ class "columns is-mobile" ]
+        [ div [ class "column" ] [ img [ src lImage.url ] [] ]
+        , div [ class "column" ] [ img [ src rImage.url ] [] ]
+        ]
+
+
+viewFixation : BorderType -> Html msg
+viewFixation borderType =
+    div
+        [ class "columns is-mobile" ]
+        [ div
+            [ class "column" ]
+            [ div [ class "fixationCross" ] [ text "+" ] ]
+        ]
+
+
+viewProbe : BorderType -> Game.Direction -> Html msg
+viewProbe borderType direction =
+    div
+        [ class "columns is-mobile" ]
+        (case direction of
+            Game.Left ->
+                [ div
+                    [ class "column" ]
+                    [ div [ class "probe" ] [ probe ] ]
+                , div
+                    [ class "column" ]
+                    [ text "" ]
+                ]
+
+            Game.Right ->
+                [ div
+                    [ class "column" ]
+                    [ text "" ]
+                , div
+                    [ class "column" ]
+                    [ div [ class "probe" ] [ probe ] ]
+                ]
+        )
+
+
+probe : Svg msg
+probe =
+    svg [ Svg.width "20", Svg.height "20" ] [ circle [ cx "10", cy "10", r "10" ] [] ]

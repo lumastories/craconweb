@@ -83,8 +83,7 @@ type alias Base =
 
 
 type Game
-    = DotProbe (GameManager.GameData DotProbe.Settings DotProbe.Trial Msg)
-    | VisualSearch (GameManager.GameData VisualSearch.Settings VisualSearch.Trial Msg)
+    = VisualSearch (GameManager.GameData VisualSearch.Settings VisualSearch.Trial Msg)
 
 
 type ValuationsError

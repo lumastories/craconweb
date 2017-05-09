@@ -1,0 +1,110 @@
+module Game.Implementations.DotProbe exposing (init)
+
+import Game.Card exposing (complete)
+import Game
+    exposing
+        ( Game
+        , Image
+        , Layout(..)
+        , BorderType(..)
+        , LogEntry(..)
+        , State
+        , onDirection
+        , andThen
+        , andThenCheckTimeout
+        , emptyState
+        , segment
+        , log
+        , addRests
+        , info
+        , onIndication
+        , timeout
+        , resultTimeout
+        , startSession
+        , leftOrRight
+        )
+import Random exposing (Generator)
+import Random.List
+import Time exposing (Time)
+
+
+init :
+    { fixationDuration : Time
+    , imageDuration : Time
+    , infoString : String
+    , responseImages : List Image
+    , nonResponseImages : List Image
+    , seedInt : Int
+    , currentTime : Time
+    , gameDuration : Time
+    }
+    -> Game msg
+init { fixationDuration, imageDuration, infoString, responseImages, nonResponseImages, seedInt, currentTime, gameDuration } =
+    let
+        trials =
+            List.map2
+                (\goImage noGoImage ->
+                    trial
+                        { fixationDuration = fixationDuration
+                        , imageDuration = imageDuration
+                        , goTrial = True
+                        , gameDuration = gameDuration
+                        , goImage = goImage
+                        , noGoImage = noGoImage
+                        }
+                )
+                responseImages
+                nonResponseImages
+
+        isTimeout state =
+            state.sessionStart
+                |> Maybe.map (\sessionStart -> sessionStart + gameDuration < state.currTime)
+                |> Maybe.withDefault False
+    in
+        trials
+            |> Random.List.shuffle
+            |> Random.andThen (addRests Nothing 500 0)
+            |> Random.map
+                (\trials ->
+                    (info infoString :: startSession :: log (BeginSession seedInt) :: trials)
+                        |> List.foldl (andThenCheckTimeout isTimeout) (Game.Card.complete (emptyState seedInt currentTime))
+                )
+            |> (\generator -> Random.step generator (Random.initialSeed seedInt))
+            |> Tuple.first
+
+
+trial :
+    { fixationDuration : Time
+    , imageDuration : Time
+    , gameDuration : Time
+    , goTrial : Bool
+    , goImage : Image
+    , noGoImage : Image
+    }
+    -> State
+    -> Game msg
+trial { fixationDuration, imageDuration, goTrial, gameDuration, goImage, noGoImage } state =
+    let
+        ( direction, nextSeed ) =
+            Random.step Game.leftOrRight state.currentSeed
+
+        borderless =
+            None
+
+        trial =
+            case direction of
+                Game.Left ->
+                    Just (LeftRight borderless goImage noGoImage)
+
+                Game.Right ->
+                    Just (LeftRight borderless noGoImage goImage)
+    in
+        log BeginTrial { state | trialResult = Nothing, trialStart = state.currTime, currentSeed = nextSeed }
+            |> andThen (log DisplayFixation)
+            |> andThen (segment [ timeout fixationDuration ] (Just (Fixation borderless)))
+            |> andThen (log (BeginDisplay trial))
+            |> andThen (segment [ timeout (fixationDuration + imageDuration) ] trial)
+            |> andThen (log (DisplayProbe direction))
+            |> andThen (log BeginInput)
+            |> andThen (segment [ onDirection True direction ] (Just (Probe borderless direction)))
+            |> andThen (log EndTrial)
