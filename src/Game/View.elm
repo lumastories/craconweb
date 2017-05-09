@@ -30,9 +30,9 @@ view { gameState, initMsg, intIndicationMsg } =
                         |> Maybe.withDefault ""
             in
                 div []
-                    [ p [] [ text timer ]
-                    , p [] [ text <| toString state.trialResult ]
-                    , case Game.Card.layout game of
+                    -- [ p [] [ text timer ]
+                    -- , p [] [ text <| toString state.trialResult ]
+                    [ case Game.Card.layout game of
                         Nothing ->
                             text ""
 
@@ -108,7 +108,7 @@ border : BorderType -> List (Html msg) -> Html msg
 border borderType content =
     case borderType of
         None ->
-            div [ class "imageBox sized" ] content
+            div [ class "imageBox whiteBorder sized" ] content
 
         Grey ->
             div [ class "imageBox greyBorder sized" ] content
