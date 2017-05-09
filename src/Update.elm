@@ -441,7 +441,7 @@ initGoNoGo model =
 <br>
 <strong>Press any key to continue.</strong></div>
 </p>
-                            """
+"""
                     , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
                     , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
                     , fillerImages = (getFullImagePathsNew model.filesrv model.ugimages_f |> Maybe.withDefault [])
@@ -505,38 +505,11 @@ You will see a grid of images. Select the target image as quickly as you can.
                     , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
                     , seedInt = 0
                     , currentTime = time
-                    , gameDuration = 0.5 * Time.minute
+                    , gameDuration = 5 * Time.minute
                     }
             )
         |> Task.perform PlayGame
     )
-
-
-
--- let
---     trialSettings =
---         { picturesPerTrial = 16
---         , blockTrialCount = 10000
---         , fixationCross = 500
---         , selectionGrid = 3000
---         , animation = 1000
---         }
---     gameSettings blocks currTime =
---         { blocks = blocks
---         , currTime = currTime
---         , maxDuration = 5 * Time.minute
---         , settings = trialSettings
---         , instructionsView = vsInstructions
---         , trialRestView = Html.text ""
---         , trialRestDuration = 0
---         , trialRestJitter = 0
---         , blockRestView = always (Html.text "Implement a block rest view.")
---         , blockRestDuration = 1500 * Time.millisecond
---         , reportView = always (Html.text "Implement a report view.")
---         , trialFuns = VisualSearch.trialFuns IntIndication
---         }
--- in
---     applyImages VisualSearch model gameSettings (\v i _ -> VisualSearch.init trialSettings v i)
 
 
 getFullImagePaths : String -> Maybe (List Entity.Ugimage) -> Maybe (List String)
