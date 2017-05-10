@@ -104,10 +104,13 @@ trial { fixationDuration, imageDuration, zoomDuration, goTrial, gameDuration, no
 
         trial =
             Just (SelectGrid None { columns = 4, images = images, goIndex = goIndex })
+
+        fixation =
+            Just (Fixation None)
     in
         log BeginTrial { state | trialResult = Game.NoResult, trialStart = state.currTime, currentSeed = nextSeed }
-            |> andThen (log DisplayFixation)
-            |> andThen (segment [ timeout fixationDuration ] (Just (Fixation None)))
+            |> andThen (log (BeginDisplay fixation))
+            |> andThen (segment [ timeout fixationDuration ] fixation)
             |> andThen (log (BeginDisplay trial))
             |> andThen (log BeginInput)
             |> andThen (segment [ onSelect goIndex, selectTimeout (fixationDuration + imageDuration) ] trial)

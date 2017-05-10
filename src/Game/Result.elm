@@ -75,8 +75,8 @@ percentCorrect state =
 
 
 isCorrect : Game.LogEntry -> Bool
-isCorrect gameEntry =
-    case gameEntry of
+isCorrect logEntry =
+    case logEntry of
         Game.BeginSession _ _ ->
             False
 
@@ -90,18 +90,6 @@ isCorrect gameEntry =
             False
 
         Game.BeginDisplay _ _ ->
-            False
-
-        Game.PlaySound _ ->
-            False
-
-        Game.DisplayRedCross _ ->
-            False
-
-        Game.DisplayFixation _ ->
-            False
-
-        Game.DisplayProbe _ _ ->
             False
 
         Game.BeginInput _ ->
@@ -121,8 +109,8 @@ isCorrect gameEntry =
 
 
 isResult : Game.LogEntry -> Bool
-isResult gameEntry =
-    case gameEntry of
+isResult logEntry =
+    case logEntry of
         Game.BeginSession _ _ ->
             False
 
@@ -138,19 +126,7 @@ isResult gameEntry =
         Game.BeginDisplay _ _ ->
             False
 
-        Game.PlaySound _ ->
-            False
-
-        Game.DisplayRedCross _ ->
-            False
-
-        Game.DisplayProbe _ _ ->
-            False
-
         Game.BeginInput _ ->
-            False
-
-        Game.DisplayFixation _ ->
             False
 
         Game.AcceptIndication _ _ ->
