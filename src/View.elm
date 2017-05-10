@@ -299,34 +299,27 @@ mesQueryModal q feedback =
             text ""
 
         Just q ->
-            div
-                [ class <| "modal is-active" ]
+            Parts.modal
                 [ div
-                    [ class "modal-background" ]
-                    []
-                , div
-                    [ class "modal-content" ]
-                    [ div
-                        [ class "field" ]
-                        [ label
-                            [ class "label white title is-3" ]
-                            [ text q ]
-                        , p
-                            [ class "control" ]
-                            [ textarea
-                                [ class "textarea"
-                                , placeholder "Answer question here"
-                                , onInput UpdateMesAnswer
-                                ]
-                                []
+                    [ class "field" ]
+                    [ label
+                        [ class "label white title is-3" ]
+                        [ text q ]
+                    , p
+                        [ class "control" ]
+                        [ textarea
+                            [ class "textarea"
+                            , placeholder "Answer question here"
+                            , onInput UpdateMesAnswer
                             ]
-                        , p [class "questionFeedback"] [Maybe.withDefault "" feedback |> text]
-                        , button
-                            [ class "button is-primary is-large"
-                            , onClick TrySubmitMesAnswer
-                            ]
-                            [ text "Share" ]
+                            []
                         ]
+                    , p [ class "questionFeedback" ] [ Maybe.withDefault "" feedback |> text ]
+                    , button
+                        [ class "button is-primary is-large"
+                        , onClick TrySubmitMesAnswer
+                        ]
+                        [ text "Share" ]
                     ]
                 ]
 

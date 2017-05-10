@@ -28,6 +28,18 @@ import Game.Implementations.VisualSearch
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        SetRequestNothing ->
+            ( { model | request = Nothing }, Cmd.none )
+
+        TryRemoveUser userId ->
+            case model.request of
+                Nothing ->
+                    ( { model | request = Just "Are you sure?" }, Cmd.none )
+
+                Just _ ->
+                    -- TODO DELETE /user/:userId
+                    ( { model | request = Nothing }, Cmd.none )
+
         NextQueryResp (Ok q) ->
             ( { model | mesQuery = Just q.content, mesAnswer = Just (newMesAnswerWithqueryId q.id) }
             , Cmd.none
@@ -49,14 +61,14 @@ update msg model =
 
                 Just mesAns ->
                     if mesAns.essay == "" then
-                        ({model|request=Just "Please answer the question. Thanks!"},Cmd.none)
+                        ( { model | request = Just "Please answer the question. Thanks!" }, Cmd.none )
                     else
                         case model.visitor of
                             Anon ->
                                 model ! []
 
                             LoggedIn { sub } ->
-                                ( { model | mesQuery = Nothing,request=Nothing }
+                                ( { model | mesQuery = Nothing, request = Nothing }
                                 , Task.attempt MesPostResp
                                     (Api.createMesAnswer
                                         { url = model.httpsrv
@@ -185,13 +197,12 @@ update msg model =
             )
 
         PublicMesResp (Ok publicMes) ->
-
-              
             ( { model | statements = Just publicMes }, Cmd.none )
 
         PublicMesResp (Err err) ->
             let
-                _ = Debug.log "public" err
+                _ =
+                    Debug.log "public" err
             in
                 model ! []
 
@@ -199,8 +210,9 @@ update msg model =
             ( model
             , Task.attempt PutMesResp
                 (Api.updateMesStatus
-                    model.httpsrv
-                    model.jwtencoded
+                    { url = model.httpsrv
+                    , token = model.jwtencoded
+                    }
                     id
                     True
                 )
@@ -210,8 +222,9 @@ update msg model =
             ( model
             , Task.attempt PutMesResp
                 (Api.updateMesStatus
-                    model.httpsrv
-                    model.jwtencoded
+                    { url = model.httpsrv
+                    , token = model.jwtencoded
+                    }
                     id
                     False
                 )
@@ -444,10 +457,9 @@ update msg model =
 
         MesResp (Err err) ->
             let
-              _ =
-              Debug.log "resp:" err
+                _ =
+                    Debug.log "resp:" err
             in
-              
                 (httpErrorState model err)
 
         PutMesResp (Err err) ->
@@ -626,7 +638,8 @@ valuationsError err =
 httpHumanError : Http.Error -> String
 httpHumanError err =
     let
-        _ = Debug.log "public" err
+        _ =
+            Debug.log "public" err
     in
         case err of
             Http.Timeout ->

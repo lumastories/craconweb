@@ -156,3 +156,8 @@ blockquote i {
     margin-top: 1em;
     margin-bottom: 1em;
 }
+
+.red,
+.red a:hover {
+    color: red;
+}

@@ -100,9 +100,9 @@ defaultHeaders jwtencoded =
         authHeaders
 
 
-updateMesStatus : String -> String -> String -> Bool -> Task Http.Error String
-updateMesStatus httpsrv token id isPublic =
-    putRequest (httpsrv ++ "/mesanswer/" ++ id) token Http.emptyBody (JD.succeed "what will it return?")
+updateMesStatus : M.Base -> String -> Bool -> Task Http.Error String
+updateMesStatus { url, token } id isPublic =
+    putRequest (url ++ "/mesanswer/" ++ id) token Http.emptyBody (JD.succeed "what will it return?")
 
 
 createMesAnswer : M.Base -> M.MesAnswer -> String -> Task Http.Error String

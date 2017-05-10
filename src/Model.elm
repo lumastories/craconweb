@@ -111,6 +111,7 @@ mesAnswerDecoder =
         |> JP.hardcoded False
         |> JP.required "mesqueryId" (JD.string)
 
+
 mesAnswerEncoder : MesAnswer -> JE.Value
 mesAnswerEncoder mesAnswer =
     JE.object [ ( "content", JE.string mesAnswer.essay ) ]
@@ -204,6 +205,8 @@ type Msg
     | MesUnPublish String
     | UpdateMesAnswer String
     | TrySubmitMesAnswer
+    | TryRemoveUser String
+    | SetRequestNothing
 
 
 ugimgsetsDecoder : JD.Decoder (List Entity.Ugimgset)
