@@ -132,6 +132,6 @@ trial { totalDuration, goTrial, gameDuration, redCrossDuration } image state =
                     ]
                     bordered
                 )
-            |> andThen (log DisplayRedCross)
+            |> andThen (log (BeginDisplay redCross))
             |> andThen (segment [ trialFailed, timeout (totalDuration + redCrossDuration) ] redCross)
             |> andThen (log EndTrial)

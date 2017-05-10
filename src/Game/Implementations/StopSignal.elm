@@ -121,13 +121,7 @@ trial { borderDelay, totalDuration, goTrial, gameDuration, redCrossDuration } im
             |> andThen (segment [ timeout borderDelay ] borderless)
             |> andThen (log BeginInput)
             |> andThen (log (BeginDisplay bordered))
-            |> andThen
-                (segment
-                    [ onIndication goTrial
-                    , resultTimeout (not goTrial) totalDuration
-                    ]
-                    bordered
-                )
-            |> andThen (log DisplayRedCross)
+            |> andThen (segment [ onIndication goTrial, resultTimeout (not goTrial) totalDuration ] bordered)
+            |> andThen (log (BeginDisplay redCross))
             |> andThen (segment [ trialFailed, timeout (totalDuration + redCrossDuration) ] redCross)
             |> andThen (log EndTrial)

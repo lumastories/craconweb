@@ -64,10 +64,6 @@ type LogEntry
     | BeginTrial Time
     | EndTrial Time
     | BeginDisplay (Maybe Layout) Time
-    | DisplayRedCross Time
-    | DisplayFixation Time
-    | DisplayProbe Direction Time
-    | PlaySound Time
     | BeginInput Time
     | AcceptIndication Bool Time
     | AcceptDirection { desired : Direction, actual : Direction } Time
