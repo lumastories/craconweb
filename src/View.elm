@@ -185,7 +185,7 @@ isActive active =
 basicPage : Model -> List (Html Msg) -> Html Msg
 basicPage model children =
     section []
-        [ mesQueryModal model.mesQuery
+        [ mesQueryModal model.mesQuery model.request
         , navBar model
         , section
             [ class "section" ]
@@ -197,7 +197,7 @@ basicPage model children =
 homePage : Model -> Html Msg
 homePage model =
     div []
-        [ mesQueryModal model.mesQuery
+        [ mesQueryModal model.mesQuery model.request
         , navBar model
         , homePageBody model
         , Parts.notification model.glitching "is-danger"
@@ -292,8 +292,8 @@ homePageGameCard gameSlug src_ title about =
         ]
 
 
-mesQueryModal : Maybe String -> Html Msg
-mesQueryModal q =
+mesQueryModal : Maybe String -> Maybe String -> Html Msg
+mesQueryModal q feedback =
     case q of
         Nothing ->
             text ""
@@ -320,7 +320,7 @@ mesQueryModal q =
                                 ]
                                 []
                             ]
-                        , br [] []
+                        , p [class "questionFeedback"] [Maybe.withDefault "" feedback |> text]
                         , button
                             [ class "button is-primary is-large"
                             , onClick TrySubmitMesAnswer

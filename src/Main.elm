@@ -93,6 +93,7 @@ init flags location =
             , mesQuery = Nothing
             , mesQuerys = Nothing
             , mesAnswer = Nothing
+            , request = Nothing
             , adminModel =
                 { tmpUserRecord = Empty.emptyUserRecord
                 , mesAnswers = Nothing

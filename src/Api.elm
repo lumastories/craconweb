@@ -126,7 +126,7 @@ fetchMesAnswers b =
 
 fetchPublicMesAnswers : M.Base -> Task Http.Error (List M.MesAnswer)
 fetchPublicMesAnswers b =
-    getRequest b.token (b.url ++ "/mesanswers?userEach=true&createdEach=true&publicEach=false&public=true") M.mesAnswersDecoder
+    getRequest b.token (b.url ++ "/mesanswers?userEach=true&createdEach=true&public=true") M.mesAnswersDecoder
 
 
 fetchMesAnswersByUser : M.Base -> String -> Task Http.Error (List M.MesAnswer)

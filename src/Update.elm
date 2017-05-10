@@ -48,21 +48,24 @@ update msg model =
                     model ! []
 
                 Just mesAns ->
-                    case model.visitor of
-                        Anon ->
-                            model ! []
+                    if mesAns.essay == "" then
+                        ({model|request=Just "Please answer the question. Thanks!"},Cmd.none)
+                    else
+                        case model.visitor of
+                            Anon ->
+                                model ! []
 
-                        LoggedIn { sub } ->
-                            ( { model | mesQuery = Nothing }
-                            , Task.attempt MesPostResp
-                                (Api.createMesAnswer
-                                    { url = model.httpsrv
-                                    , token = model.jwtencoded
-                                    }
-                                    mesAns
-                                    sub
+                            LoggedIn { sub } ->
+                                ( { model | mesQuery = Nothing,request=Nothing }
+                                , Task.attempt MesPostResp
+                                    (Api.createMesAnswer
+                                        { url = model.httpsrv
+                                        , token = model.jwtencoded
+                                        }
+                                        mesAns
+                                        sub
+                                    )
                                 )
-                            )
 
         MesPostResp _ ->
             model ! []
@@ -182,10 +185,15 @@ update msg model =
             )
 
         PublicMesResp (Ok publicMes) ->
+
+              
             ( { model | statements = Just publicMes }, Cmd.none )
 
         PublicMesResp (Err err) ->
-            model ! []
+            let
+                _ = Debug.log "public" err
+            in
+                model ! []
 
         MesPublish id ->
             ( model
@@ -435,17 +443,12 @@ update msg model =
             (httpErrorState model err)
 
         MesResp (Err err) ->
-            case err of
-                Http.BadStatus st ->
-                    case st.status.code of
-                        404 ->
-                            model ! []
-
-                        _ ->
-                            (httpErrorState model err)
-
-                _ ->
-                    (httpErrorState model err)
+            let
+              _ =
+              Debug.log "resp:" err
+            in
+              
+                (httpErrorState model err)
 
         PutMesResp (Err err) ->
             (httpErrorState model err)
@@ -622,21 +625,24 @@ valuationsError err =
 
 httpHumanError : Http.Error -> String
 httpHumanError err =
-    case err of
-        Http.Timeout ->
-            "Something is taking too long"
+    let
+        _ = Debug.log "public" err
+    in
+        case err of
+            Http.Timeout ->
+                "Something is taking too long"
 
-        Http.NetworkError ->
-            "Oops. There's been a network error."
+            Http.NetworkError ->
+                "Oops. There's been a network error."
 
-        Http.BadStatus s ->
-            "Server error: " ++ (.error (errorCodeEncoder s.body))
+            Http.BadStatus s ->
+                "Server error: " ++ (.error (errorCodeEncoder s.body))
 
-        Http.BadPayload str _ ->
-            "Bad payload"
+            Http.BadPayload str _ ->
+                "Bad payload"
 
-        _ ->
-            "Unknown error"
+            _ ->
+                "Unknown error"
 
 
 

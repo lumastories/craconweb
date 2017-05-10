@@ -44,6 +44,7 @@ type alias Model =
     , mesAnswer : Maybe MesAnswer
     , adminModel : AdminModel
     , statements : Maybe (List MesAnswer)
+    , request : Maybe String
     }
 
 
@@ -102,18 +103,17 @@ mesAnswersDecoder =
     JD.field "mesanswers" (JD.list mesAnswerDecoder)
 
 
-mesAnswerEncoder : MesAnswer -> JE.Value
-mesAnswerEncoder mesAnswer =
-    JE.object [ ( "content", JE.string mesAnswer.essay ) ]
-
-
 mesAnswerDecoder : JD.Decoder MesAnswer
 mesAnswerDecoder =
     JP.decode MesAnswer
         |> JP.required "id" (JD.string)
         |> JP.required "content" (JD.string)
         |> JP.hardcoded False
-        |> JP.required "mesQueryId" (JD.string)
+        |> JP.required "mesqueryId" (JD.string)
+
+mesAnswerEncoder : MesAnswer -> JE.Value
+mesAnswerEncoder mesAnswer =
+    JE.object [ ( "content", JE.string mesAnswer.essay ) ]
 
 
 type alias MesQuery =
