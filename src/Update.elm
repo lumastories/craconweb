@@ -222,19 +222,11 @@ update msg model =
                                 LoggedIn jwtdecoded ->
                                     jwtdecoded.sub
 
-                        publishedMes mes =
-                            case mes of
-                                Nothing ->
-                                    Nothing
-
-                                Just m ->
-                                    Just { m | public = True }
-
                         mesAns =
                             mess
                                 |> List.filter (\m -> m.id == id)
                                 |> List.head
-                                |> publishedMes
+                                |> Maybe.map (\m -> { m | public = True })
                     in
                         case mesAns of
                             Nothing ->
