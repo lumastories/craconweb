@@ -46,22 +46,13 @@ mesPage model =
         ]
 
 
-publishButton : Bool -> String -> Html Msg
-publishButton public id =
-    case public of
-        True ->
-            a
-                [ class "button is-danger is-outlined"
-                , MesUnPublish id |> onClick
-                ]
-                [ text "Unpublish" ]
-
-        False ->
-            a
-                [ class "button is-success is-outlined"
-                , MesPublish id |> onClick
-                ]
-                [ text "Publish!" ]
+publishButton : String -> Html Msg
+publishButton id =
+    a
+        [ class "button is-success is-outlined"
+        , PublishMes id |> onClick
+        ]
+        [ text "Publish!" ]
 
 
 mesTable : AdminModel -> Html Msg
@@ -69,7 +60,7 @@ mesTable am =
     case am.mesAnswers of
         Just mesAnswers ->
             mesAnswers
-                |> List.map (\ms -> tr [] [ td [] [ text ms.essay ], td [] [ publishButton ms.public ms.id ] ])
+                |> List.map (\ms -> tr [] [ td [] [ text ms.essay ], td [] [ publishButton ms.id ] ])
                 |> mesTableHelper
 
         Nothing ->
@@ -162,7 +153,7 @@ userRows users request =
                         "fa-wrench"
                         "is-small"
                     , text " "
-                    , a [class "button is-small red", onClick (TryRemoveUser user.id)] [i [class "fa fa-remove"][]]
+                    , a [ class "button is-small red", onClick (TryRemoveUser user.id) ] [ i [ class "fa fa-remove" ] [] ]
                     , confirmModal request user.id
                     ]
                 ]
@@ -174,14 +165,15 @@ userRows users request =
 confirmModal request userId =
     case request of
         Just r ->
-            Parts.modal [h3 [class "title is-3 white"] [text "Are you sure?"]
-                , a [class "button is-outlined is-danger", onClick (TryRemoveUser userId)][text "Yep! I'm sure, delete this user."]
+            Parts.modal
+                [ h3 [ class "title is-3 white" ] [ text "Are you sure?" ]
+                , a [ class "button is-outlined is-danger", onClick (TryRemoveUser userId) ] [ text "Yep! I'm sure, archive this user." ]
                 , text " "
-                , a [class "button is-outlined is-primary", onClick SetRequestNothing][text "Just kidding."]
-            ]
+                , a [ class "button is-outlined is-primary", onClick SetRequestNothing ] [ text "Just kidding." ]
+                ]
+
         Nothing ->
             text ""
-    
 
 
 iconButton : String -> String -> String -> String -> Html Msg
@@ -451,4 +443,3 @@ backButton =
     button
         ([ class "button is-link" ] ++ (Parts.linkAttrs R.adminPath))
         [ text "Go back" ]
-

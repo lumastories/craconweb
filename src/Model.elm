@@ -138,6 +138,7 @@ mesQuerysDecoder =
 type alias Base =
     { url : String
     , token : String
+    , sub : String
     }
 
 
@@ -201,8 +202,7 @@ type Msg
     | SetRegistration String String
     | TryUpdateUser
     | EditUserAccount String String
-    | MesPublish String
-    | MesUnPublish String
+    | PublishMes String
     | UpdateMesAnswer String
     | TrySubmitMesAnswer
     | TryRemoveUser String

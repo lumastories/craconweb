@@ -22,6 +22,7 @@ import Jwt
 import Time
 import Model as M
 import Json.Decode as JD
+import Json.Encode as JE
 
 
 {-
@@ -53,8 +54,8 @@ shared httpsrv token sub =
     , Task.attempt M.GameResp (fetchGame httpsrv token "respondsignal")
     , Task.attempt M.GameResp (fetchGame httpsrv token "visualsearch")
     , Task.attempt M.UserResp (fetchUser httpsrv token sub)
-    , Task.attempt M.MesQuerysResp (fetchMesQuerys { url = httpsrv, token = token })
-    , Task.attempt M.PublicMesResp (fetchPublicMesAnswers { url = httpsrv, token = token })
+    , Task.attempt M.MesQuerysResp (fetchMesQuerys { url = httpsrv, token = token, sub = sub })
+    , Task.attempt M.PublicMesResp (fetchPublicMesAnswers { url = httpsrv, token = token, sub = sub })
     ]
 
 
@@ -64,7 +65,7 @@ adminOnly httpsrv token =
     , Task.attempt M.RoleResp (fetchRole httpsrv token "user")
     , Task.attempt M.GroupResp (fetchGroup httpsrv token "control_a")
     , Task.attempt M.GroupResp (fetchGroup httpsrv token "experimental_a")
-    , Task.attempt M.MesResp (fetchMesAnswers { url = httpsrv, token = token })
+    , Task.attempt M.MesResp (fetchMesAnswers { url = httpsrv, token = token, sub = "" })
     ]
 
 
@@ -73,14 +74,14 @@ userOnly httpsrv token sub =
     [ Task.attempt M.FillerResp (fetchFiller httpsrv token sub)
     , Task.attempt M.ValidResp (fetchValid httpsrv token sub)
     , Task.attempt M.InvalidResp (fetchInvalid httpsrv token sub)
-    , Task.attempt M.NextQueryResp (calcNextQuery { url = httpsrv, token = token } sub)
+    , Task.attempt M.NextQueryResp (calcNextQuery { url = httpsrv, token = token, sub = sub })
     ]
 
 
-calcNextQuery : M.Base -> String -> Task Http.Error M.MesQuery
-calcNextQuery b sub =
+calcNextQuery : M.Base -> Task Http.Error M.MesQuery
+calcNextQuery { token, url } =
     -- TODO: chain mesanswers request with this to determinine which queries to display
-    getRequest b.token (b.url ++ "/mesquery/1") M.mesQueryDecoder
+    getRequest token (url ++ "/mesquery/1") M.mesQueryDecoder
 
 
 defaultHeaders : String -> List Http.Header
@@ -100,9 +101,28 @@ defaultHeaders jwtencoded =
         authHeaders
 
 
-updateMesStatus : M.Base -> String -> Bool -> Task Http.Error String
-updateMesStatus { url, token } id isPublic =
-    putRequest (url ++ "/mesanswer/" ++ id) token Http.emptyBody (JD.succeed "what will it return?")
+updateMesStatus : M.Base -> String -> M.MesAnswer -> Task Http.Error String
+updateMesStatus { url, token, sub } id updatedMes =
+    let
+        _ =
+            Debug.log "mes" updatedMes
+    in
+        putRequest (url ++ "/mesanswer/" ++ id) token (Http.jsonBody <| encodeMes updatedMes sub) (JD.succeed "TODO: decode response")
+
+
+encodeMes : M.MesAnswer -> String -> JE.Value
+encodeMes mes sub =
+    JE.object
+        [ ( "mesanswerId", JE.string mes.id )
+        , ( "mesanswerRecord"
+          , JE.object
+                [ ( "userId", JE.string sub )
+                , ( "mesqueryId", JE.string mes.id )
+                , ( "content", JE.string mes.essay )
+                , ( "public", JE.bool mes.public )
+                ]
+          )
+        ]
 
 
 createMesAnswer : M.Base -> M.MesAnswer -> String -> Task Http.Error String

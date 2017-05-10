@@ -73,6 +73,7 @@ update msg model =
                                     (Api.createMesAnswer
                                         { url = model.httpsrv
                                         , token = model.jwtencoded
+                                        , sub = ""
                                         }
                                         mesAns
                                         sub
@@ -206,29 +207,51 @@ update msg model =
             in
                 model ! []
 
-        MesPublish id ->
-            ( model
-            , Task.attempt PutMesResp
-                (Api.updateMesStatus
-                    { url = model.httpsrv
-                    , token = model.jwtencoded
-                    }
-                    id
-                    True
-                )
-            )
+        PublishMes id ->
+            case model.adminModel.mesAnswers of
+                Nothing ->
+                    model ! []
 
-        MesUnPublish id ->
-            ( model
-            , Task.attempt PutMesResp
-                (Api.updateMesStatus
-                    { url = model.httpsrv
-                    , token = model.jwtencoded
-                    }
-                    id
-                    False
-                )
-            )
+                Just mess ->
+                    let
+                        userId =
+                            case model.visitor of
+                                Anon ->
+                                    ""
+
+                                LoggedIn jwtdecoded ->
+                                    jwtdecoded.sub
+
+                        publishedMes mes =
+                            case mes of
+                                Nothing ->
+                                    Nothing
+
+                                Just m ->
+                                    Just { m | public = True }
+
+                        mesAns =
+                            mess
+                                |> List.filter (\m -> m.id == id)
+                                |> List.head
+                                |> publishedMes
+                    in
+                        case mesAns of
+                            Nothing ->
+                                model ! []
+
+                            Just mesAnswer ->
+                                ( model
+                                , Task.attempt PutMesResp
+                                    (Api.updateMesStatus
+                                        { url = model.httpsrv
+                                        , token = model.jwtencoded
+                                        , sub = userId
+                                        }
+                                        id
+                                        mesAnswer
+                                    )
+                                )
 
         PutMesResp (Ok r) ->
             let
