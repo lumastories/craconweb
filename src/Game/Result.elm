@@ -95,8 +95,8 @@ isCorrect logEntry =
         Game.BeginInput _ ->
             False
 
-        Game.AcceptIndication noGoTrial _ ->
-            noGoTrial
+        Game.AcceptIndication { desired } _ ->
+            desired
 
         Game.AcceptDirection { desired, actual } _ ->
             desired == actual
@@ -104,8 +104,8 @@ isCorrect logEntry =
         Game.AcceptSelection { desired, actual } _ ->
             desired == actual
 
-        Game.Timeout goTrial _ ->
-            goTrial
+        Game.Timeout { desired } _ ->
+            desired
 
 
 isResult : Game.LogEntry -> Bool
