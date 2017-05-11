@@ -81,7 +81,7 @@ userOnly httpsrv token sub =
 calcNextQuery : M.Base -> Task Http.Error M.MesQuery
 calcNextQuery { token, url } =
     -- TODO: chain mesanswers request with this to determinine which queries to display
-    getRequest token (url ++ "/mesquery/1") M.mesQueryDecoder
+    getRequest token (url ++ "/mesquery/2") M.mesQueryDecoder
 
 
 defaultHeaders : String -> List Http.Header
@@ -113,13 +113,13 @@ updateMesStatus { url, token, sub } id updatedMes =
 encodeMes : M.MesAnswer -> String -> JE.Value
 encodeMes mes sub =
     JE.object
-        [ ( "mesanswerId", JE.string mes.id )
-        , ( "mesanswerRecord"
+        [ ( "mesanswerRecord"
           , JE.object
                 [ ( "userId", JE.string sub )
-                , ( "mesqueryId", JE.string mes.id )
+                , ( "mesqueryId", JE.string mes.queryId )
                 , ( "content", JE.string mes.essay )
                 , ( "public", JE.bool mes.public )
+                  --, ( "sort", JE.int 1 )
                 ]
           )
         ]

@@ -227,13 +227,21 @@ update msg model =
                                 |> List.filter (\m -> m.id == id)
                                 |> List.head
                                 |> Maybe.map (\m -> { m | public = True })
+
+                        model_ =
+                            case model.adminModel.mesAnswers of
+                                Nothing ->
+                                    model
+
+                                Just mesA ->
+                                    { model | adminModel = up_mesAnswers model.adminModel (List.filter (\m -> m.id /= id) mesA) }
                     in
                         case mesAns of
                             Nothing ->
                                 model ! []
 
                             Just mesAnswer ->
-                                ( model
+                                ( model_
                                 , Task.attempt PutMesResp
                                     (Api.updateMesStatus
                                         { url = model.httpsrv
