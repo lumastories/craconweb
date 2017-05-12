@@ -62,6 +62,8 @@ update msg model =
                 Just mesAns ->
                     if mesAns.essay == "" then
                         ( { model | request = Just "Please answer the question. Thanks!" }, Cmd.none )
+                    else if (String.length mesAns.essay) < 2 then
+                        ( { model | request = Just "Maybe write a little more?" }, Cmd.none )
                     else
                         case model.visitor of
                             Anon ->
