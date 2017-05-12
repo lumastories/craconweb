@@ -11,7 +11,12 @@
     },
     "tasks": [
         {
-            "taskName": "Main.elm --debug --yes --output \"../public/js/app.js\"",
+            "taskName": "Main.elm --debug --warn --yes --output \"../public/js/app.js\"",
+            "isBuildCommand": true,
+            "echoCommand": true
+        },
+        {
+            "taskName": "Main.elm --yes --warn  --output \"../public/js/app.js\"",
             "isBuildCommand": true,
             "echoCommand": true
         }

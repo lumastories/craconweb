@@ -4,12 +4,22 @@ import Game.Card as Card exposing (Continuation(Complete, Continue))
 import Random exposing (Generator)
 import Random.Extra
 import Time exposing (Time)
+import RemoteData
 
 
 type GameState msg
     = NotPlaying
-    | Playing (Game msg)
+    | Loading (Game msg) (RemoteData.WebData Session)
+    | Playing (Game msg) Session
     | Finished State
+
+
+type alias Session =
+    { id : String
+    , gameId : String
+    , start : Time
+    , end : Maybe Time
+    }
 
 
 type alias Game msg =
@@ -347,8 +357,11 @@ emptyState initialSeed time =
 isPlaying : GameState msg -> Bool
 isPlaying gameState =
     case gameState of
-        Playing _ ->
+        Playing _ _ ->
             True
+
+        Loading _ _ ->
+            False
 
         NotPlaying ->
             False

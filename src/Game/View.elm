@@ -17,7 +17,10 @@ import List.Extra
 view : { gameState : Game.GameState msg, initMsg : msg, intIndicationMsg : Int -> msg } -> Html msg
 view { gameState, initMsg, intIndicationMsg } =
     case gameState of
-        Game.Playing game ->
+        Game.Loading game remoteData ->
+            text <| toString remoteData
+
+        Game.Playing game session ->
             let
                 state =
                     game |> Game.unwrap

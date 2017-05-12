@@ -12,6 +12,7 @@ module Api
         , jwtDecoded
         , okyToky
         , isAdmin
+        , startSession
         )
 
 import Entity
@@ -21,6 +22,11 @@ import Jwt
 import Time
 import Model as M
 import Json.Decode as JD
+import Json.Encode as JE
+import RemoteData
+import Game
+import Time exposing (Time)
+import Json
 
 
 {-
@@ -356,3 +362,37 @@ okyToky now token =
 jwtDecoded : String -> Result Jwt.JwtError M.JwtPayload
 jwtDecoded token =
     Jwt.decodeToken M.jwtDecoder token
+
+
+startSession : { token : String, userId : String, gameId : String, start : Time, httpsrv : String } -> Task Never (RemoteData.WebData Game.Session)
+startSession { token, userId, gameId, start, httpsrv } =
+    let
+        json =
+            Json.sessionEncoder
+                { userId = userId
+                , gameId = gameId
+                , start = start
+                , end = Nothing
+                }
+    in
+        postRequest
+            { endpoint = httpsrv ++ "/user/" ++ userId ++ "/gsession"
+            , decoder = Json.sessionDecoder
+            , token = token
+            , json = json
+            }
+
+
+postRequest : { endpoint : String, token : String, decoder : JD.Decoder a, json : JE.Value } -> Task Never (RemoteData.WebData a)
+postRequest { endpoint, decoder, token, json } =
+    Http.request
+        { method = "POST"
+        , headers = defaultHeaders token
+        , url = endpoint
+        , body = json |> Http.jsonBody
+        , expect = Http.expectJson decoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
+        |> Http.toTask
+        |> RemoteData.fromTask

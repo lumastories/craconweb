@@ -9,6 +9,7 @@ import Time
 import Json.Decode as JD
 import Json.Encode as JE
 import Json.Decode.Pipeline as JP
+import RemoteData
 
 
 type alias Model =
@@ -111,7 +112,8 @@ type Msg
     | InitGoNoGo
     | InitDotProbe
     | InitVisualSearch
-    | PlayGame (Game.Game Msg)
+    | StartSession { gameId : String, game : Game.Game Msg, time : Time.Time }
+    | StartSessionResp (Game.Game Msg) (RemoteData.WebData Game.Session)
     | StopGame
     | AuthResp (Result Http.Error Entity.Auth)
     | UserResp (Result Http.Error Entity.User)

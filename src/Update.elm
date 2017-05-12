@@ -13,10 +13,7 @@ import Port
 import Routing as R
 import Task exposing (Task)
 import Time exposing (Time)
-
-
--- NEW GAME ENGINES
-
+import RemoteData
 import Game
 import Game.Card
 import Game.Implementations.GoNoGo
@@ -289,8 +286,16 @@ update msg model =
             , Cmd.none
             )
 
-        PlayGame game ->
-            handleInput Game.Initialize { model | gameState = Game.Playing game }
+        StartSession { gameId, game, time } ->
+            startSession gameId game time model
+
+        StartSessionResp game remoteData ->
+            case remoteData of
+                RemoteData.Success session ->
+                    playGame game session model
+
+                _ ->
+                    { model | gameState = Game.Loading game remoteData } ! []
 
         StopGame ->
             ( { model | gameState = Game.NotPlaying }, Cmd.none )
@@ -400,41 +405,54 @@ update msg model =
 
 initStopSignal : Model -> ( Model, Cmd Msg )
 initStopSignal model =
-    ( model
-    , Time.now
-        |> Task.map
-            (\time ->
-                Game.Implementations.StopSignal.init
-                    { borderDelay = 100 * Time.millisecond
-                    , totalDuration = 1000 * Time.millisecond
-                    , infoString = """
+    case model.stopsignalGame of
+        Nothing ->
+            model ! []
+
+        Just gameEntity ->
+            ( model
+            , Time.now
+                |> Task.map
+                    (\time ->
+                        ( time
+                        , Game.Implementations.StopSignal.init
+                            { borderDelay = 100 * Time.millisecond
+                            , totalDuration = 1000 * Time.millisecond
+                            , infoString = """
 <h3 class="title">Instructions</h3>
 You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a grey border. Go as fast as you can, but don't sacrifice accuracy for speed.
 <br>
 <br>
 **Press any key to continue.**
-                            """
-                    , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
-                    , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
-                    , seedInt = 0
-                    , currentTime = time
-                    , gameDuration = 5 * Time.minute
-                    , redCrossDuration = 500 * Time.millisecond
-                    }
+                                    """
+                            , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
+                            , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
+                            , seedInt = round time
+                            , currentTime = time
+                            , gameDuration = 5 * Time.minute
+                            , redCrossDuration = 500 * Time.millisecond
+                            }
+                        )
+                    )
+                |> Task.perform (\( time, game ) -> StartSession { gameId = gameEntity.id, game = game, time = time })
             )
-        |> Task.perform PlayGame
-    )
 
 
 initGoNoGo : Model -> ( Model, Cmd Msg )
 initGoNoGo model =
-    ( model
-    , Time.now
-        |> Task.map
-            (\time ->
-                Game.Implementations.GoNoGo.init
-                    { totalDuration = 1250 * Time.millisecond
-                    , infoString = """
+    case model.gonogoGame of
+        Nothing ->
+            model ! []
+
+        Just gameEntity ->
+            ( model
+            , Time.now
+                |> Task.map
+                    (\time ->
+                        ( time
+                        , Game.Implementations.GoNoGo.init
+                            { totalDuration = 1250 * Time.millisecond
+                            , infoString = """
 <h3 class="title">Instructions</h3>
 <p>You will see pictures either on the left or right side of the screen, surrounded by a solid or dashed border. Press <span class="highlight"><strong>c</strong></span> when the picture is on the left side of the screen or <span class="highlight"><strong>m</strong></span> when the picture is on the right side of the screen. BUT only if you see a <span style="border: 1px solid rgb(0, 0, 0); padding: 2px;">solid border</span> around the picture. Do not press if you see a <span style="border: 1px dashed rgb(0, 0, 0); padding: 2px;">dashed border</span>. Go as fast as you can, but don't sacrifice accuracy for speed.<div>
 <br>
@@ -442,58 +460,72 @@ initGoNoGo model =
 <strong>Press any key to continue.</strong></div>
 </p>
 """
-                    , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
-                    , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
-                    , fillerImages = (getFullImagePathsNew model.filesrv model.ugimages_f |> Maybe.withDefault [])
-                    , seedInt = 0
-                    , currentTime = time
-                    , gameDuration = 5 * Time.minute
-                    , redCrossDuration = 500 * Time.millisecond
-                    }
+                            , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
+                            , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
+                            , fillerImages = (getFullImagePathsNew model.filesrv model.ugimages_f |> Maybe.withDefault [])
+                            , seedInt = round time
+                            , currentTime = time
+                            , gameDuration = 5 * Time.minute
+                            , redCrossDuration = 500 * Time.millisecond
+                            }
+                        )
+                    )
+                |> Task.perform (\( time, game ) -> StartSession { gameId = gameEntity.id, game = game, time = time })
             )
-        |> Task.perform PlayGame
-    )
 
 
 initDotProbe : Model -> ( Model, Cmd Msg )
 initDotProbe model =
-    ( model
-    , Time.now
-        |> Task.map
-            (\time ->
-                Game.Implementations.DotProbe.init
-                    { fixationDuration = 500 * Time.millisecond
-                    , imageDuration = 500 * Time.millisecond
-                    , infoString = """
+    case model.dotprobeGame of
+        Nothing ->
+            model ! []
+
+        Just gameEntity ->
+            ( model
+            , Time.now
+                |> Task.map
+                    (\time ->
+                        ( time
+                        , Game.Implementations.DotProbe.init
+                            { fixationDuration = 500 * Time.millisecond
+                            , imageDuration = 500 * Time.millisecond
+                            , infoString = """
 <h3 class="title">Instructions</h3>
 You will see pictures on the left and right side of the screen, followed by a dot on the left or right side of the screen. Press the <span class="highlight"><strong>c</strong></span> if the dot is on the left side of the screen or <span class="highlight"><strong>m</strong></span> when the dot is on the right side of the screen. Go as fast as you can, but don't sacrifice accuracy for speed.<div>
 <br>
 <br>
 <strong>Press any key to continue.</strong>
 </div>
-"""
-                    , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
-                    , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
-                    , seedInt = 0
-                    , currentTime = time
-                    , gameDuration = 5 * Time.minute
-                    }
+        """
+                            , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
+                            , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
+                            , seedInt = round time
+                            , currentTime = time
+                            , gameDuration = 5 * Time.minute
+                            }
+                        )
+                    )
+                |> Task.perform (\( time, game ) -> StartSession { gameId = gameEntity.id, game = game, time = time })
             )
-        |> Task.perform PlayGame
-    )
 
 
 initVisualSearch : Model -> ( Model, Cmd Msg )
 initVisualSearch model =
-    ( model
-    , Time.now
-        |> Task.map
-            (\time ->
-                Game.Implementations.VisualSearch.init
-                    { fixationDuration = 500 * Time.millisecond
-                    , imageDuration = 3000 * Time.millisecond
-                    , zoomDuration = 1000 * Time.millisecond
-                    , infoString = """
+    case model.visualsearchGame of
+        Nothing ->
+            model ! []
+
+        Just gameEntity ->
+            ( model
+            , Time.now
+                |> Task.map
+                    (\time ->
+                        ( time
+                        , Game.Implementations.VisualSearch.init
+                            { fixationDuration = 500 * Time.millisecond
+                            , imageDuration = 3000 * Time.millisecond
+                            , zoomDuration = 1000 * Time.millisecond
+                            , infoString = """
 <h3 class="title">Instructions</h3>
 You will see a grid of images. Select the target image as quickly as you can.
 <br>
@@ -501,15 +533,16 @@ You will see a grid of images. Select the target image as quickly as you can.
 <strong>Press any key to continue.</strong>
 </div>
 """
-                    , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
-                    , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
-                    , seedInt = 0
-                    , currentTime = time
-                    , gameDuration = 5 * Time.minute
-                    }
+                            , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
+                            , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
+                            , seedInt = round time
+                            , currentTime = time
+                            , gameDuration = 5 * Time.minute
+                            }
+                        )
+                    )
+                |> Task.perform (\( time, game ) -> StartSession { gameId = gameEntity.id, game = game, time = time })
             )
-        |> Task.perform PlayGame
-    )
 
 
 getFullImagePaths : String -> Maybe (List Entity.Ugimage) -> Maybe (List String)
@@ -699,6 +732,30 @@ missing ur =
         ]
 
 
+startSession : String -> Game.Game Msg -> Time -> Model -> ( Model, Cmd Msg )
+startSession gameId game time model =
+    case model.visitor of
+        Anon ->
+            model ! []
+
+        LoggedIn jwt ->
+            { model | gameState = Game.Loading game RemoteData.Loading }
+                ! [ Api.startSession
+                        { token = model.jwtencoded
+                        , userId = jwt.sub
+                        , gameId = gameId
+                        , start = time
+                        , httpsrv = model.httpsrv
+                        }
+                        |> Task.perform (StartSessionResp game)
+                  ]
+
+
+playGame : Game.Game Msg -> Game.Session -> Model -> ( Model, Cmd Msg )
+playGame game session model =
+    handleInput Game.Initialize { model | gameState = Game.Playing game session }
+
+
 
 -- NEW GAME ENGINE
 
@@ -709,13 +766,16 @@ handleInput input model =
         Game.NotPlaying ->
             ( model, Cmd.none )
 
-        Game.Playing game ->
+        Game.Loading _ _ ->
+            ( model, Cmd.none )
+
+        Game.Playing game session ->
             case Game.Card.step input game of
                 ( Game.Card.Complete state, cmd ) ->
                     ( { model | gameState = Game.Finished state }, cmd )
 
                 ( Game.Card.Continue _ newGame, cmd ) ->
-                    ( { model | gameState = Game.Playing newGame }, cmd )
+                    ( { model | gameState = Game.Playing newGame session }, cmd )
 
         Game.Finished _ ->
             ( model, Cmd.none )
