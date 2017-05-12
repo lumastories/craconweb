@@ -2,6 +2,7 @@ module Json
     exposing
         ( sessionDecoder
         , sessionEncoder
+        , putSessionEncoder
         )
 
 import Json.Decode as JD exposing (Decoder)
@@ -16,6 +17,7 @@ sessionDecoder : Decoder Game.Session
 sessionDecoder =
     decode Game.Session
         |> required "id" JD.string
+        |> required "userId" JD.string
         |> required "gameId" JD.string
         |> required "start" stringToFloatDecoder
         |> optional "end" (JD.maybe JD.float) Nothing
@@ -35,11 +37,19 @@ stringToFloatDecoder =
             )
 
 
-sessionEncoder : { userId : String, gameId : String, start : Time, end : Maybe Time } -> JE.Value
+sessionEncoder : { a | userId : String, gameId : String, start : Time, end : Maybe Time } -> JE.Value
 sessionEncoder { userId, gameId, start, end } =
     object
         [ ( "userId", userId |> JE.string )
         , ( "gameId", gameId |> JE.string )
         , ( "start", start |> toString |> JE.string )
         , ( "end", end |> Maybe.map (toString >> JE.string) |> Maybe.withDefault JE.null )
+        ]
+
+
+putSessionEncoder : Game.Session -> JE.Value
+putSessionEncoder session =
+    object
+        [ ( "gsessionId", session.id |> JE.string )
+        , ( "UserGsessionRecord", sessionEncoder session )
         ]

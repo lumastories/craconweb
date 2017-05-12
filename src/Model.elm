@@ -114,7 +114,8 @@ type Msg
     | InitVisualSearch
     | StartSession { gameId : String, game : Game.Game Msg, time : Time.Time }
     | StartSessionResp (Game.Game Msg) (RemoteData.WebData Game.Session)
-    | StopGame
+    | SessionSaved Game.State Game.Session (RemoteData.WebData Game.Session)
+    | ResendSession Game.State Game.Session
     | AuthResp (Result Http.Error Entity.Auth)
     | UserResp (Result Http.Error Entity.User)
     | GameResp (Result Http.Error Entity.Game)

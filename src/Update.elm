@@ -20,6 +20,7 @@ import Game.Implementations.GoNoGo
 import Game.Implementations.StopSignal
 import Game.Implementations.DotProbe
 import Game.Implementations.VisualSearch
+import Helpers
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -290,15 +291,13 @@ update msg model =
             startSession gameId game time model
 
         StartSessionResp game remoteData ->
-            case remoteData of
-                RemoteData.Success session ->
-                    playGame game session model
+            startSessionResp game remoteData model
 
-                _ ->
-                    { model | gameState = Game.Loading game remoteData } ! []
+        SessionSaved state session remoteData ->
+            sessionSaved state session remoteData model
 
-        StopGame ->
-            ( { model | gameState = Game.NotPlaying }, Cmd.none )
+        ResendSession state session ->
+            sendSession state session model
 
         -- TODO fetch configuration from the model
         InitStopSignal ->
@@ -537,7 +536,7 @@ You will see a grid of images. Select the target image as quickly as you can.
                             , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
                             , seedInt = round time
                             , currentTime = time
-                            , gameDuration = 5 * Time.minute
+                            , gameDuration = 0.5 * Time.minute
                             }
                         )
                     )
@@ -583,7 +582,7 @@ httpErrorState : Model -> Http.Error -> ( Model, Cmd msg )
 httpErrorState model err =
     ( { model
         | loading = Nothing
-        , glitching = Just (httpHumanError err)
+        , glitching = Just (Helpers.httpHumanError err)
         , httpErr = toString err
       }
     , Cmd.none
@@ -594,29 +593,10 @@ valuationsError : ValuationsError -> String
 valuationsError err =
     case err of
         ReqFail httpErr ->
-            httpHumanError httpErr
+            Helpers.httpHumanError httpErr
 
         MissingValuations ->
             "You are missing customized game images! Are your image valuations uploaded?"
-
-
-httpHumanError : Http.Error -> String
-httpHumanError err =
-    case err of
-        Http.Timeout ->
-            "Something is taking too long"
-
-        Http.NetworkError ->
-            "Oops. There's been a network error."
-
-        Http.BadStatus s ->
-            "Server error: " ++ (.error (errorCodeEncoder s.body))
-
-        Http.BadPayload str _ ->
-            "Bad payload"
-
-        _ ->
-            "Unknown error"
 
 
 
@@ -753,11 +733,15 @@ startSession gameId game time model =
 
 playGame : Game.Game Msg -> Game.Session -> Model -> ( Model, Cmd Msg )
 playGame game session model =
-    handleInput Game.Initialize { model | gameState = Game.Playing game session }
+    handleInput Game.Initialize
+        { model
+            | gameState = Game.Playing game session
+            , glitching = Nothing
+        }
 
 
 
--- NEW GAME ENGINE
+-- GAME ENGINE
 
 
 handleInput : Game.Input -> Model -> ( Model, Cmd Msg )
@@ -772,12 +756,25 @@ handleInput input model =
         Game.Playing game session ->
             case Game.Card.step input game of
                 ( Game.Card.Complete state, cmd ) ->
-                    ( { model | gameState = Game.Finished state }, cmd )
+                    ( { model | gameState = Game.Saving state session RemoteData.Loading }
+                    , Cmd.batch
+                        [ cmd
+                        , Api.endSession
+                            { session = session
+                            , token = model.jwtencoded
+                            , httpsrv = model.httpsrv
+                            }
+                            |> Task.perform (SessionSaved state session)
+                        ]
+                    )
 
                 ( Game.Card.Continue _ newGame, cmd ) ->
                     ( { model | gameState = Game.Playing newGame session }, cmd )
 
-        Game.Finished _ ->
+        Game.Saving _ _ _ ->
+            ( model, Cmd.none )
+
+        Game.Saved _ _ ->
             ( model, Cmd.none )
 
 
@@ -822,3 +819,56 @@ handleIntIndicationUpdate n model =
 handleTimeUpdate : Time -> Model -> ( Model, Cmd Msg )
 handleTimeUpdate t model =
     handleInput (Game.Tick t) model
+
+
+startSessionResp : Game.Game Msg -> RemoteData.WebData Game.Session -> Model -> ( Model, Cmd Msg )
+startSessionResp game remoteData model =
+    let
+        updatedModel =
+            { model | gameState = Game.Loading game remoteData }
+    in
+        case remoteData of
+            RemoteData.Success session ->
+                playGame game session updatedModel
+
+            RemoteData.Failure err ->
+                { updatedModel | glitching = Just <| Helpers.httpHumanError err }
+                    ! []
+
+            RemoteData.Loading ->
+                updatedModel ! []
+
+            RemoteData.NotAsked ->
+                updatedModel ! []
+
+
+sessionSaved : Game.State -> Game.Session -> RemoteData.WebData Game.Session -> Model -> ( Model, Cmd Msg )
+sessionSaved state session remoteData model =
+    let
+        updatedModel =
+            { model | gameState = Game.Saving state session remoteData }
+    in
+        case remoteData of
+            RemoteData.Success session ->
+                { model | gameState = Game.Saved state session } ! []
+
+            RemoteData.Failure err ->
+                { updatedModel | glitching = Just <| Helpers.httpHumanError err } ! []
+
+            RemoteData.Loading ->
+                updatedModel ! []
+
+            RemoteData.NotAsked ->
+                updatedModel ! []
+
+
+sendSession : Game.State -> Game.Session -> Model -> ( Model, Cmd Msg )
+sendSession state session model =
+    { model | gameState = Game.Saving state session RemoteData.Loading }
+        ! [ Api.endSession
+                { session = session
+                , token = model.jwtencoded
+                , httpsrv = model.httpsrv
+                }
+                |> Task.perform (SessionSaved state session)
+          ]

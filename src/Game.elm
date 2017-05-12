@@ -11,11 +11,13 @@ type GameState msg
     = NotPlaying
     | Loading (Game msg) (RemoteData.WebData Session)
     | Playing (Game msg) Session
-    | Finished State
+    | Saving State Session (RemoteData.WebData Session)
+    | Saved State Session
 
 
 type alias Session =
     { id : String
+    , userId : String
     , gameId : String
     , start : Time
     , end : Maybe Time
@@ -366,7 +368,10 @@ isPlaying gameState =
         NotPlaying ->
             False
 
-        Finished _ ->
+        Saving _ _ _ ->
+            False
+
+        Saved _ _ ->
             False
 
 

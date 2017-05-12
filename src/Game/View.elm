@@ -12,13 +12,37 @@ import Numeral
 import Svg exposing (Svg, svg, circle)
 import Svg.Attributes as Svg exposing (cy, cx, r)
 import List.Extra
+import RemoteData
+import Helpers
+import Ui.Parts as Parts
+import Model exposing (Msg(..))
 
 
-view : { gameState : Game.GameState msg, initMsg : msg, intIndicationMsg : Int -> msg } -> Html msg
+view : { gameState : Game.GameState Msg, initMsg : Msg, intIndicationMsg : Int -> Msg } -> Html Msg
 view { gameState, initMsg, intIndicationMsg } =
     case gameState of
         Game.Loading game remoteData ->
-            text <| toString remoteData
+            case remoteData of
+                RemoteData.Loading ->
+                    div []
+                        [ a
+                            [ class "button is-info is-large is-loading"
+                            , onClick initMsg
+                            ]
+                            [ text "Start Game" ]
+                        ]
+
+                RemoteData.Failure _ ->
+                    div []
+                        [ a
+                            [ class "button is-info is-large"
+                            , onClick initMsg
+                            ]
+                            [ text "Try Again" ]
+                        ]
+
+                _ ->
+                    text ""
 
         Game.Playing game session ->
             let
@@ -71,10 +95,20 @@ view { gameState, initMsg, intIndicationMsg } =
                             viewProbe borderType direction
                     ]
 
-        Game.Finished state ->
-            viewResult (Just state)
+        Game.Saving state session remoteData ->
+            viewResult state
+                session
                 { percentCorrect = Game.Result.percentCorrect state
                 , averageResponseTimeResult = Game.Result.averageResponseTimeInMillisecond state
+                , savingStatus = remoteData
+                }
+
+        Game.Saved state session ->
+            viewResult state
+                session
+                { percentCorrect = Game.Result.percentCorrect state
+                , averageResponseTimeResult = Game.Result.averageResponseTimeInMillisecond state
+                , savingStatus = RemoteData.Success session
                 }
 
         Game.NotPlaying ->
@@ -87,8 +121,8 @@ view { gameState, initMsg, intIndicationMsg } =
                 ]
 
 
-viewResult : Maybe Game.State -> { a | percentCorrect : Float, averageResponseTimeResult : Result String Float } -> Html msg
-viewResult state { percentCorrect, averageResponseTimeResult } =
+viewResult : Game.State -> Game.Session -> { a | percentCorrect : Float, averageResponseTimeResult : Result String Float, savingStatus : RemoteData.WebData Game.Session } -> Html Msg
+viewResult state session { percentCorrect, averageResponseTimeResult, savingStatus } =
     let
         averageResponseTime =
             case averageResponseTimeResult of
@@ -104,6 +138,30 @@ viewResult state { percentCorrect, averageResponseTimeResult } =
                 [ li [] [ text <| "Average Response Time: " ++ averageResponseTime ]
                 , li [] [ text <| "Percent Correct: " ++ Numeral.format "0.00" percentCorrect ++ "%" ]
                 ]
+            , br [] []
+            , case savingStatus of
+                RemoteData.Failure _ ->
+                    button
+                        [ class "button is-info is-large"
+                        , onClick (ResendSession state session)
+                        , type_ "button"
+                        ]
+                        [ text "Resend Data" ]
+
+                RemoteData.Loading ->
+                    button [ class "button is-info is-large is-loading" ]
+                        [ text "Resend Data" ]
+
+                RemoteData.NotAsked ->
+                    text ""
+
+                RemoteData.Success _ ->
+                    button
+                        [ class "button is-info is-large"
+                        , onClick (UpdateLocation "/")
+                        , type_ "button"
+                        ]
+                        [ text "Done" ]
             ]
 
 
