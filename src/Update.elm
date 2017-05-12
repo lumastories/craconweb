@@ -31,15 +31,6 @@ update msg model =
         SetRequestNothing ->
             ( { model | request = Nothing }, Cmd.none )
 
-        TryRemoveUser userId ->
-            case model.request of
-                Nothing ->
-                    ( { model | request = Just "Are you sure?" }, Cmd.none )
-
-                Just _ ->
-                    -- TODO DELETE /user/:userId
-                    ( { model | request = Nothing }, Cmd.none )
-
         NextQueryResp (Ok q) ->
             ( { model | mesQuery = Just q.content, mesAnswer = Just (newMesAnswerWithqueryId q.id) }
             , Cmd.none

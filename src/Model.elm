@@ -205,7 +205,6 @@ type Msg
     | PublishMes String
     | UpdateMesAnswer String
     | TrySubmitMesAnswer
-    | TryRemoveUser String
     | SetRequestNothing
 
 

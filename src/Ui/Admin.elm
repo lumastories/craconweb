@@ -153,27 +153,11 @@ userRows users request =
                         "fa-wrench"
                         "is-small"
                     , text " "
-                    , a [ class "button is-small red", onClick (TryRemoveUser user.id) ] [ i [ class "fa fa-remove" ] [] ]
-                    , confirmModal request user.id
                     ]
                 ]
     in
         users
             |> List.map row
-
-
-confirmModal request userId =
-    case request of
-        Just r ->
-            Parts.modal
-                [ h3 [ class "title is-3 white" ] [ text "Are you sure?" ]
-                , a [ class "button is-outlined is-danger", onClick (TryRemoveUser userId) ] [ text "Yep! I'm sure, archive this user." ]
-                , text " "
-                , a [ class "button is-outlined is-primary", onClick SetRequestNothing ] [ text "Just kidding." ]
-                ]
-
-        Nothing ->
-            text ""
 
 
 iconButton : String -> String -> String -> String -> Html Msg
