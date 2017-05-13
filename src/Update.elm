@@ -536,7 +536,7 @@ You will see a grid of images. Select the target image as quickly as you can.
                             , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
                             , seedInt = round time
                             , currentTime = time
-                            , gameDuration = 0.5 * Time.minute
+                            , gameDuration = 5 * Time.minute
                             }
                         )
                     )
