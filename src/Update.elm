@@ -756,17 +756,21 @@ handleInput input model =
         Game.Playing game session ->
             case Game.Card.step input game of
                 ( Game.Card.Complete state, cmd ) ->
-                    ( { model | gameState = Game.Saving state session RemoteData.Loading }
-                    , Cmd.batch
-                        [ cmd
-                        , Api.endSession
-                            { session = session
-                            , token = model.jwtencoded
-                            , httpsrv = model.httpsrv
-                            }
-                            |> Task.perform (SessionSaved state session)
-                        ]
-                    )
+                    let
+                        updatedSession =
+                            { session | end = Just state.currTime }
+                    in
+                        ( { model | gameState = Game.Saving state updatedSession RemoteData.Loading }
+                        , Cmd.batch
+                            [ cmd
+                            , Api.endSession
+                                { session = updatedSession
+                                , token = model.jwtencoded
+                                , httpsrv = model.httpsrv
+                                }
+                                |> Task.perform (SessionSaved state updatedSession)
+                            ]
+                        )
 
                 ( Game.Card.Continue _ newGame, cmd ) ->
                     ( { model | gameState = Game.Playing newGame session }, cmd )

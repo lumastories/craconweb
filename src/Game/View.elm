@@ -13,8 +13,6 @@ import Svg exposing (Svg, svg, circle)
 import Svg.Attributes as Svg exposing (cy, cx, r)
 import List.Extra
 import RemoteData
-import Helpers
-import Ui.Parts as Parts
 import Model exposing (Msg(..))
 
 
