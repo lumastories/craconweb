@@ -188,6 +188,7 @@ type Msg
     | GameResp (Result Http.Error Entity.Game)
     | UsersResp (Result Http.Error (List Entity.User))
     | RegisterUserResp (Result Http.Error Entity.User)
+    | EditUserResp (Result Http.Error Entity.User)
     | GroupResp (Result Http.Error Entity.Group)
     | MesResp (Result Http.Error (List MesAnswer))
     | MesPostResp (Result Http.Error String)

@@ -210,16 +210,93 @@ editUser informing tasksrv user ugimgsets =
     basicAdminPage Nothing
         [ divColumns
             [ div [ class "column is-half is-offset-one-quarter" ]
-                [ h1
-                    [ class "title" ]
-                    [ text "Upload valuations for "
-                    , strong [] [ text user.firstName ]
-                    ]
-                , br [] []
-                , Parts.notification informing "is-warning"
-                , editUserForm tasksrv user
+                [ Parts.notification informing "is-warning is-small"
+                , userForm user
                 ]
             ]
+        , divColumns
+            [ div [ class "column is-half is-offset-one-quarter" ]
+                [ editUserForm tasksrv user
+                ]
+            ]
+        ]
+
+
+userForm : Entity.User -> Html Msg
+userForm user =
+    Html.form []
+        [ div [ class "columns" ]
+            [ div [ class "column" ]
+                [ p [ class "control" ]
+                    [ label_ "First Name"
+                    , input [ class "input", type_ "text", value user.firstName ] []
+                    ]
+                ]
+            , div [ class "column" ]
+                [ p [ class "control" ]
+                    [ label_ "Last Name"
+                    , input [ class "input", type_ "text", value user.lastName ] []
+                    ]
+                ]
+            ]
+        , a
+            [ class "button is-primary" ]
+            [ text "Save User" ]
+        ]
+
+
+editUserForm : String -> Entity.User -> Html Msg
+editUserForm tasksrv user =
+    Html.form
+        [ enctype "multipart/form-data"
+        , name "csvfile"
+        , action <| tasksrv ++ "/upload/ugimgset"
+        , method "POST"
+        , id "csvForm"
+        , class "box"
+        ]
+        [ h4
+            [ class "title is-4" ]
+            [ text "Upload valuations"
+            ]
+        , input
+            [ type_ "file"
+            , id "csvFilInput"
+            , accept ".csv"
+            , name "upload"
+            ]
+            []
+        , input
+            [ type_ "hidden"
+            , id "csvFilInput"
+            , name "userid"
+            , value user.id
+            ]
+            []
+        , hr [] []
+        , editButtons
+        ]
+
+
+editButtons : Html Msg
+editButtons =
+    div
+        [ class "field is-grouped" ]
+        [ a
+            [ class "button is-primary", onClick TryUpdateUser ]
+            [ span
+                [ class "icon" ]
+                [ i
+                    [ class "fa fa-file-text-o" ]
+                    []
+                ]
+            , span
+                []
+                [ text "Upload CSV"
+                ]
+            ]
+        , text " "
+        , backButton
         ]
 
 
@@ -371,55 +448,6 @@ primaryButton title path =
         , R.onLinkClick <| UpdateLocation path
         ]
         [ text title ]
-
-
-editUserForm : String -> Entity.User -> Html Msg
-editUserForm tasksrv user =
-    Html.form
-        [ enctype "multipart/form-data"
-        , name "csvfile"
-        , action <| tasksrv ++ "/upload/ugimgset"
-        , method "POST"
-        , id "csvForm"
-        , class "box"
-        ]
-        [ input
-            [ type_ "file"
-            , id "csvFilInput"
-            , accept ".csv"
-            , name "upload"
-            ]
-            []
-        , input
-            [ type_ "hidden"
-            , id "csvFilInput"
-            , name "userid"
-            , value user.id
-            ]
-            []
-        , editButtons
-        ]
-
-
-editButtons : Html Msg
-editButtons =
-    div
-        [ class "field is-grouped is-pulled-right" ]
-        [ a
-            [ class "button is-primary", onClick TryUpdateUser ]
-            [ span
-                [ class "icon" ]
-                [ i
-                    [ class "fa fa-file-text-o" ]
-                    []
-                ]
-            , span
-                []
-                [ text "Upload"
-                ]
-            ]
-        , backButton
-        ]
 
 
 backButton : Html Msg

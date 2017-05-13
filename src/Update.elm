@@ -28,6 +28,12 @@ import Game.Implementations.VisualSearch
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        EditUserResp (Ok user) ->
+            model ! []
+
+        EditUserResp (Err err) ->
+            model ! []
+
         SetRequestNothing ->
             ( { model | request = Nothing }, Cmd.none )
 
