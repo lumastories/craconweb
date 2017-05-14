@@ -307,7 +307,7 @@ userForm user exp con =
                     , input
                         [ class "input"
                         , type_ "text"
-                        , placeholder "Previous password is hidden"
+                        , placeholder "Hidden"
                         , onInput (SetTmpUserEdit "password")
                         ]
                         []
