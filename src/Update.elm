@@ -28,21 +28,6 @@ import Game.Implementations.VisualSearch
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        UpdateTmpUserEdit key ->
-            let
-                old =
-                    model.adminModel.tmpUserEdit
-
-                newTmpUserEdit =
-                    case key of
-                        "firstName" ->
-                            { old | firstName = "test" }
-
-                        _ ->
-                            { old | firstName = "test" }
-            in
-                model ! []
-
         FillTmpUserEdit userId ->
             let
                 user_ =
