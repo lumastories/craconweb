@@ -40,20 +40,36 @@ type alias Model =
     , visualsearchGame : Maybe Entity.Game
     , gameState : Game.GameState Msg
     , ugimgsets : Maybe (List Entity.Ugimgset)
+    , mesQuerys : Maybe (List MesQuery)
     , mesQuery : Maybe String
+    , mesAnswer : Maybe MesAnswer
     , adminModel : AdminModel
+    , statements : Maybe (List MesAnswer)
+    , request : Maybe String
     }
 
 
 type alias AdminModel =
     { tmpUserRecord : Entity.UserRecord
-    , meStatements : Maybe (List MeStatement)
+    , mesAnswers : Maybe (List MesAnswer)
+    , tmpUserEdit : Maybe UserEdit
     }
 
 
-up_meStatements : AdminModel -> List MeStatement -> AdminModel
-up_meStatements am mes =
-    { am | meStatements = Just mes }
+type alias UserEdit =
+    { id : String
+    , username : String
+    , firstName : String
+    , lastName : String
+    , email : String
+    , password : String
+    , groupId : String
+    }
+
+
+up_mesAnswers : AdminModel -> List MesAnswer -> AdminModel
+up_mesAnswers am mes =
+    { am | mesAnswers = Just mes }
 
 
 up_tmpUserRecord : AdminModel -> Entity.UserRecord -> AdminModel
@@ -61,16 +77,74 @@ up_tmpUserRecord am tur =
     { am | tmpUserRecord = tur }
 
 
-type alias MeStatement =
+up_tmpUserEdit : AdminModel -> Maybe UserEdit -> AdminModel
+up_tmpUserEdit am tue =
+    { am | tmpUserEdit = tue }
+
+
+type alias MesAnswer =
     { id : String
     , essay : String
     , public : Bool
+    , queryId : String
     }
+
+
+newMesAnswerWithqueryId : String -> MesAnswer
+newMesAnswerWithqueryId qId =
+    { id = ""
+    , essay = ""
+    , public = False
+    , queryId = qId
+    }
+
+
+up_essay : String -> MesAnswer -> MesAnswer
+up_essay essay ma =
+    { ma | essay = essay }
+
+
+mesAnswersDecoder : JD.Decoder (List MesAnswer)
+mesAnswersDecoder =
+    JD.field "mesanswers" (JD.list mesAnswerDecoder)
+
+
+mesAnswerDecoder : JD.Decoder MesAnswer
+mesAnswerDecoder =
+    JP.decode MesAnswer
+        |> JP.required "id" (JD.string)
+        |> JP.required "content" (JD.string)
+        |> JP.hardcoded False
+        |> JP.required "mesqueryId" (JD.string)
+
+
+mesAnswerEncoder : MesAnswer -> JE.Value
+mesAnswerEncoder mesAnswer =
+    JE.object [ ( "content", JE.string mesAnswer.essay ) ]
+
+
+type alias MesQuery =
+    { id : String
+    , content : String
+    }
+
+
+mesQueryDecoder : JD.Decoder MesQuery
+mesQueryDecoder =
+    JP.decode MesQuery
+        |> JP.required "id" JD.string
+        |> JP.required "content" JD.string
+
+
+mesQuerysDecoder : JD.Decoder (List MesQuery)
+mesQuerysDecoder =
+    JD.succeed []
 
 
 type alias Base =
     { url : String
     , token : String
+    , sub : String
     }
 
 
@@ -97,6 +171,7 @@ type alias JwtPayload =
 type Msg
     = UpdateLocation String
     | OnUpdateLocation Navigation.Location
+    | FillTmpUserEdit String
     | GroupChanged (Maybe String)
     | SetStatus String
     | UpdateEmail String
@@ -117,23 +192,33 @@ type Msg
     | SessionSaved Game.State Game.Session (RemoteData.WebData Game.Session)
     | ResendSession Game.State Game.Session
     | AuthResp (Result Http.Error Entity.Auth)
+    | PublicMesResp (Result Http.Error (List MesAnswer))
     | UserResp (Result Http.Error Entity.User)
     | GameResp (Result Http.Error Entity.Game)
     | UsersResp (Result Http.Error (List Entity.User))
     | RegisterUserResp (Result Http.Error Entity.User)
+    | EditUserResp (Result Http.Error Entity.User)
     | GroupResp (Result Http.Error Entity.Group)
-    | MesResp (Result Http.Error (List MeStatement))
+    | MesResp (Result Http.Error (List MesAnswer))
+    | MesPostResp (Result Http.Error String)
     | PutMesResp (Result Http.Error String)
+    | UserEditResp (Result Http.Error String)
+    | MesQuerysResp (Result Http.Error (List MesQuery))
+    | NextQueryResp (Result Http.Error MesQuery)
     | RoleResp (Result Http.Error Entity.Role)
     | FillerResp (Result ValuationsError (List Entity.Ugimage))
     | ValidResp (Result ValuationsError (List Entity.Ugimage))
     | InvalidResp (Result ValuationsError (List Entity.Ugimage))
     | TryRegisterUser
     | SetRegistration String String
-    | TryUpdateUser
+    | TryCsvUpload
+    | TryPutUser
     | EditUserAccount String String
-    | MesPublish String
-    | MesUnPublish String
+    | PublishMes String
+    | UpdateMesAnswer String
+    | TrySubmitMesAnswer
+    | SetRequestNothing
+    | SetTmpUserEdit String String
 
 
 ugimgsetsDecoder : JD.Decoder (List Entity.Ugimgset)

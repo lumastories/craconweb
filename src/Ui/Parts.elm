@@ -3,6 +3,7 @@ module Ui.Parts
         ( notification
         , linkAttrs
         , notificationRemoteData
+        , modal
         )
 
 import Html exposing (..)
@@ -47,3 +48,16 @@ notificationRemoteData remoteData =
 linkAttrs : String -> List (Attribute Msg)
 linkAttrs path =
     [ href <| path, R.onLinkClick <| UpdateLocation path ]
+
+
+modal : List (Html msg) -> Html msg
+modal children =
+    div
+        [ class <| "modal is-active" ]
+        [ div
+            [ class "modal-background" ]
+            []
+        , div
+            [ class "modal-content" ]
+            children
+        ]

@@ -7,9 +7,9 @@ import Navigation
 import UrlParser exposing (..)
 
 
-adminPaths : List String
-adminPaths =
-    [ adminPath, registerPath ]
+powerPaths : List String
+powerPaths =
+    [ adminPath, registerPath, mesPath ]
 
 
 parseLocation : Navigation.Location -> Route

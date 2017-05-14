@@ -11,6 +11,7 @@ import Entity
 import Ui.Card as Card
 import Ui.Admin as Admin
 import Ui.Parts as Parts
+import List.Extra
 
 
 bigLogo : String -> Html Msg
@@ -101,15 +102,20 @@ navBar model =
         ]
 
 
-isAdmin : Visitor -> Bool
-isAdmin visitor =
+isPowerful : Visitor -> Bool
+isPowerful visitor =
     case visitor of
         LoggedIn jwt ->
             List.map .name jwt.roles
-                |> List.member "admin"
+                |> isAdminOrStaff
 
         _ ->
             False
+
+
+isAdminOrStaff : List String -> Bool
+isAdminOrStaff roles =
+    (List.member "admin" roles) || (List.member "staff" roles)
 
 
 navToggler : Bool -> Html Msg
@@ -124,7 +130,7 @@ navToggler activeMenu =
 
 adminLink : Visitor -> Html Msg
 adminLink visitor =
-    case isAdmin visitor of
+    case isPowerful visitor of
         True ->
             navLink "Admin" R.adminPath False
 
@@ -176,10 +182,23 @@ isActive active =
         ""
 
 
+basicPage : Model -> List (Html Msg) -> Html Msg
+basicPage model children =
+    section []
+        [ mesQueryModal model.mesQuery model.request
+        , navBar model
+        , section
+            [ class "section" ]
+            children
+        , Parts.notification model.glitching "is-danger"
+        ]
+
+
 homePage : Model -> Html Msg
 homePage model =
     div []
-        [ navBar model
+        [ mesQueryModal model.mesQuery model.request
+        , navBar model
         , homePageBody model
         , Parts.notification model.glitching "is-danger"
         ]
@@ -273,15 +292,36 @@ homePageGameCard gameSlug src_ title about =
         ]
 
 
-basicPage : Model -> List (Html Msg) -> Html Msg
-basicPage model children =
-    section []
-        [ navBar model
-        , section
-            [ class "section" ]
-            children
-        , Parts.notification model.glitching "is-danger"
-        ]
+mesQueryModal : Maybe String -> Maybe String -> Html Msg
+mesQueryModal q feedback =
+    case q of
+        Nothing ->
+            text ""
+
+        Just q ->
+            Parts.modal
+                [ div
+                    [ class "field" ]
+                    [ label
+                        [ class "label white title is-3" ]
+                        [ text q ]
+                    , p
+                        [ class "control" ]
+                        [ textarea
+                            [ class "textarea"
+                            , placeholder "Answer the above question. Please sign with with your first and last initial."
+                            , onInput UpdateMesAnswer
+                            ]
+                            []
+                        ]
+                    , p [ class "questionFeedback" ] [ Maybe.withDefault "" feedback |> text ]
+                    , button
+                        [ class "button is-primary is-large"
+                        , onClick TrySubmitMesAnswer
+                        ]
+                        [ text "Share" ]
+                    ]
+                ]
 
 
 accessDeniedPage : Model -> Html Msg
@@ -519,24 +559,46 @@ toStyle styles =
             |> List.map toTuple
 
 
+statementsPage : Model -> Html Msg
+statementsPage model =
+    basicPage model
+        (statements model.statements)
+
+
+statements : Maybe (List MesAnswer) -> List (Html Msg)
+statements mesAnswers =
+    case mesAnswers of
+        Nothing ->
+            [ Card.middleBlock
+                [ h1 [ class "title" ] [ text "Statements" ]
+                , p [] [ text """Coming soon! You will be able to see personal
+                            statements from other members of the study about their journey to better
+                            health and some of the choices they made that helped them get there!""" ]
+                ]
+            ]
+
+        Just mesAnswers ->
+            [ h1 [ class "title" ] [ text "Statements" ] ]
+                ++ (List.map (div [ class "columns" ]) (List.map statement mesAnswers |> List.Extra.greedyGroupsOf 4))
+
+
+statement : MesAnswer -> Html Msg
+statement mes =
+    div [ class "column" ]
+        [ blockquote []
+            [ i [ class "fa fa-quote-left" ] []
+            , p [] [ text mes.essay ]
+            , i [ class "fa fa-quote-right" ] []
+            ]
+        ]
+
+
 
 {-
 
    ADMIN VIEWS
 
 -}
-
-
-statementsPage : Model -> Html Msg
-statementsPage model =
-    basicPage model
-        [ Card.middleBlock
-            [ h1 [ class "title" ] [ text "Statements" ]
-            , p [] [ text """Coming soon! You will be able to see personal
-                statements from other members of the study about their journey to better
-                health and some of the choices they made that helped them get there!""" ]
-            ]
-        ]
 
 
 view : Model -> Html Msg

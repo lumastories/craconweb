@@ -89,10 +89,15 @@ init flags location =
             , visualsearchGame = Nothing
             , gameState = Game.NotPlaying
             , ugimgsets = Nothing
+            , statements = Nothing
             , mesQuery = Nothing
+            , mesQuerys = Nothing
+            , mesAnswer = Nothing
+            , request = Nothing
             , adminModel =
                 { tmpUserRecord = Empty.emptyUserRecord
-                , meStatements = Nothing
+                , mesAnswers = Nothing
+                , tmpUserEdit = Nothing
                 }
             }
     in

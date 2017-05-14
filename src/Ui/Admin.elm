@@ -6,7 +6,6 @@ module Ui.Admin
         , mesPage
         )
 
-import Access as A
 import Entity
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -46,30 +45,21 @@ mesPage model =
         ]
 
 
-publishButton : Bool -> String -> Html Msg
-publishButton public id =
-    case public of
-        True ->
-            a
-                [ class "button is-danger is-outlined"
-                , MesUnPublish id |> onClick
-                ]
-                [ text "Unpublish" ]
-
-        False ->
-            a
-                [ class "button is-success is-outlined"
-                , MesPublish id |> onClick
-                ]
-                [ text "Publish!" ]
+publishButton : String -> Html Msg
+publishButton id =
+    a
+        [ class "button is-success is-outlined"
+        , PublishMes id |> onClick
+        ]
+        [ text "Publish!" ]
 
 
 mesTable : AdminModel -> Html Msg
 mesTable am =
-    case am.meStatements of
-        Just meStatements ->
-            meStatements
-                |> List.map (\ms -> tr [] [ td [] [ text ms.essay ], td [] [ publishButton ms.public ms.id ] ])
+    case am.mesAnswers of
+        Just mesAnswers ->
+            mesAnswers
+                |> List.map (\ms -> tr [] [ td [] [ text ms.essay ], td [] [ publishButton ms.id ] ])
                 |> mesTableHelper
 
         Nothing ->
@@ -119,16 +109,6 @@ registerPage model =
         ]
 
 
-editUserPage : Model -> String -> Html Msg
-editUserPage model userid =
-    case (A.userName model.users userid) of
-        Just user ->
-            editUser model.informing model.tasksrv user model.ugimgsets
-
-        Nothing ->
-            editUser404
-
-
 usersTable : Model -> Html Msg
 usersTable model =
     table [ class "table is-bordered is-striped is-narrow" ]
@@ -142,12 +122,12 @@ usersTable model =
                 , th [] [ text "Actions" ]
                 ]
             ]
-        , tbody [] (userRows model.users)
+        , tbody [] (userRows model.users model.request)
         ]
 
 
-userRows : List Entity.User -> List (Html Msg)
-userRows users =
+userRows : List Entity.User -> Maybe String -> List (Html Msg)
+userRows users request =
     let
         row user =
             tr []
@@ -157,10 +137,20 @@ userRows users =
                 , td [] [ text user.email ]
                 , td [] [ text user.groupId ]
                 , td []
-                    [ iconButton "Edit"
-                        (R.editPath ++ user.id)
-                        "fa-wrench"
-                        "is-small"
+                    [ a
+                        [ class "button is-small"
+                        , onClick (FillTmpUserEdit user.id)
+                        ]
+                        [ span
+                            [ class "icon is-small" ]
+                            [ i
+                                [ class "fa fa-wrench" ]
+                                []
+                            ]
+                        , span
+                            []
+                            [ text "Edit" ]
+                        ]
                     ]
                 ]
     in
@@ -213,21 +203,186 @@ divColumns children =
     div [ class "columns" ] children
 
 
-editUser : Maybe String -> String -> Entity.User -> Maybe (List Entity.Ugimgset) -> Html Msg
-editUser informing tasksrv user ugimgsets =
+editUserPage : Model -> String -> Html Msg
+editUserPage model userid =
+    case model.adminModel.tmpUserEdit of
+        Just user ->
+            editUser
+                model.groupIdExp
+                model.groupIdCon
+                model.informing
+                model.tasksrv
+                user
+                model.ugimgsets
+
+        Nothing ->
+            editUser404
+
+
+editUser :
+    Maybe String
+    -> Maybe String
+    -> Maybe String
+    -> String
+    -> Model.UserEdit
+    -> Maybe (List Entity.Ugimgset)
+    -> Html Msg
+editUser exp con informing tasksrv user ugimgsets =
     basicAdminPage Nothing
         [ divColumns
             [ div [ class "column is-half is-offset-one-quarter" ]
-                [ h1
-                    [ class "title" ]
-                    [ text "Upload valuations for "
-                    , strong [] [ text user.firstName ]
-                    ]
-                , br [] []
-                , Parts.notification informing "is-warning"
-                , editUserForm tasksrv user
+                [ Parts.notification informing "is-warning is-small"
+                , userForm user exp con
                 ]
             ]
+        , divColumns
+            [ div [ class "column is-half is-offset-one-quarter" ]
+                [ editUserForm tasksrv user.id
+                ]
+            ]
+        ]
+
+
+userForm :
+    Model.UserEdit
+    -> Maybe String
+    -> Maybe String
+    -> Html Msg
+userForm user exp con =
+    Html.form []
+        [ div [ class "columns" ]
+            [ div [ class "column" ]
+                [ p [ class "control" ]
+                    [ label_ "First Name"
+                    , input
+                        [ class "input"
+                        , type_ "text"
+                        , value user.firstName
+                        , onInput (SetTmpUserEdit "firstName")
+                        ]
+                        []
+                    ]
+                ]
+            , div [ class "column" ]
+                [ p [ class "control" ]
+                    [ label_ "Last Name"
+                    , input
+                        [ class "input"
+                        , type_ "text"
+                        , value user.lastName
+                        , onInput (SetTmpUserEdit "lastName")
+                        ]
+                        []
+                    ]
+                ]
+            ]
+        , div [ class "columns" ]
+            [ div [ class "column" ]
+                [ p [ class "control" ]
+                    [ label_ "Username"
+                    , input
+                        [ class "input"
+                        , type_ "text"
+                        , value user.username
+                        , onInput (SetTmpUserEdit "username")
+                        ]
+                        []
+                    ]
+                ]
+            , div [ class "column" ]
+                [ p [ class "control" ]
+                    [ label_ "Email"
+                    , input
+                        [ class "input"
+                        , type_ "text"
+                        , value user.email
+                        , onInput (SetTmpUserEdit "email")
+                        ]
+                        []
+                    ]
+                ]
+            , div [ class "column" ]
+                [ p [ class "control" ]
+                    [ label_ "Password"
+                    , input
+                        [ class "input"
+                        , type_ "text"
+                        , placeholder "Hidden"
+                        , onInput (SetTmpUserEdit "password")
+                        ]
+                        []
+                    ]
+                ]
+            ]
+        , div [ class "columns" ]
+            [ div [ class "column" ]
+                [ p [ class "control" ]
+                    [ label_ "Group"
+                      -- TODO make dropdown update user
+                    , span
+                        [ class "select" ]
+                        [ groupsDropDown exp con user.groupId ]
+                    ]
+                ]
+            ]
+        , a
+            [ class "button is-primary", onClick TryPutUser ]
+            [ text "Save User" ]
+        ]
+
+
+editUserForm : String -> String -> Html Msg
+editUserForm tasksrv userId =
+    Html.form
+        [ enctype "multipart/form-data"
+        , name "csvfile"
+        , action <| tasksrv ++ "/upload/ugimgset"
+        , method "POST"
+        , id "csvForm"
+        , class "box"
+        ]
+        [ h4
+            [ class "title is-4" ]
+            [ text "Upload valuations"
+            ]
+        , input
+            [ type_ "file"
+            , id "csvFilInput"
+            , accept ".csv"
+            , name "upload"
+            ]
+            []
+        , input
+            [ type_ "hidden"
+            , id "csvFilInput"
+            , name "userid"
+            , value userId
+            ]
+            []
+        , hr [] []
+        , editButtons
+        ]
+
+
+editButtons : Html Msg
+editButtons =
+    div
+        [ class "field is-grouped" ]
+        [ a
+            [ class "button is-primary", onClick TryCsvUpload ]
+            [ span
+                [ class "icon" ]
+                [ i
+                    [ class "fa fa-file-text-o" ]
+                    []
+                ]
+            , span
+                []
+                [ text "Upload CSV"
+                ]
+            ]
+        , text " "
+        , backButton
         ]
 
 
@@ -317,12 +472,12 @@ dropdownOptions groupIdExp groupIdCon =
         }
 
 
-groupsDropDown : Model -> Html Msg
-groupsDropDown model =
+groupsDropDown : Maybe String -> Maybe String -> String -> Html Msg
+groupsDropDown exp con groupId =
     Dropdown.dropdown
-        (dropdownOptions model.groupIdExp model.groupIdCon)
+        (dropdownOptions exp con)
         []
-        (Just model.adminModel.tmpUserRecord.groupId)
+        (Just groupId)
 
 
 registerUserForm : Model -> Html Msg
@@ -332,14 +487,12 @@ registerUserForm model =
         [ firstLastReg
         , userEmailPassReg
         , div [ class "field" ]
-            [ label
-                [ class "label" ]
-                [ text "Group *" ]
+            [ label_ "Group *"
             , p
                 [ class "control" ]
                 [ span
                     [ class "select" ]
-                    [ groupsDropDown model
+                    [ groupsDropDown model.groupIdExp model.groupIdCon model.adminModel.tmpUserRecord.groupId
                     ]
                 ]
             ]
@@ -379,55 +532,6 @@ primaryButton title path =
         , R.onLinkClick <| UpdateLocation path
         ]
         [ text title ]
-
-
-editUserForm : String -> Entity.User -> Html Msg
-editUserForm tasksrv user =
-    Html.form
-        [ enctype "multipart/form-data"
-        , name "csvfile"
-        , action <| tasksrv ++ "/upload/ugimgset"
-        , method "POST"
-        , id "csvForm"
-        , class "box"
-        ]
-        [ input
-            [ type_ "file"
-            , id "csvFilInput"
-            , accept ".csv"
-            , name "upload"
-            ]
-            []
-        , input
-            [ type_ "hidden"
-            , id "csvFilInput"
-            , name "userid"
-            , value user.id
-            ]
-            []
-        , editButtons
-        ]
-
-
-editButtons : Html Msg
-editButtons =
-    div
-        [ class "field is-grouped is-pulled-right" ]
-        [ a
-            [ class "button is-primary", onClick TryUpdateUser ]
-            [ span
-                [ class "icon" ]
-                [ i
-                    [ class "fa fa-file-text-o" ]
-                    []
-                ]
-            , span
-                []
-                [ text "Upload"
-                ]
-            ]
-        , backButton
-        ]
 
 
 backButton : Html Msg

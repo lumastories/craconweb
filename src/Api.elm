@@ -8,7 +8,9 @@ module Api
         , fetchRole
         , createUserRecord
         , createAuthRecord
+        , createMesAnswer
         , updateMesStatus
+        , updateUser
         , jwtDecoded
         , okyToky
         , isAdmin
@@ -39,7 +41,7 @@ import Json
 
 fetchAll : String -> M.JwtPayload -> String -> Cmd M.Msg
 fetchAll httpsrv jwt token =
-    case isAdmin jwt of
+    case (isAdmin jwt) || (isStaff jwt) of
         True ->
             Cmd.batch <|
                 (adminOnly httpsrv token)
@@ -59,6 +61,8 @@ shared httpsrv token sub =
     , Task.attempt M.GameResp (fetchGame httpsrv token "respondsignal")
     , Task.attempt M.GameResp (fetchGame httpsrv token "visualsearch")
     , Task.attempt M.UserResp (fetchUser httpsrv token sub)
+    , Task.attempt M.MesQuerysResp (fetchMesQuerys { url = httpsrv, token = token, sub = sub })
+    , Task.attempt M.PublicMesResp (fetchPublicMesAnswers { url = httpsrv, token = token, sub = sub })
     ]
 
 
@@ -68,14 +72,7 @@ adminOnly httpsrv token =
     , Task.attempt M.RoleResp (fetchRole httpsrv token "user")
     , Task.attempt M.GroupResp (fetchGroup httpsrv token "control_a")
     , Task.attempt M.GroupResp (fetchGroup httpsrv token "experimental_a")
-    , Task.attempt M.MesResp
-        (Task.succeed
-            [ { id = "123", essay = "I like food so much. It is so lovely, yes yes yes, oh boy! GIMME FOOD. I like to eat. hooray! This is my personal statement", public = True }
-            , { id = "124", essay = "Motivation is so important, blablabl, I am loving this program, i like to eat but only healthy things, oh yeah!! woohoo!", public = False }
-            , { id = "125", essay = "Motivation is so important, blablabl, I am loving this program, i like to eat but only healthy things, oh yeah!! woohoo!", public = False }
-            , { id = "126", essay = "Motivation is so important, blablabl, I am loving this program, i like to eat but only healthy things, oh yeah!! woohoo!", public = True }
-            ]
-        )
+    , Task.attempt M.MesResp (fetchMesAnswers { url = httpsrv, token = token, sub = "" })
     ]
 
 
@@ -84,7 +81,14 @@ userOnly httpsrv token sub =
     [ Task.attempt M.FillerResp (fetchFiller httpsrv token sub)
     , Task.attempt M.ValidResp (fetchValid httpsrv token sub)
     , Task.attempt M.InvalidResp (fetchInvalid httpsrv token sub)
+    , Task.attempt M.NextQueryResp (calcNextQuery { url = httpsrv, token = token, sub = sub })
     ]
+
+
+calcNextQuery : M.Base -> Task Http.Error M.MesQuery
+calcNextQuery { token, url } =
+    -- TODO: chain mesanswers request with this to determinine which queries to display
+    getRequest token (url ++ "/mesquery/2") M.mesQueryDecoder
 
 
 defaultHeaders : String -> List Http.Header
@@ -104,24 +108,58 @@ defaultHeaders jwtencoded =
         authHeaders
 
 
-updateMesStatus : String -> String -> String -> Bool -> Task Http.Error String
-updateMesStatus httpsrv token id isPublic =
+updateMesStatus : M.Base -> String -> M.MesAnswer -> Task Http.Error String
+updateMesStatus { url, token, sub } id updatedMes =
     putRequest
-        { endpoint = (httpsrv ++ "/mesanswer/" ++ id)
+        { endpoint = (url ++ "/mesanswer/" ++ id)
+        , decoder = (JD.succeed "TODO: decode response")
         , token = token
-        , json = JE.null
-        , decoder = (JD.succeed "what will it return?")
+        , json = (Json.mesEncoder updatedMes sub)
         }
 
 
-fetchMesAnswers : M.Base -> Task Http.Error (List M.MeStatement)
+updateUser : M.Base -> M.UserEdit -> Task Http.Error String
+updateUser { url, token, sub } user =
+    putRequest
+        { endpoint = (url ++ "/user/" ++ user.id)
+        , decoder = (JD.succeed "TODO: decode response")
+        , token = token
+        , json = (Json.userEncoder user)
+        }
+
+
+createMesAnswer : M.Base -> M.MesAnswer -> String -> Task Http.Error String
+createMesAnswer b answer sub =
+    Http.request
+        { method = "POST"
+        , headers = defaultHeaders b.token
+        , url = b.url ++ "/user/" ++ sub ++ "/mesquery/" ++ answer.queryId ++ "/mesanswer"
+        , body = Http.jsonBody <| M.mesAnswerEncoder answer
+        , expect = Http.expectString
+        , timeout = Nothing
+        , withCredentials = False
+        }
+        |> Http.toTask
+
+
+fetchMesAnswers : M.Base -> Task Http.Error (List M.MesAnswer)
 fetchMesAnswers b =
-    getRequest b.token (b.url ++ "/mesanswers") meStatementsDecoder
+    getRequest b.token (b.url ++ "/mesanswers?userEach=true&createdEach=true&public=false") M.mesAnswersDecoder
 
 
-meStatementsDecoder : JD.Decoder (List M.MeStatement)
-meStatementsDecoder =
-    JD.succeed []
+fetchPublicMesAnswers : M.Base -> Task Http.Error (List M.MesAnswer)
+fetchPublicMesAnswers b =
+    getRequest b.token (b.url ++ "/mesanswers?userEach=true&createdEach=true&public=true") M.mesAnswersDecoder
+
+
+fetchMesAnswersByUser : M.Base -> String -> Task Http.Error (List M.MesAnswer)
+fetchMesAnswersByUser b sub =
+    getRequest b.token (b.url ++ "/mesanswers?userId=" ++ sub ++ "&createdEach=true&publicEach=true") M.mesAnswersDecoder
+
+
+fetchMesQuerys : M.Base -> Task Http.Error (List M.MesQuery)
+fetchMesQuerys b =
+    getRequest b.token (b.url ++ "/mesquerys") M.mesQuerysDecoder
 
 
 createAuthRecord :

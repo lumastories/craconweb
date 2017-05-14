@@ -26,20 +26,169 @@ import Helpers
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        SetTmpUserEdit key value ->
+            let
+                adminModel_ =
+                    model.adminModel
+
+                tue_ =
+                    case model.adminModel.tmpUserEdit of
+                        Nothing ->
+                            Nothing
+
+                        Just tue_ ->
+                            case key of
+                                "email" ->
+                                    Just { tue_ | email = value }
+
+                                "password" ->
+                                    Just { tue_ | password = value }
+
+                                "username" ->
+                                    Just { tue_ | username = value }
+
+                                "firstName" ->
+                                    Just { tue_ | firstName = value }
+
+                                "lastName" ->
+                                    Just { tue_ | lastName = value }
+
+                                _ ->
+                                    Just tue_
+            in
+                ( { model | adminModel = { adminModel_ | tmpUserEdit = tue_ } }
+                , Cmd.none
+                )
+
+        FillTmpUserEdit userId ->
+            let
+                user_ =
+                    model.users
+                        |> List.filter (\u -> u.id == userId)
+                        |> List.head
+
+                ( tmpUser, cmd ) =
+                    case user_ of
+                        Nothing ->
+                            ( Nothing, Cmd.none )
+
+                        Just u ->
+                            ( (Just
+                                { id = u.id
+                                , username = u.username
+                                , firstName = u.firstName
+                                , lastName = u.lastName
+                                , email = u.email
+                                , password = ""
+                                , groupId = u.groupId
+                                }
+                              )
+                            , Navigation.newUrl (R.editPath ++ u.id)
+                            )
+            in
+                ( { model | adminModel = up_tmpUserEdit model.adminModel tmpUser }
+                , cmd
+                )
+
+        EditUserResp (Ok user) ->
+            model ! []
+
+        EditUserResp (Err err) ->
+            model ! []
+
+        SetRequestNothing ->
+            ( { model | request = Nothing }, Cmd.none )
+
+        NextQueryResp (Ok q) ->
+            ( { model
+                | mesQuery = Just q.content
+                , mesAnswer = Just (newMesAnswerWithqueryId q.id)
+              }
+            , Cmd.none
+            )
+
+        NextQueryResp (Err e) ->
+            model ! []
+
+        MesQuerysResp _ ->
+            model ! []
+
+        UpdateMesAnswer a ->
+            ( { model | mesAnswer = Maybe.map (up_essay a) model.mesAnswer }, Cmd.none )
+
+        TrySubmitMesAnswer ->
+            case model.mesAnswer of
+                Nothing ->
+                    model ! []
+
+                Just mesAns ->
+                    if mesAns.essay == "" then
+                        ( { model | request = Just "Please answer the question. Thanks!" }, Cmd.none )
+                    else if (String.length mesAns.essay) < 2 then
+                        ( { model | request = Just "Maybe write a little more?" }, Cmd.none )
+                    else
+                        case model.visitor of
+                            Anon ->
+                                model ! []
+
+                            LoggedIn { sub } ->
+                                ( { model | mesQuery = Nothing, request = Nothing }
+                                , Task.attempt MesPostResp
+                                    (Api.createMesAnswer
+                                        { url = model.httpsrv
+                                        , token = model.jwtencoded
+                                        , sub = ""
+                                        }
+                                        mesAns
+                                        sub
+                                    )
+                                )
+
+        MesPostResp _ ->
+            model ! []
+
         GroupChanged groupId_ ->
             let
-                ( adminModel, user ) =
-                    ( model.adminModel, model.adminModel.tmpUserRecord )
+                ( adminModel, user, userEdit ) =
+                    ( model.adminModel, model.adminModel.tmpUserRecord, model.adminModel.tmpUserEdit )
 
                 user_ =
                     { user | groupId = (Maybe.withDefault "" groupId_) }
 
+                userEdit_ =
+                    case userEdit of
+                        Nothing ->
+                            Nothing
+
+                        Just u ->
+                            Just { u | groupId = (Maybe.withDefault "" groupId_) }
+
                 adminModel_ =
-                    { adminModel | tmpUserRecord = user_ }
+                    { adminModel | tmpUserRecord = user_, tmpUserEdit = userEdit_ }
             in
                 ( { model | adminModel = adminModel_ }, Cmd.none )
 
-        TryUpdateUser ->
+        UserEditResp _ ->
+            model ! []
+
+        TryPutUser ->
+            case model.adminModel.tmpUserEdit of
+                Nothing ->
+                    model ! []
+
+                Just user ->
+                    ( model
+                    , Task.attempt UserEditResp
+                        (Api.updateUser
+                            { url = model.httpsrv
+                            , token = model.jwtencoded
+                            , sub = ""
+                            }
+                            user
+                        )
+                    )
+
+        TryCsvUpload ->
             ( model
             , Port.upload
                 ( model.tasksrv ++ "/upload/ugimgset"
@@ -124,45 +273,77 @@ update msg model =
                 ( { model | glitching = Just "* Please fill out required fields." }, Cmd.none )
             else
                 ( { model | loading = Just "loading..." }
-                , Cmd.batch
-                    [ Task.attempt RegisterUserResp
-                        (Api.createUserRecord
-                            model.httpsrv
-                            model.jwtencoded
-                            model.adminModel.tmpUserRecord
-                        )
-                    ]
+                , Task.attempt RegisterUserResp
+                    (Api.createUserRecord
+                        model.httpsrv
+                        model.jwtencoded
+                        model.adminModel.tmpUserRecord
+                    )
                 )
 
-        MesResp (Ok meStatements) ->
+        MesResp (Ok mesAnswers) ->
             ( { model
                 | adminModel =
-                    up_meStatements model.adminModel meStatements
+                    up_mesAnswers model.adminModel mesAnswers
               }
             , Cmd.none
             )
 
-        MesPublish id ->
-            ( model
-            , Task.attempt PutMesResp
-                (Api.updateMesStatus
-                    model.httpsrv
-                    model.jwtencoded
-                    id
-                    True
-                )
-            )
+        PublicMesResp (Ok publicMes) ->
+            ( { model | statements = Just publicMes }, Cmd.none )
 
-        MesUnPublish id ->
-            ( model
-            , Task.attempt PutMesResp
-                (Api.updateMesStatus
-                    model.httpsrv
-                    model.jwtencoded
-                    id
-                    False
-                )
-            )
+        PublicMesResp (Err err) ->
+            let
+                _ =
+                    Debug.log "public" err
+            in
+                model ! []
+
+        PublishMes id ->
+            case model.adminModel.mesAnswers of
+                Nothing ->
+                    model ! []
+
+                Just mess ->
+                    let
+                        userId =
+                            case model.visitor of
+                                Anon ->
+                                    ""
+
+                                LoggedIn jwtdecoded ->
+                                    jwtdecoded.sub
+
+                        mesAns =
+                            mess
+                                |> List.filter (\m -> m.id == id)
+                                |> List.head
+                                |> Maybe.map (\m -> { m | public = True })
+
+                        model_ =
+                            case model.adminModel.mesAnswers of
+                                Nothing ->
+                                    model
+
+                                Just mesA ->
+                                    { model | adminModel = up_mesAnswers model.adminModel (List.filter (\m -> m.id /= id) mesA) }
+                    in
+                        case mesAns of
+                            Nothing ->
+                                model ! []
+
+                            Just mesAnswer ->
+                                ( model_
+                                , Task.attempt PutMesResp
+                                    (Api.updateMesStatus
+                                        { url = model.httpsrv
+                                        , token = model.jwtencoded
+                                        , sub = userId
+                                        }
+                                        id
+                                        mesAnswer
+                                    )
+                                )
 
         PutMesResp (Ok r) ->
             let
@@ -396,7 +577,11 @@ update msg model =
             (httpErrorState model err)
 
         MesResp (Err err) ->
-            (httpErrorState model err)
+            let
+                _ =
+                    Debug.log "resp:" err
+            in
+                (httpErrorState model err)
 
         PutMesResp (Err err) ->
             (httpErrorState model err)
@@ -597,6 +782,7 @@ valuationsError err =
 
         MissingValuations ->
             "You are missing customized game images! Are your image valuations uploaded?"
+
 
 
 
