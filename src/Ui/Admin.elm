@@ -110,16 +110,6 @@ registerPage model =
         ]
 
 
-editUserPage : Model -> String -> Html Msg
-editUserPage model userid =
-    case (A.userName model.users userid) of
-        Just user ->
-            editUser model.informing model.tasksrv user model.ugimgsets
-
-        Nothing ->
-            editUser404
-
-
 usersTable : Model -> Html Msg
 usersTable model =
     table [ class "table is-bordered is-striped is-narrow" ]
@@ -148,11 +138,22 @@ userRows users request =
                 , td [] [ text user.email ]
                 , td [] [ text user.groupId ]
                 , td []
-                    [ iconButton "Edit"
-                        (R.editPath ++ user.id)
-                        "fa-wrench"
-                        "is-small"
-                    , text " "
+                    [ a
+                        [ class "button is-small"
+                        , href (R.editPath ++ user.id)
+                        , R.onLinkClick <| UpdateLocation (R.editPath ++ user.id)
+                        , onClick (FillTmpUserEdit user.id)
+                        ]
+                        [ span
+                            [ class "icon is-small" ]
+                            [ i
+                                [ class "fa fa-wrench" ]
+                                []
+                            ]
+                        , span
+                            []
+                            [ text "Edit" ]
+                        ]
                     ]
                 ]
     in
@@ -205,31 +206,63 @@ divColumns children =
     div [ class "columns" ] children
 
 
-editUser : Maybe String -> String -> Entity.User -> Maybe (List Entity.Ugimgset) -> Html Msg
-editUser informing tasksrv user ugimgsets =
+editUserPage : Model -> String -> Html Msg
+editUserPage model userid =
+    case model.adminModel.tmpUserEdit of
+        Just user ->
+            editUser
+                model.groupIdExp
+                model.groupIdCon
+                model.informing
+                model.tasksrv
+                user
+                model.ugimgsets
+
+        Nothing ->
+            editUser404
+
+
+editUser :
+    Maybe String
+    -> Maybe String
+    -> Maybe String
+    -> String
+    -> Model.UserEdit
+    -> Maybe (List Entity.Ugimgset)
+    -> Html Msg
+editUser exp con informing tasksrv user ugimgsets =
     basicAdminPage Nothing
         [ divColumns
             [ div [ class "column is-half is-offset-one-quarter" ]
                 [ Parts.notification informing "is-warning is-small"
-                , userForm user
+                , userForm user exp con
                 ]
             ]
         , divColumns
             [ div [ class "column is-half is-offset-one-quarter" ]
-                [ editUserForm tasksrv user
+                [ editUserForm tasksrv user.id
                 ]
             ]
         ]
 
 
-userForm : Entity.User -> Html Msg
-userForm user =
+userForm :
+    Model.UserEdit
+    -> Maybe String
+    -> Maybe String
+    -> Html Msg
+userForm user exp con =
     Html.form []
         [ div [ class "columns" ]
             [ div [ class "column" ]
                 [ p [ class "control" ]
                     [ label_ "First Name"
-                    , input [ class "input", type_ "text", value user.firstName ] []
+                    , input
+                        [ class "input"
+                        , type_ "text"
+                        , value user.firstName
+                        ]
+                        []
                     ]
                 ]
             , div [ class "column" ]
@@ -239,14 +272,44 @@ userForm user =
                     ]
                 ]
             ]
+        , div [ class "columns" ]
+            [ div [ class "column" ]
+                [ p [ class "control" ]
+                    [ label_ "Username"
+                    , input [ class "input", type_ "text", value user.username ] []
+                    ]
+                ]
+            , div [ class "column" ]
+                [ p [ class "control" ]
+                    [ label_ "Email"
+                    , input [ class "input", type_ "text", value user.email ] []
+                    ]
+                ]
+            , div [ class "column" ]
+                [ p [ class "control" ]
+                    [ label_ "Password"
+                    , input [ class "input", type_ "text" ] []
+                    ]
+                ]
+            ]
+        , div [ class "columns" ]
+            [ div [ class "column" ]
+                [ p [ class "control" ]
+                    [ label_ "Group"
+                    , span
+                        [ class "select" ]
+                        [ groupsDropDown exp con user.groupId ]
+                    ]
+                ]
+            ]
         , a
             [ class "button is-primary" ]
             [ text "Save User" ]
         ]
 
 
-editUserForm : String -> Entity.User -> Html Msg
-editUserForm tasksrv user =
+editUserForm : String -> String -> Html Msg
+editUserForm tasksrv userId =
     Html.form
         [ enctype "multipart/form-data"
         , name "csvfile"
@@ -270,7 +333,7 @@ editUserForm tasksrv user =
             [ type_ "hidden"
             , id "csvFilInput"
             , name "userid"
-            , value user.id
+            , value userId
             ]
             []
         , hr [] []
@@ -386,12 +449,12 @@ dropdownOptions groupIdExp groupIdCon =
         }
 
 
-groupsDropDown : Model -> Html Msg
-groupsDropDown model =
+groupsDropDown : Maybe String -> Maybe String -> String -> Html Msg
+groupsDropDown exp con groupId =
     Dropdown.dropdown
-        (dropdownOptions model.groupIdExp model.groupIdCon)
+        (dropdownOptions exp con)
         []
-        (Just model.adminModel.tmpUserRecord.groupId)
+        (Just groupId)
 
 
 registerUserForm : Model -> Html Msg
@@ -401,14 +464,12 @@ registerUserForm model =
         [ firstLastReg
         , userEmailPassReg
         , div [ class "field" ]
-            [ label
-                [ class "label" ]
-                [ text "Group *" ]
+            [ label_ "Group *"
             , p
                 [ class "control" ]
                 [ span
                     [ class "select" ]
-                    [ groupsDropDown model
+                    [ groupsDropDown model.groupIdExp model.groupIdCon model.adminModel.tmpUserRecord.groupId
                     ]
                 ]
             ]

@@ -1,4 +1,4 @@
-module Ui.Parts exposing (notification, linkAttrs,modal)
+module Ui.Parts exposing (notification, linkAttrs, modal)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -25,6 +25,8 @@ linkAttrs : String -> List (Attribute Msg)
 linkAttrs path =
     [ href <| path, R.onLinkClick <| UpdateLocation path ]
 
+
+modal : List (Html msg) -> Html msg
 modal children =
     div
         [ class <| "modal is-active" ]

@@ -56,13 +56,13 @@ type alias AdminModel =
 
 
 type alias UserEdit =
-    { username : String
+    { id : String
+    , username : String
     , firstName : String
     , lastName : String
     , email : String
     , password : String
     , groupId : String
-    , roleId : String
     }
 
 
@@ -74,6 +74,11 @@ up_mesAnswers am mes =
 up_tmpUserRecord : AdminModel -> Entity.UserRecord -> AdminModel
 up_tmpUserRecord am tur =
     { am | tmpUserRecord = tur }
+
+
+up_tmpUserEdit : AdminModel -> Maybe UserEdit -> AdminModel
+up_tmpUserEdit am tue =
+    { am | tmpUserEdit = tue }
 
 
 type alias MesAnswer =
@@ -165,6 +170,7 @@ type alias JwtPayload =
 type Msg
     = UpdateLocation String
     | OnUpdateLocation Navigation.Location
+    | FillTmpUserEdit String
     | GroupChanged (Maybe String)
     | SetStatus String
     | UpdateEmail String

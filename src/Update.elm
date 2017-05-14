@@ -28,6 +28,48 @@ import Game.Implementations.VisualSearch
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        UpdateTmpUserEdit key ->
+            let
+                old =
+                    model.adminModel.tmpUserEdit
+
+                newTmpUserEdit =
+                    case key of
+                        "firstName" ->
+                            { old | firstName = "test" }
+
+                        _ ->
+                            { old | firstName = "test" }
+            in
+                model ! []
+
+        FillTmpUserEdit userId ->
+            let
+                user_ =
+                    model.users
+                        |> List.filter (\u -> u.id == userId)
+                        |> List.head
+
+                tmpUser =
+                    case user_ of
+                        Nothing ->
+                            Nothing
+
+                        Just u ->
+                            Just
+                                { id = u.id
+                                , username = u.username
+                                , firstName = u.firstName
+                                , lastName = u.lastName
+                                , email = u.email
+                                , password = ""
+                                , groupId = u.groupId
+                                }
+            in
+                ( { model | adminModel = up_tmpUserEdit model.adminModel tmpUser }
+                , Cmd.none
+                )
+
         EditUserResp (Ok user) ->
             model ! []
 
@@ -38,7 +80,10 @@ update msg model =
             ( { model | request = Nothing }, Cmd.none )
 
         NextQueryResp (Ok q) ->
-            ( { model | mesQuery = Just q.content, mesAnswer = Just (newMesAnswerWithqueryId q.id) }
+            ( { model
+                | mesQuery = Just q.content
+                , mesAnswer = Just (newMesAnswerWithqueryId q.id)
+              }
             , Cmd.none
             )
 
