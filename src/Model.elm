@@ -49,6 +49,60 @@ type alias Model =
     }
 
 
+type Msg
+    = UpdateLocation String
+    | OnUpdateLocation Navigation.Location
+    | FillTmpUserEdit String
+    | GroupChanged (Maybe String)
+    | SetStatus String
+    | UpdateEmail String
+    | UpdatePassword String
+    | TryLogin
+    | Logout
+    | ResetNotifications
+    | MainMenuToggle
+    | NewCurrentTime Time.Time
+    | Presses Int
+    | IntIndication Int
+    | InitStopSignal
+    | InitGoNoGo
+    | InitDotProbe
+    | InitVisualSearch
+    | StartSession { gameId : String, game : Game.Game Msg, time : Time.Time }
+    | StartSessionResp (Game.Game Msg) (RemoteData.WebData Game.Session)
+    | SessionSaved Game.State Game.Session (RemoteData.WebData Game.Session)
+    | ResendSession Game.State Game.Session
+    | AuthResp (Result Http.Error Entity.Auth)
+    | PublicMesResp (Result Http.Error (List MesAnswer))
+    | UserResp (Result Http.Error Entity.User)
+    | GameResp (Result Http.Error Entity.Game)
+    | UsersResp (Result Http.Error (List Entity.User))
+    | RegisterUserResp (Result Http.Error Entity.User)
+    | EditUserResp (Result Http.Error Entity.User)
+    | GroupResp (Result Http.Error Entity.Group)
+    | MesResp (Result Http.Error (List MesAnswer))
+    | MesPostResp (Result Http.Error String)
+    | PutMesResp (Result Http.Error String)
+    | UserEditResp (Result Http.Error String)
+    | MesQuerysResp (Result Http.Error (List MesQuery))
+    | MesAnswersResp (Result Http.Error (List MesAnswer))
+    | NextQueryResp (Result Http.Error MesQuery)
+    | RoleResp (Result Http.Error Entity.Role)
+    | FillerResp (Result ValuationsError (List Entity.Ugimage))
+    | ValidResp (Result ValuationsError (List Entity.Ugimage))
+    | InvalidResp (Result ValuationsError (List Entity.Ugimage))
+    | TryRegisterUser
+    | SetRegistration String String
+    | TryCsvUpload
+    | TryPutUser
+    | EditUserAccount String String
+    | PublishMes String
+    | UpdateMesAnswer String
+    | TrySubmitMesAnswer
+    | SetRequestNothing
+    | SetTmpUserEdit String String
+
+
 type alias AdminModel =
     { tmpUserRecord : Entity.UserRecord
     , mesAnswers : Maybe (List MesAnswer)
@@ -166,59 +220,6 @@ type alias JwtPayload =
     , sub : String
     , roles : List Entity.Role
     }
-
-
-type Msg
-    = UpdateLocation String
-    | OnUpdateLocation Navigation.Location
-    | FillTmpUserEdit String
-    | GroupChanged (Maybe String)
-    | SetStatus String
-    | UpdateEmail String
-    | UpdatePassword String
-    | TryLogin
-    | Logout
-    | ResetNotifications
-    | MainMenuToggle
-    | NewCurrentTime Time.Time
-    | Presses Int
-    | IntIndication Int
-    | InitStopSignal
-    | InitGoNoGo
-    | InitDotProbe
-    | InitVisualSearch
-    | StartSession { gameId : String, game : Game.Game Msg, time : Time.Time }
-    | StartSessionResp (Game.Game Msg) (RemoteData.WebData Game.Session)
-    | SessionSaved Game.State Game.Session (RemoteData.WebData Game.Session)
-    | ResendSession Game.State Game.Session
-    | AuthResp (Result Http.Error Entity.Auth)
-    | PublicMesResp (Result Http.Error (List MesAnswer))
-    | UserResp (Result Http.Error Entity.User)
-    | GameResp (Result Http.Error Entity.Game)
-    | UsersResp (Result Http.Error (List Entity.User))
-    | RegisterUserResp (Result Http.Error Entity.User)
-    | EditUserResp (Result Http.Error Entity.User)
-    | GroupResp (Result Http.Error Entity.Group)
-    | MesResp (Result Http.Error (List MesAnswer))
-    | MesPostResp (Result Http.Error String)
-    | PutMesResp (Result Http.Error String)
-    | UserEditResp (Result Http.Error String)
-    | MesQuerysResp (Result Http.Error (List MesQuery))
-    | NextQueryResp (Result Http.Error MesQuery)
-    | RoleResp (Result Http.Error Entity.Role)
-    | FillerResp (Result ValuationsError (List Entity.Ugimage))
-    | ValidResp (Result ValuationsError (List Entity.Ugimage))
-    | InvalidResp (Result ValuationsError (List Entity.Ugimage))
-    | TryRegisterUser
-    | SetRegistration String String
-    | TryCsvUpload
-    | TryPutUser
-    | EditUserAccount String String
-    | PublishMes String
-    | UpdateMesAnswer String
-    | TrySubmitMesAnswer
-    | SetRequestNothing
-    | SetTmpUserEdit String String
 
 
 ugimgsetsDecoder : JD.Decoder (List Entity.Ugimgset)

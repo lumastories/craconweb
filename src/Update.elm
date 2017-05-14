@@ -26,6 +26,9 @@ import Helpers
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        MesAnswersResp _ ->
+            model ! []
+
         SetTmpUserEdit key value ->
             let
                 adminModel_ =
@@ -782,7 +785,6 @@ valuationsError err =
 
         MissingValuations ->
             "You are missing customized game images! Are your image valuations uploaded?"
-
 
 
 
