@@ -3,8 +3,8 @@ module Ui.Parts
         ( notification
         , linkAttrs
         , notificationRemoteData
+        , modal
         )
-
 
 import Html exposing (..)
 import Html.Attributes exposing (..)

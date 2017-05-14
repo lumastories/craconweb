@@ -32,7 +32,6 @@ import Time exposing (Time)
 import Json
 
 
-
 {-
    The Api module is primarily for
    fetching, updating and creating
@@ -109,31 +108,24 @@ defaultHeaders jwtencoded =
         authHeaders
 
 
-
 updateMesStatus : M.Base -> String -> M.MesAnswer -> Task Http.Error String
 updateMesStatus { url, token, sub } id updatedMes =
-    putRequest (url ++ "/mesanswer/" ++ id) token (Http.jsonBody <| encodeMes updatedMes sub) (JD.succeed "TODO: decode response")
+    putRequest
+        { endpoint = (url ++ "/mesanswer/" ++ id)
+        , decoder = (JD.succeed "TODO: decode response")
+        , token = token
+        , json = (Json.mesEncoder updatedMes sub)
+        }
 
 
 updateUser : M.Base -> M.UserEdit -> Task Http.Error String
 updateUser { url, token, sub } user =
-    putRequest (url ++ "/user/" ++ user.id) token Http.emptyBody (JD.succeed "TODO: decode response")
-
-
-
-encodeMes : M.MesAnswer -> String -> JE.Value
-encodeMes mes sub =
-    JE.object
-        [ ( "mesanswerRecord"
-          , JE.object
-                [ ( "userId", JE.string sub )
-                , ( "mesqueryId", JE.string mes.queryId )
-                , ( "content", JE.string mes.essay )
-                , ( "public", JE.bool mes.public )
-                  --, ( "sort", JE.int 1 )
-                ]
-          )
-        ]
+    putRequest
+        { endpoint = (url ++ "/user/" ++ user.id)
+        , decoder = (JD.succeed "TODO: decode response")
+        , token = token
+        , json = (Json.userEncoder user)
+        }
 
 
 createMesAnswer : M.Base -> M.MesAnswer -> String -> Task Http.Error String

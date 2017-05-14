@@ -326,7 +326,7 @@ userForm user exp con =
                 ]
             ]
         , a
-            [ class "button is-primary", onClick TryCsvUpload ]
+            [ class "button is-primary", onClick TryPutUser ]
             [ text "Save User" ]
         ]
 
