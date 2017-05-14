@@ -6,7 +6,6 @@ module Ui.Admin
         , mesPage
         )
 
-import Access as A
 import Entity
 import Html exposing (..)
 import Html.Attributes exposing (..)
