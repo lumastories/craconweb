@@ -89,7 +89,7 @@ init { totalDuration, infoString, responseImages, nonResponseImages, fillerImage
             |> Random.andThen (addRests Nothing 500 0)
             |> Random.map
                 (\trials ->
-                    (info infoString :: startSession :: log (BeginSession seedInt) :: trials)
+                    (info infoString :: startSession :: log (BeginSession { seed = seedInt }) :: trials)
                         |> List.foldl (andThenCheckTimeout isTimeout) (Game.Card.complete (emptyState seedInt currentTime))
                 )
             |> (\generator -> Random.step generator (Random.initialSeed seedInt))
@@ -132,6 +132,6 @@ trial { totalDuration, goTrial, gameDuration, redCrossDuration } image state =
                     ]
                     bordered
                 )
-            |> andThen (log DisplayRedCross)
+            |> andThen (log (BeginDisplay redCross))
             |> andThen (segment [ trialFailed, timeout (totalDuration + redCrossDuration) ] redCross)
             |> andThen (log EndTrial)

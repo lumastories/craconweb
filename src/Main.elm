@@ -10,7 +10,7 @@ import Routing as R
 import Update
 import View
 import Port
-import Time
+import AnimationFrame
 
 
 main : Program Flags M.Model M.Msg
@@ -35,7 +35,7 @@ subscriptions model =
 ticker : Game.GameState M.Msg -> Sub M.Msg
 ticker gameState =
     if Game.isPlaying gameState then
-        Time.every Time.millisecond M.NewCurrentTime
+        AnimationFrame.times M.NewCurrentTime
     else
         Sub.none
 

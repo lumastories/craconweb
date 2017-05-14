@@ -66,7 +66,7 @@ init { fixationDuration, imageDuration, infoString, responseImages, nonResponseI
             |> Random.andThen (addRests Nothing 500 0)
             |> Random.map
                 (\trials ->
-                    (info infoString :: startSession :: log (BeginSession seedInt) :: trials)
+                    (info infoString :: startSession :: log (BeginSession { seed = seedInt }) :: trials)
                         |> List.foldl (andThenCheckTimeout isTimeout) (Game.Card.complete (emptyState seedInt currentTime))
                 )
             |> (\generator -> Random.step generator (Random.initialSeed seedInt))
@@ -98,13 +98,19 @@ trial { fixationDuration, imageDuration, goTrial, gameDuration, goImage, noGoIma
 
                 Game.Right ->
                     Just (LeftRight borderless noGoImage goImage)
+
+        fixation =
+            Just (Fixation borderless)
+
+        probe =
+            Just (Probe borderless direction)
     in
         log BeginTrial { state | trialResult = Game.NoResult, trialStart = state.currTime, currentSeed = nextSeed }
-            |> andThen (log DisplayFixation)
-            |> andThen (segment [ timeout fixationDuration ] (Just (Fixation borderless)))
+            |> andThen (log (BeginDisplay fixation))
+            |> andThen (segment [ timeout fixationDuration ] fixation)
             |> andThen (log (BeginDisplay trial))
             |> andThen (segment [ timeout (fixationDuration + imageDuration) ] trial)
-            |> andThen (log (DisplayProbe direction))
+            |> andThen (log (BeginDisplay probe))
             |> andThen (log BeginInput)
-            |> andThen (segment [ onDirection True direction ] (Just (Probe borderless direction)))
+            |> andThen (segment [ onDirection True direction ] probe)
             |> andThen (log EndTrial)

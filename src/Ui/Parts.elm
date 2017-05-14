@@ -1,10 +1,18 @@
-module Ui.Parts exposing (notification, linkAttrs, modal)
+module Ui.Parts
+    exposing
+        ( notification
+        , linkAttrs
+        , notificationRemoteData
+        )
+
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Model exposing (Msg(..))
 import Html.Events exposing (onClick)
 import Routing as R
+import RemoteData
+import Helpers
 
 
 notification : Maybe String -> String -> Html Msg
@@ -19,6 +27,22 @@ notification notifText mods =
 
         Nothing ->
             div [] []
+
+
+notificationRemoteData : RemoteData.WebData a -> Html Msg
+notificationRemoteData remoteData =
+    case remoteData of
+        RemoteData.Loading ->
+            notification (Just "Saving game data..") "is-info"
+
+        RemoteData.Success _ ->
+            notification (Just "Game data saved") "is-info"
+
+        RemoteData.NotAsked ->
+            text ""
+
+        RemoteData.Failure error ->
+            notification (Just <| Helpers.httpHumanError error) "is-danger"
 
 
 linkAttrs : String -> List (Attribute Msg)

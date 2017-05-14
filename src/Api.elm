@@ -14,6 +14,8 @@ module Api
         , jwtDecoded
         , okyToky
         , isAdmin
+        , startSession
+        , endSession
         )
 
 import Entity
@@ -24,6 +26,11 @@ import Time
 import Model as M
 import Json.Decode as JD
 import Json.Encode as JE
+import RemoteData
+import Game
+import Time exposing (Time)
+import Json
+
 
 
 {-
@@ -102,6 +109,7 @@ defaultHeaders jwtencoded =
         authHeaders
 
 
+
 updateMesStatus : M.Base -> String -> M.MesAnswer -> Task Http.Error String
 updateMesStatus { url, token, sub } id updatedMes =
     putRequest (url ++ "/mesanswer/" ++ id) token (Http.jsonBody <| encodeMes updatedMes sub) (JD.succeed "TODO: decode response")
@@ -110,6 +118,7 @@ updateMesStatus { url, token, sub } id updatedMes =
 updateUser : M.Base -> M.UserEdit -> Task Http.Error String
 updateUser { url, token, sub } user =
     putRequest (url ++ "/user/" ++ user.id) token Http.emptyBody (JD.succeed "TODO: decode response")
+
 
 
 encodeMes : M.MesAnswer -> String -> JE.Value
@@ -159,20 +168,6 @@ fetchMesAnswersByUser b sub =
 fetchMesQuerys : M.Base -> Task Http.Error (List M.MesQuery)
 fetchMesQuerys b =
     getRequest b.token (b.url ++ "/mesquerys") M.mesQuerysDecoder
-
-
-putRequest : String -> String -> Http.Body -> JD.Decoder a -> Task Http.Error a
-putRequest url_ token body_ decoder =
-    Http.request
-        { method = "PUT"
-        , headers = defaultHeaders token
-        , url = url_
-        , body = body_
-        , expect = Http.expectJson decoder
-        , timeout = Nothing
-        , withCredentials = False
-        }
-        |> Http.toTask
 
 
 createAuthRecord :
@@ -405,3 +400,66 @@ okyToky now token =
 jwtDecoded : String -> Result Jwt.JwtError M.JwtPayload
 jwtDecoded token =
     Jwt.decodeToken M.jwtDecoder token
+
+
+startSession : { token : String, userId : String, gameId : String, start : Time, httpsrv : String } -> Task Never (RemoteData.WebData Game.Session)
+startSession { token, userId, gameId, start, httpsrv } =
+    let
+        json =
+            Json.sessionEncoder
+                { userId = userId
+                , gameId = gameId
+                , start = start
+                , end = Nothing
+                }
+    in
+        postRequest
+            { endpoint = httpsrv ++ "/user/" ++ userId ++ "/gsession"
+            , decoder = Json.sessionDecoder
+            , token = token
+            , json = json
+            }
+            |> RemoteData.fromTask
+
+
+endSession : { session : Game.Session, token : String, httpsrv : String } -> Task Never (RemoteData.WebData Game.Session)
+endSession { session, token, httpsrv } =
+    let
+        json =
+            Json.putSessionEncoder session
+    in
+        putRequest
+            { endpoint = httpsrv ++ "/gsession/" ++ session.id
+            , decoder = Json.sessionDecoder
+            , token = token
+            , json = json
+            }
+            |> RemoteData.fromTask
+
+
+postRequest : { endpoint : String, token : String, decoder : JD.Decoder a, json : JE.Value } -> Task Http.Error a
+postRequest { endpoint, decoder, token, json } =
+    Http.request
+        { method = "POST"
+        , headers = defaultHeaders token
+        , url = endpoint
+        , body = json |> Http.jsonBody
+        , expect = Http.expectJson decoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
+        |> Http.toTask
+
+
+putRequest : { endpoint : String, token : String, decoder : JD.Decoder a, json : JE.Value } -> Task Http.Error a
+putRequest { endpoint, decoder, token, json } =
+    Http.request
+        { method = "PUT"
+        , headers = defaultHeaders token
+        , url = endpoint
+        , body = json |> Http.jsonBody
+        , expect = Http.expectJson decoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
+        |> Http.toTask
