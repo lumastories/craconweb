@@ -151,18 +151,46 @@ update msg model =
 
         GroupChanged groupId_ ->
             let
-                ( adminModel, user ) =
-                    ( model.adminModel, model.adminModel.tmpUserRecord )
+                ( adminModel, user, userEdit ) =
+                    ( model.adminModel, model.adminModel.tmpUserRecord, model.adminModel.tmpUserEdit )
 
                 user_ =
                     { user | groupId = (Maybe.withDefault "" groupId_) }
 
+                userEdit_ =
+                    case userEdit of
+                        Nothing ->
+                            Nothing
+
+                        Just u ->
+                            Just { u | groupId = (Maybe.withDefault "" groupId_) }
+
                 adminModel_ =
-                    { adminModel | tmpUserRecord = user_ }
+                    { adminModel | tmpUserRecord = user_, tmpUserEdit = userEdit_ }
             in
                 ( { model | adminModel = adminModel_ }, Cmd.none )
 
-        TryUpdateUser ->
+        UserEditResp _ ->
+            model ! []
+
+        TryPutUser ->
+            case model.adminModel.tmpUserEdit of
+                Nothing ->
+                    model ! []
+
+                Just user ->
+                    ( model
+                    , Task.attempt UserEditResp
+                        (Api.updateUser
+                            { url = model.httpsrv
+                            , token = model.jwtencoded
+                            , sub = ""
+                            }
+                            user
+                        )
+                    )
+
+        TryCsvUpload ->
             ( model
             , Port.upload
                 ( model.tasksrv ++ "/upload/ugimgset"

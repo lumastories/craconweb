@@ -307,6 +307,7 @@ userForm user exp con =
                     , input
                         [ class "input"
                         , type_ "text"
+                        , placeholder "Previous password is hidden"
                         , onInput (SetTmpUserEdit "password")
                         ]
                         []
@@ -325,7 +326,7 @@ userForm user exp con =
                 ]
             ]
         , a
-            [ class "button is-primary" ]
+            [ class "button is-primary", onClick TryCsvUpload ]
             [ text "Save User" ]
         ]
 
@@ -368,7 +369,7 @@ editButtons =
     div
         [ class "field is-grouped" ]
         [ a
-            [ class "button is-primary", onClick TryUpdateUser ]
+            [ class "button is-primary", onClick TryCsvUpload ]
             [ span
                 [ class "icon" ]
                 [ i

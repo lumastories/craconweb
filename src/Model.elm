@@ -199,6 +199,7 @@ type Msg
     | MesResp (Result Http.Error (List MesAnswer))
     | MesPostResp (Result Http.Error String)
     | PutMesResp (Result Http.Error String)
+    | UserEditResp (Result Http.Error String)
     | MesQuerysResp (Result Http.Error (List MesQuery))
     | NextQueryResp (Result Http.Error MesQuery)
     | RoleResp (Result Http.Error Entity.Role)
@@ -207,7 +208,8 @@ type Msg
     | InvalidResp (Result ValuationsError (List Entity.Ugimage))
     | TryRegisterUser
     | SetRegistration String String
-    | TryUpdateUser
+    | TryCsvUpload
+    | TryPutUser
     | EditUserAccount String String
     | PublishMes String
     | UpdateMesAnswer String

@@ -10,6 +10,7 @@ module Api
         , createAuthRecord
         , createMesAnswer
         , updateMesStatus
+        , updateUser
         , jwtDecoded
         , okyToky
         , isAdmin
@@ -103,11 +104,12 @@ defaultHeaders jwtencoded =
 
 updateMesStatus : M.Base -> String -> M.MesAnswer -> Task Http.Error String
 updateMesStatus { url, token, sub } id updatedMes =
-    let
-        _ =
-            Debug.log "mes" updatedMes
-    in
-        putRequest (url ++ "/mesanswer/" ++ id) token (Http.jsonBody <| encodeMes updatedMes sub) (JD.succeed "TODO: decode response")
+    putRequest (url ++ "/mesanswer/" ++ id) token (Http.jsonBody <| encodeMes updatedMes sub) (JD.succeed "TODO: decode response")
+
+
+updateUser : M.Base -> M.UserEdit -> Task Http.Error String
+updateUser { url, token, sub } user =
+    putRequest (url ++ "/user/" ++ user.id) token Http.emptyBody (JD.succeed "TODO: decode response")
 
 
 encodeMes : M.MesAnswer -> String -> JE.Value
