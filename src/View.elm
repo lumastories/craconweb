@@ -399,6 +399,9 @@ game model title initMsg =
                 Game.NotPlaying ->
                     h1 [ class "title is-1" ] [ text title ]
 
+                Game.Loading _ _ ->
+                    h1 [ class "title is-1" ] [ text title ]
+
                 _ ->
                     text ""
     in

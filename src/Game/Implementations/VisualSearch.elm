@@ -68,7 +68,7 @@ init { fixationDuration, imageDuration, zoomDuration, infoString, responseImages
             |> Random.andThen (addRests Nothing 500 0)
             |> Random.map
                 (\trials ->
-                    (info infoString :: startSession :: log (BeginSession seedInt) :: trials)
+                    (info infoString :: startSession :: log (BeginSession { seed = seedInt }) :: trials)
                         |> List.foldl (andThenCheckTimeout isTimeout) (Game.Card.complete (emptyState seedInt currentTime))
                 )
             |> (\generator -> Random.step generator (Random.initialSeed seedInt))
@@ -104,10 +104,13 @@ trial { fixationDuration, imageDuration, zoomDuration, goTrial, gameDuration, no
 
         trial =
             Just (SelectGrid None { columns = 4, images = images, goIndex = goIndex })
+
+        fixation =
+            Just (Fixation None)
     in
         log BeginTrial { state | trialResult = Game.NoResult, trialStart = state.currTime, currentSeed = nextSeed }
-            |> andThen (log DisplayFixation)
-            |> andThen (segment [ timeout fixationDuration ] (Just (Fixation None)))
+            |> andThen (log (BeginDisplay fixation))
+            |> andThen (segment [ timeout fixationDuration ] fixation)
             |> andThen (log (BeginDisplay trial))
             |> andThen (log BeginInput)
             |> andThen (segment [ onSelect goIndex, selectTimeout (fixationDuration + imageDuration) ] trial)

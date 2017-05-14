@@ -4,12 +4,24 @@ import Game.Card as Card exposing (Continuation(Complete, Continue))
 import Random exposing (Generator)
 import Random.Extra
 import Time exposing (Time)
+import RemoteData
 
 
 type GameState msg
     = NotPlaying
-    | Playing (Game msg)
-    | Finished State
+    | Loading (Game msg) (RemoteData.WebData Session)
+    | Playing (Game msg) Session
+    | Saving State Session (RemoteData.WebData Session)
+    | Saved State Session
+
+
+type alias Session =
+    { id : String
+    , userId : String
+    , gameId : String
+    , start : Time
+    , end : Maybe Time
+    }
 
 
 type alias Game msg =
@@ -59,20 +71,16 @@ type alias Image =
 
 
 type LogEntry
-    = BeginSession Int Time
+    = BeginSession { seed : Int } Time
     | EndSession Time
     | BeginTrial Time
     | EndTrial Time
     | BeginDisplay (Maybe Layout) Time
-    | DisplayRedCross Time
-    | DisplayFixation Time
-    | DisplayProbe Direction Time
-    | PlaySound Time
     | BeginInput Time
-    | AcceptIndication Bool Time
+    | AcceptIndication { desired : Bool } Time
     | AcceptDirection { desired : Direction, actual : Direction } Time
     | AcceptSelection { desired : Int, actual : Int } Time
-    | Timeout Bool Time
+    | Timeout { desired : Bool } Time
 
 
 type alias State =
@@ -203,7 +211,7 @@ onIndication desired state input =
         ( Indication, NoResult ) ->
             ( True
             , { state
-                | log = AcceptIndication desired state.currTime :: state.log
+                | log = AcceptIndication { desired = desired } state.currTime :: state.log
                 , trialResult = BoolResult desired
               }
             )
@@ -258,7 +266,7 @@ selectTimeout expiration state input =
         ( NoResult, ( False, newState ) ) ->
             ( False
             , { state
-                | log = Timeout False state.currTime :: newState.log
+                | log = Timeout { desired = False } state.currTime :: newState.log
                 , trialResult = SelectResult { result = False, answer = Nothing }
               }
             )
@@ -279,7 +287,7 @@ resultTimeout desired expiration state input =
         ( NoResult, ( False, newState ) ) ->
             ( False
             , { state
-                | log = Timeout desired state.currTime :: newState.log
+                | log = Timeout { desired = desired } state.currTime :: newState.log
                 , trialResult = BoolResult desired
               }
             )
@@ -351,13 +359,19 @@ emptyState initialSeed time =
 isPlaying : GameState msg -> Bool
 isPlaying gameState =
     case gameState of
-        Playing _ ->
+        Playing _ _ ->
             True
+
+        Loading _ _ ->
+            False
 
         NotPlaying ->
             False
 
-        Finished _ ->
+        Saving _ _ _ ->
+            False
+
+        Saved _ _ ->
             False
 
 
