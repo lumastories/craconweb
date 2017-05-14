@@ -140,8 +140,6 @@ userRows users request =
                 , td []
                     [ a
                         [ class "button is-small"
-                        , href (R.editPath ++ user.id)
-                        , R.onLinkClick <| UpdateLocation (R.editPath ++ user.id)
                         , onClick (FillTmpUserEdit user.id)
                         ]
                         [ span
@@ -261,6 +259,7 @@ userForm user exp con =
                         [ class "input"
                         , type_ "text"
                         , value user.firstName
+                        , onInput (SetTmpUserEdit "firstName")
                         ]
                         []
                     ]
@@ -268,7 +267,13 @@ userForm user exp con =
             , div [ class "column" ]
                 [ p [ class "control" ]
                     [ label_ "Last Name"
-                    , input [ class "input", type_ "text", value user.lastName ] []
+                    , input
+                        [ class "input"
+                        , type_ "text"
+                        , value user.lastName
+                        , onInput (SetTmpUserEdit "lastName")
+                        ]
+                        []
                     ]
                 ]
             ]
@@ -276,19 +281,36 @@ userForm user exp con =
             [ div [ class "column" ]
                 [ p [ class "control" ]
                     [ label_ "Username"
-                    , input [ class "input", type_ "text", value user.username ] []
+                    , input
+                        [ class "input"
+                        , type_ "text"
+                        , value user.username
+                        , onInput (SetTmpUserEdit "username")
+                        ]
+                        []
                     ]
                 ]
             , div [ class "column" ]
                 [ p [ class "control" ]
                     [ label_ "Email"
-                    , input [ class "input", type_ "text", value user.email ] []
+                    , input
+                        [ class "input"
+                        , type_ "text"
+                        , value user.email
+                        , onInput (SetTmpUserEdit "email")
+                        ]
+                        []
                     ]
                 ]
             , div [ class "column" ]
                 [ p [ class "control" ]
                     [ label_ "Password"
-                    , input [ class "input", type_ "text" ] []
+                    , input
+                        [ class "input"
+                        , type_ "text"
+                        , onInput (SetTmpUserEdit "password")
+                        ]
+                        []
                     ]
                 ]
             ]
@@ -296,6 +318,7 @@ userForm user exp con =
             [ div [ class "column" ]
                 [ p [ class "control" ]
                     [ label_ "Group"
+                      -- TODO make dropdown update user
                     , span
                         [ class "select" ]
                         [ groupsDropDown exp con user.groupId ]

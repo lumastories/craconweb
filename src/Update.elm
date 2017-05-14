@@ -28,6 +28,40 @@ import Game.Implementations.VisualSearch
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        SetTmpUserEdit key value ->
+            let
+                adminModel_ =
+                    model.adminModel
+
+                tue_ =
+                    case model.adminModel.tmpUserEdit of
+                        Nothing ->
+                            Nothing
+
+                        Just tue_ ->
+                            case key of
+                                "email" ->
+                                    Just { tue_ | email = value }
+
+                                "password" ->
+                                    Just { tue_ | password = value }
+
+                                "username" ->
+                                    Just { tue_ | username = value }
+
+                                "firstName" ->
+                                    Just { tue_ | firstName = value }
+
+                                "lastName" ->
+                                    Just { tue_ | lastName = value }
+
+                                _ ->
+                                    Just tue_
+            in
+                ( { model | adminModel = { adminModel_ | tmpUserEdit = tue_ } }
+                , Cmd.none
+                )
+
         FillTmpUserEdit userId ->
             let
                 user_ =
@@ -35,13 +69,13 @@ update msg model =
                         |> List.filter (\u -> u.id == userId)
                         |> List.head
 
-                tmpUser =
+                ( tmpUser, cmd ) =
                     case user_ of
                         Nothing ->
-                            Nothing
+                            ( Nothing, Cmd.none )
 
                         Just u ->
-                            Just
+                            ( (Just
                                 { id = u.id
                                 , username = u.username
                                 , firstName = u.firstName
@@ -50,9 +84,12 @@ update msg model =
                                 , password = ""
                                 , groupId = u.groupId
                                 }
+                              )
+                            , Navigation.newUrl (R.editPath ++ u.id)
+                            )
             in
                 ( { model | adminModel = up_tmpUserEdit model.adminModel tmpUser }
-                , Cmd.none
+                , cmd
                 )
 
         EditUserResp (Ok user) ->

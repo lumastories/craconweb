@@ -213,6 +213,7 @@ type Msg
     | UpdateMesAnswer String
     | TrySubmitMesAnswer
     | SetRequestNothing
+    | SetTmpUserEdit String String
 
 
 ugimgsetsDecoder : JD.Decoder (List Entity.Ugimgset)
