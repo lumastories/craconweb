@@ -40,12 +40,14 @@ type alias Model =
     , visualsearchGame : Maybe Entity.Game
     , gameState : Game.GameState Msg
     , ugimgsets : Maybe (List Entity.Ugimgset)
-    , mesQuerys : Maybe (List MesQuery)
     , mesQuery : Maybe String
+    , mesQuerys : Maybe (List MesQuery)
+    , mesAnswers : Maybe (List MesAnswer)
     , mesAnswer : Maybe MesAnswer
     , adminModel : AdminModel
     , statements : Maybe (List MesAnswer)
     , request : Maybe String
+    , loadTime : Time.Time
     }
 
 
@@ -86,7 +88,6 @@ type Msg
     | UserEditResp (Result Http.Error String)
     | MesQuerysResp (Result Http.Error (List MesQuery))
     | MesAnswersResp (Result Http.Error (List MesAnswer))
-    | NextQueryResp (Result Http.Error MesQuery)
     | RoleResp (Result Http.Error Entity.Role)
     | FillerResp (Result ValuationsError (List Entity.Ugimage))
     | ValidResp (Result ValuationsError (List Entity.Ugimage))
@@ -141,6 +142,7 @@ type alias MesAnswer =
     , essay : String
     , public : Bool
     , queryId : String
+    , created : String
     }
 
 
@@ -150,6 +152,7 @@ newMesAnswerWithqueryId qId =
     , essay = ""
     , public = False
     , queryId = qId
+    , created = ""
     }
 
 
@@ -170,6 +173,7 @@ mesAnswerDecoder =
         |> JP.required "content" (JD.string)
         |> JP.hardcoded False
         |> JP.required "mesqueryId" (JD.string)
+        |> JP.required "created" JD.string
 
 
 mesAnswerEncoder : MesAnswer -> JE.Value
@@ -192,7 +196,7 @@ mesQueryDecoder =
 
 mesQuerysDecoder : JD.Decoder (List MesQuery)
 mesQuerysDecoder =
-    JD.succeed []
+    JD.field "mesquerys" (JD.list mesQueryDecoder)
 
 
 type alias Base =

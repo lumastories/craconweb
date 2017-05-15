@@ -6,6 +6,7 @@ module Api
         , fetchUsers
         , fetchGroup
         , fetchRole
+        , fetchMesQuerys
         , createUserRecord
         , createAuthRecord
         , createMesAnswer
@@ -81,14 +82,8 @@ userOnly httpsrv token sub =
     [ Task.attempt M.FillerResp (fetchFiller httpsrv token sub)
     , Task.attempt M.ValidResp (fetchValid httpsrv token sub)
     , Task.attempt M.InvalidResp (fetchInvalid httpsrv token sub)
-    , Task.attempt M.NextQueryResp (calcNextQuery { url = httpsrv, token = token, sub = sub })
+    , Task.attempt M.MesAnswersResp (fetchMesAnswersByUser { url = httpsrv, token = token, sub = sub })
     ]
-
-
-calcNextQuery : M.Base -> Task Http.Error M.MesQuery
-calcNextQuery { token, url } =
-    -- TODO: chain mesanswers request with this to determinine which queries to display
-    getRequest token (url ++ "/mesquery/2") M.mesQueryDecoder
 
 
 defaultHeaders : String -> List Http.Header
@@ -152,9 +147,9 @@ fetchPublicMesAnswers b =
     getRequest b.token (b.url ++ "/mesanswers?userEach=true&createdEach=true&public=true") M.mesAnswersDecoder
 
 
-fetchMesAnswersByUser : M.Base -> String -> Task Http.Error (List M.MesAnswer)
-fetchMesAnswersByUser b sub =
-    getRequest b.token (b.url ++ "/mesanswers?userId=" ++ sub ++ "&createdEach=true&publicEach=true") M.mesAnswersDecoder
+fetchMesAnswersByUser : M.Base -> Task Http.Error (List M.MesAnswer)
+fetchMesAnswersByUser { url, token, sub } =
+    getRequest token (url ++ "/mesanswers?userId=" ++ sub ++ "&createdEach=true&publicEach=true&createdDesc=true") M.mesAnswersDecoder
 
 
 fetchMesQuerys : M.Base -> Task Http.Error (List M.MesQuery)
