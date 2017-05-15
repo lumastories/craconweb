@@ -134,8 +134,25 @@ update msg model =
                 unanswered =
                     querys
                         |> List.filter (\q -> List.member q.id queryIds |> not)
+
+                mesQuery_ =
+                    (List.head unanswered |> Maybe.map .content)
+
+                mesAnswer_ =
+                    case (List.head unanswered) of
+                        Nothing ->
+                            Nothing
+
+                        Just q ->
+                            Just (newMesAnswerWithqueryId q.id)
             in
-                ( { model | mesQuerys = Just unanswered, mesQuery = (List.head unanswered |> Maybe.map .content) }, Cmd.none )
+                ( { model
+                    | mesQuerys = Just unanswered
+                    , mesQuery = mesQuery_
+                    , mesAnswer = mesAnswer_
+                  }
+                , Cmd.none
+                )
 
         MesQuerysResp (Err err) ->
             let
