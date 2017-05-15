@@ -26,6 +26,20 @@ import Helpers
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        MesAnswersResp (Ok myAnswers) ->
+            let
+                cmd =
+                    (Task.attempt MesQuerysResp (Api.fetchMesQuerys { url = model.httpsrv, token = model.jwtencoded, sub = "" }))
+            in
+                ( { model | mesAnswers = Just myAnswers }, cmd )
+
+        MesAnswersResp (Err oops) ->
+            let
+                _ =
+                    Debug.log "oops" oops
+            in
+                model ! []
+
         SetTmpUserEdit key value ->
             let
                 adminModel_ =
@@ -99,19 +113,53 @@ update msg model =
         SetRequestNothing ->
             ( { model | request = Nothing }, Cmd.none )
 
-        NextQueryResp (Ok q) ->
-            ( { model
-                | mesQuery = Just q.content
-                , mesAnswer = Just (newMesAnswerWithqueryId q.id)
-              }
-            , Cmd.none
-            )
+        MesQuerysResp (Ok querys) ->
+            let
+                _ =
+                    Debug.log "hey" model.mesAnswers
 
-        NextQueryResp (Err e) ->
-            model ! []
+                ( queryIds, latest ) =
+                    case model.mesAnswers of
+                        Nothing ->
+                            ( [], Nothing )
 
-        MesQuerysResp _ ->
-            model ! []
+                        Just mesAs ->
+                            ( mesAs |> List.map .queryId
+                            , List.head mesAs |> Maybe.map .created
+                            )
+
+                _ =
+                    Debug.log "LATEST" latest
+
+                unanswered =
+                    querys
+                        |> List.filter (\q -> List.member q.id queryIds |> not)
+
+                mesQuery_ =
+                    (List.head unanswered |> Maybe.map .content)
+
+                mesAnswer_ =
+                    case (List.head unanswered) of
+                        Nothing ->
+                            Nothing
+
+                        Just q ->
+                            Just (newMesAnswerWithqueryId q.id)
+            in
+                ( { model
+                    | mesQuerys = Just unanswered
+                    , mesQuery = mesQuery_
+                    , mesAnswer = mesAnswer_
+                  }
+                , Cmd.none
+                )
+
+        MesQuerysResp (Err err) ->
+            let
+                _ =
+                    Debug.log "e" err
+            in
+                model ! []
 
         UpdateMesAnswer a ->
             ( { model | mesAnswer = Maybe.map (up_essay a) model.mesAnswer }, Cmd.none )
@@ -782,7 +830,6 @@ valuationsError err =
 
         MissingValuations ->
             "You are missing customized game images! Are your image valuations uploaded?"
-
 
 
 

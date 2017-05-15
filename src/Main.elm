@@ -92,6 +92,7 @@ init flags location =
             , statements = Nothing
             , mesQuery = Nothing
             , mesQuerys = Nothing
+            , mesAnswers = Nothing
             , mesAnswer = Nothing
             , request = Nothing
             , adminModel =
@@ -99,6 +100,7 @@ init flags location =
                 , mesAnswers = Nothing
                 , tmpUserEdit = Nothing
                 }
+            , loadTime = flags.time
             }
     in
         ( baseModel, commands_ )
