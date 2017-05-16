@@ -75,14 +75,14 @@ mesEncoder mes sub =
 userEncoder : M.UserEdit -> JE.Value
 userEncoder u_ =
     JE.object
-        [ ( "userRecord"
+        [ ( "userReq"
           , JE.object
                 [ ( "username", JE.string u_.username )
                 , ( "email", JE.string u_.email )
                 , ( "firstName", JE.string u_.firstName )
                 , ( "lastName", JE.string u_.lastName )
                 , ( "groupId", JE.string u_.groupId )
-                , ( "password", JE.string u_.password )
+                  -- , ( "password", JE.string u_.password )
                 ]
           )
         ]
