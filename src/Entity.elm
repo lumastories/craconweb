@@ -855,97 +855,465 @@ gameGroupGinstructsReferralEncoder v =
             ]
 
 
-type alias Gameplay =
+type alias Gsession =
     { id :
         String
         -- 1
-    , gameId :
+    , userId :
         String
         -- 2
-    , duration :
-        Int
+    , gameId :
+        String
         -- 3
+    , start :
+        String
+        -- 4
+    , end :
+        String
+        -- 5
     , created :
         Maybe Timestamp
-        -- 4
+        -- 6
     , updated :
         Maybe Timestamp
-        -- 5
+        -- 7
     }
 
 
-gameplayDecoder : JD.Decoder Gameplay
-gameplayDecoder =
+gsessionDecoder : JD.Decoder Gsession
+gsessionDecoder =
     JD.lazy <|
         \_ ->
-            decode Gameplay
+            decode Gsession
                 |> required "id" JD.string ""
+                |> required "userId" JD.string ""
                 |> required "gameId" JD.string ""
-                |> required "duration" JD.int 0
+                |> required "start" JD.string ""
+                |> required "end" JD.string ""
                 |> optional "created" timestampDecoder
                 |> optional "updated" timestampDecoder
 
 
-gameplayEncoder : Gameplay -> JE.Value
-gameplayEncoder v =
+gsessionEncoder : Gsession -> JE.Value
+gsessionEncoder v =
     JE.object <|
         List.filterMap identity <|
             [ (requiredFieldEncoder "id" JE.string "" v.id)
+            , (requiredFieldEncoder "userId" JE.string "" v.userId)
             , (requiredFieldEncoder "gameId" JE.string "" v.gameId)
-            , (requiredFieldEncoder "duration" JE.int 0 v.duration)
+            , (requiredFieldEncoder "start" JE.string "" v.start)
+            , (requiredFieldEncoder "end" JE.string "" v.end)
             , (optionalEncoder "created" timestampEncoder v.created)
             , (optionalEncoder "updated" timestampEncoder v.updated)
             ]
 
 
-type alias Gameplays =
-    { gameplays :
-        List Gameplay
+type alias Gsessions =
+    { gsessions :
+        List Gsession
         -- 1
     }
 
 
-gameplaysDecoder : JD.Decoder Gameplays
-gameplaysDecoder =
+gsessionsDecoder : JD.Decoder Gsessions
+gsessionsDecoder =
     JD.lazy <|
         \_ ->
-            decode Gameplays
-                |> repeated "gameplays" gameplayDecoder
+            decode Gsessions
+                |> repeated "gsessions" gsessionDecoder
 
 
-gameplaysEncoder : Gameplays -> JE.Value
-gameplaysEncoder v =
+gsessionsEncoder : Gsessions -> JE.Value
+gsessionsEncoder v =
     JE.object <|
         List.filterMap identity <|
-            [ (repeatedFieldEncoder "gameplays" gameplayEncoder v.gameplays)
+            [ (repeatedFieldEncoder "gsessions" gsessionEncoder v.gsessions)
             ]
 
 
-type alias UserGameplaysReferral =
+type alias GsessionsReferral =
     { userId :
         String
         -- 1
-    , gameIds :
-        List String
+    , userEach :
+        Bool
+        -- 2
+    , gameId :
+        String
+        -- 3
+    , gameEach :
+        Bool
+        -- 4
+    , hasEnd :
+        Bool
+        -- 5
+    , hasEndEach :
+        Bool
+        -- 6
+    , createdFirst :
+        Maybe Timestamp
+        -- 7
+    , createdFinal :
+        Maybe Timestamp
+        -- 8
+    , createdEach :
+        Bool
+        -- 9
+    , createdDesc :
+        Bool
+        -- 10
+    , limit :
+        Int
+        -- 11
+    , skip :
+        Int
+        -- 12
+    }
+
+
+gsessionsReferralDecoder : JD.Decoder GsessionsReferral
+gsessionsReferralDecoder =
+    JD.lazy <|
+        \_ ->
+            decode GsessionsReferral
+                |> required "userId" JD.string ""
+                |> required "userEach" JD.bool False
+                |> required "gameId" JD.string ""
+                |> required "gameEach" JD.bool False
+                |> required "hasEnd" JD.bool False
+                |> required "hasEndEach" JD.bool False
+                |> optional "createdFirst" timestampDecoder
+                |> optional "createdFinal" timestampDecoder
+                |> required "createdEach" JD.bool False
+                |> required "createdDesc" JD.bool False
+                |> required "limit" JD.int 0
+                |> required "skip" JD.int 0
+
+
+gsessionsReferralEncoder : GsessionsReferral -> JE.Value
+gsessionsReferralEncoder v =
+    JE.object <|
+        List.filterMap identity <|
+            [ (requiredFieldEncoder "userId" JE.string "" v.userId)
+            , (requiredFieldEncoder "userEach" JE.bool False v.userEach)
+            , (requiredFieldEncoder "gameId" JE.string "" v.gameId)
+            , (requiredFieldEncoder "gameEach" JE.bool False v.gameEach)
+            , (requiredFieldEncoder "hasEnd" JE.bool False v.hasEnd)
+            , (requiredFieldEncoder "hasEndEach" JE.bool False v.hasEndEach)
+            , (optionalEncoder "createdFirst" timestampEncoder v.createdFirst)
+            , (optionalEncoder "createdFinal" timestampEncoder v.createdFinal)
+            , (requiredFieldEncoder "createdEach" JE.bool False v.createdEach)
+            , (requiredFieldEncoder "createdDesc" JE.bool False v.createdDesc)
+            , (requiredFieldEncoder "limit" JE.int 0 v.limit)
+            , (requiredFieldEncoder "skip" JE.int 0 v.skip)
+            ]
+
+
+type alias UserGsessionRecord =
+    { userId :
+        String
+        -- 1
+    , gameId :
+        String
+        -- 2
+    , start :
+        String
+        -- 3
+    , end :
+        String
+        -- 4
+    }
+
+
+userGsessionRecordDecoder : JD.Decoder UserGsessionRecord
+userGsessionRecordDecoder =
+    JD.lazy <|
+        \_ ->
+            decode UserGsessionRecord
+                |> required "userId" JD.string ""
+                |> required "gameId" JD.string ""
+                |> required "start" JD.string ""
+                |> required "end" JD.string ""
+
+
+userGsessionRecordEncoder : UserGsessionRecord -> JE.Value
+userGsessionRecordEncoder v =
+    JE.object <|
+        List.filterMap identity <|
+            [ (requiredFieldEncoder "userId" JE.string "" v.userId)
+            , (requiredFieldEncoder "gameId" JE.string "" v.gameId)
+            , (requiredFieldEncoder "start" JE.string "" v.start)
+            , (requiredFieldEncoder "end" JE.string "" v.end)
+            ]
+
+
+type alias GsessionRecorder =
+    { gsessionId :
+        String
+        -- 1
+    , userGsessionRecord :
+        Maybe UserGsessionRecord
         -- 2
     }
 
 
-userGameplaysReferralDecoder : JD.Decoder UserGameplaysReferral
-userGameplaysReferralDecoder =
+gsessionRecorderDecoder : JD.Decoder GsessionRecorder
+gsessionRecorderDecoder =
     JD.lazy <|
         \_ ->
-            decode UserGameplaysReferral
-                |> required "userId" JD.string ""
-                |> repeated "gameIds" JD.string
+            decode GsessionRecorder
+                |> required "gsessionId" JD.string ""
+                |> optional "UserGsessionRecord" userGsessionRecordDecoder
 
 
-userGameplaysReferralEncoder : UserGameplaysReferral -> JE.Value
-userGameplaysReferralEncoder v =
+gsessionRecorderEncoder : GsessionRecorder -> JE.Value
+gsessionRecorderEncoder v =
     JE.object <|
         List.filterMap identity <|
-            [ (requiredFieldEncoder "userId" JE.string "" v.userId)
-            , (repeatedFieldEncoder "gameIds" JE.string v.gameIds)
+            [ (requiredFieldEncoder "gsessionId" JE.string "" v.gsessionId)
+            , (optionalEncoder "UserGsessionRecord" userGsessionRecordEncoder v.userGsessionRecord)
+            ]
+
+
+type alias Gcycle =
+    { id :
+        String
+        -- 1
+    , gsessionId :
+        String
+        -- 2
+    , report :
+        String
+        -- 3
+    , fixation :
+        String
+        -- 4
+    , selection :
+        String
+        -- 5
+    , instruct :
+        String
+        -- 6
+    , jitter :
+        String
+        -- 7
+    , pictures :
+        String
+        -- 8
+    , filler :
+        String
+        -- 9
+    , cross :
+        String
+        -- 10
+    , picnobord :
+        String
+        -- 11
+    , picbord :
+        String
+        -- 12
+    , xCoords :
+        Int
+        -- 13
+    , yCoords :
+        Int
+        -- 14
+    , blue :
+        Bool
+        -- 15
+    , reasonId :
+        String
+        -- 16
+    }
+
+
+gcycleDecoder : JD.Decoder Gcycle
+gcycleDecoder =
+    JD.lazy <|
+        \_ ->
+            decode Gcycle
+                |> required "id" JD.string ""
+                |> required "gsessionId" JD.string ""
+                |> required "report" JD.string ""
+                |> required "fixation" JD.string ""
+                |> required "selection" JD.string ""
+                |> required "instruct" JD.string ""
+                |> required "jitter" JD.string ""
+                |> required "pictures" JD.string ""
+                |> required "filler" JD.string ""
+                |> required "cross" JD.string ""
+                |> required "picnobord" JD.string ""
+                |> required "picbord" JD.string ""
+                |> required "xCoords" JD.int 0
+                |> required "yCoords" JD.int 0
+                |> required "blue" JD.bool False
+                |> required "reasonId" JD.string ""
+
+
+gcycleEncoder : Gcycle -> JE.Value
+gcycleEncoder v =
+    JE.object <|
+        List.filterMap identity <|
+            [ (requiredFieldEncoder "id" JE.string "" v.id)
+            , (requiredFieldEncoder "gsessionId" JE.string "" v.gsessionId)
+            , (requiredFieldEncoder "report" JE.string "" v.report)
+            , (requiredFieldEncoder "fixation" JE.string "" v.fixation)
+            , (requiredFieldEncoder "selection" JE.string "" v.selection)
+            , (requiredFieldEncoder "instruct" JE.string "" v.instruct)
+            , (requiredFieldEncoder "jitter" JE.string "" v.jitter)
+            , (requiredFieldEncoder "pictures" JE.string "" v.pictures)
+            , (requiredFieldEncoder "filler" JE.string "" v.filler)
+            , (requiredFieldEncoder "cross" JE.string "" v.cross)
+            , (requiredFieldEncoder "picnobord" JE.string "" v.picnobord)
+            , (requiredFieldEncoder "picbord" JE.string "" v.picbord)
+            , (requiredFieldEncoder "xCoords" JE.int 0 v.xCoords)
+            , (requiredFieldEncoder "yCoords" JE.int 0 v.yCoords)
+            , (requiredFieldEncoder "blue" JE.bool False v.blue)
+            , (requiredFieldEncoder "reasonId" JE.string "" v.reasonId)
+            ]
+
+
+type alias GsessionGcycleRecord =
+    { gsessionId :
+        String
+        -- 1
+    , report :
+        String
+        -- 2
+    , fixation :
+        String
+        -- 3
+    , selection :
+        String
+        -- 4
+    , instruct :
+        String
+        -- 5
+    , jitter :
+        String
+        -- 6
+    , pictures :
+        String
+        -- 7
+    , filler :
+        String
+        -- 8
+    , cross :
+        String
+        -- 9
+    , picnobord :
+        String
+        -- 10
+    , picbord :
+        String
+        -- 11
+    , xCoords :
+        Int
+        -- 12
+    , yCoords :
+        Int
+        -- 13
+    , blue :
+        Bool
+        -- 14
+    , reasonId :
+        String
+        -- 15
+    }
+
+
+gsessionGcycleRecordDecoder : JD.Decoder GsessionGcycleRecord
+gsessionGcycleRecordDecoder =
+    JD.lazy <|
+        \_ ->
+            decode GsessionGcycleRecord
+                |> required "gsessionId" JD.string ""
+                |> required "report" JD.string ""
+                |> required "fixation" JD.string ""
+                |> required "selection" JD.string ""
+                |> required "instruct" JD.string ""
+                |> required "jitter" JD.string ""
+                |> required "pictures" JD.string ""
+                |> required "filler" JD.string ""
+                |> required "cross" JD.string ""
+                |> required "picnobord" JD.string ""
+                |> required "picbord" JD.string ""
+                |> required "xCoords" JD.int 0
+                |> required "yCoords" JD.int 0
+                |> required "blue" JD.bool False
+                |> required "reasonId" JD.string ""
+
+
+gsessionGcycleRecordEncoder : GsessionGcycleRecord -> JE.Value
+gsessionGcycleRecordEncoder v =
+    JE.object <|
+        List.filterMap identity <|
+            [ (requiredFieldEncoder "gsessionId" JE.string "" v.gsessionId)
+            , (requiredFieldEncoder "report" JE.string "" v.report)
+            , (requiredFieldEncoder "fixation" JE.string "" v.fixation)
+            , (requiredFieldEncoder "selection" JE.string "" v.selection)
+            , (requiredFieldEncoder "instruct" JE.string "" v.instruct)
+            , (requiredFieldEncoder "jitter" JE.string "" v.jitter)
+            , (requiredFieldEncoder "pictures" JE.string "" v.pictures)
+            , (requiredFieldEncoder "filler" JE.string "" v.filler)
+            , (requiredFieldEncoder "cross" JE.string "" v.cross)
+            , (requiredFieldEncoder "picnobord" JE.string "" v.picnobord)
+            , (requiredFieldEncoder "picbord" JE.string "" v.picbord)
+            , (requiredFieldEncoder "xCoords" JE.int 0 v.xCoords)
+            , (requiredFieldEncoder "yCoords" JE.int 0 v.yCoords)
+            , (requiredFieldEncoder "blue" JE.bool False v.blue)
+            , (requiredFieldEncoder "reasonId" JE.string "" v.reasonId)
+            ]
+
+
+type alias Gcycles =
+    { gcycles :
+        List Gcycle
+        -- 1
+    }
+
+
+gcyclesDecoder : JD.Decoder Gcycles
+gcyclesDecoder =
+    JD.lazy <|
+        \_ ->
+            decode Gcycles
+                |> repeated "gcycles" gcycleDecoder
+
+
+gcyclesEncoder : Gcycles -> JE.Value
+gcyclesEncoder v =
+    JE.object <|
+        List.filterMap identity <|
+            [ (repeatedFieldEncoder "gcycles" gcycleEncoder v.gcycles)
+            ]
+
+
+type alias GsessionGcyclesRecord =
+    { gsessionId :
+        String
+        -- 1
+    , records :
+        List GsessionGcycleRecord
+        -- 2
+    }
+
+
+gsessionGcyclesRecordDecoder : JD.Decoder GsessionGcyclesRecord
+gsessionGcyclesRecordDecoder =
+    JD.lazy <|
+        \_ ->
+            decode GsessionGcyclesRecord
+                |> required "gsessionId" JD.string ""
+                |> repeated "records" gsessionGcycleRecordDecoder
+
+
+gsessionGcyclesRecordEncoder : GsessionGcyclesRecord -> JE.Value
+gsessionGcyclesRecordEncoder v =
+    JE.object <|
+        List.filterMap identity <|
+            [ (requiredFieldEncoder "gsessionId" JE.string "" v.gsessionId)
+            , (repeatedFieldEncoder "records" gsessionGcycleRecordEncoder v.records)
             ]
 
 
