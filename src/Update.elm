@@ -486,18 +486,29 @@ update msg model =
                 ( model_, command_ ) =
                     case jwtdecoded_ of
                         Ok jwt ->
-                            ( { model
-                                | loading = Nothing
-                                , visitor = LoggedIn jwt
-                                , jwtencoded = auth.token
-                                , glitching = Nothing
-                              }
-                            , Cmd.batch
-                                [ Port.set ( "token", tokenEncoder auth.token )
-                                , Api.fetchAll model.httpsrv jwt auth.token
-                                , Navigation.newUrl R.homePath
-                                ]
-                            )
+                            let
+                                isPowerful roles =
+                                    (List.member "staff" roles)
+                                        || (List.member "admin" roles)
+
+                                skipToAdmin jwt =
+                                    if (isPowerful (List.map .name jwt.roles)) then
+                                        Navigation.newUrl R.adminPath
+                                    else
+                                        Navigation.newUrl R.homePath
+                            in
+                                ( { model
+                                    | loading = Nothing
+                                    , visitor = LoggedIn jwt
+                                    , jwtencoded = auth.token
+                                    , glitching = Nothing
+                                  }
+                                , Cmd.batch
+                                    [ Port.set ( "token", tokenEncoder auth.token )
+                                    , Api.fetchAll model.httpsrv jwt auth.token
+                                    , skipToAdmin jwt
+                                    ]
+                                )
 
                         Err err ->
                             ( { model
