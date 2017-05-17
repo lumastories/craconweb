@@ -85,8 +85,21 @@ trial :
     -> Game msg
 trial { fixationDuration, imageDuration, goTrial, gameDuration, goImage, noGoImage } state =
     let
-        ( direction, nextSeed ) =
+        ( direction, firstSeed ) =
             Random.step Game.leftOrRight state.currentSeed
+
+        probeDirectionGenerator =
+            Random.float 0 1
+                |> Random.map
+                    (\n ->
+                        if n < 0.9 then
+                            direction
+                        else
+                            Game.flipDirection direction
+                    )
+
+        ( probeDirection, nextSeed ) =
+            Random.step probeDirectionGenerator firstSeed
 
         borderless =
             None
@@ -103,7 +116,7 @@ trial { fixationDuration, imageDuration, goTrial, gameDuration, goImage, noGoIma
             Just (Fixation borderless)
 
         probe =
-            Just (Probe borderless direction)
+            Just (Probe borderless probeDirection)
     in
         log BeginTrial { state | trialResult = Game.NoResult, trialStart = state.currTime, currentSeed = nextSeed }
             |> andThen (log (BeginDisplay fixation))
