@@ -115,9 +115,6 @@ update msg model =
 
         MesQuerysResp (Ok querys) ->
             let
-                _ =
-                    Debug.log "hey" model.mesAnswers
-
                 ( queryIds, latest ) =
                     case model.mesAnswers of
                         Nothing ->
@@ -127,9 +124,6 @@ update msg model =
                             ( mesAs |> List.map .queryId
                             , List.head mesAs |> Maybe.map .created
                             )
-
-                _ =
-                    Debug.log "LATEST" latest
 
                 unanswered =
                     querys

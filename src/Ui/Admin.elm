@@ -27,7 +27,7 @@ adminPage model =
 
 basicAdminPage : Maybe String -> List (Html Msg) -> Html Msg
 basicAdminPage glitching children =
-    section [ class "section" ]
+    section [ class "section grey" ]
         [ div
             [ class "container" ]
             ([ Parts.notification glitching "is-warning" ] ++ children)
@@ -81,15 +81,55 @@ adminTop : Maybe Entity.User -> Html Msg
 adminTop user =
     div [ class "columns" ]
         [ div [ class "column" ]
-            [ h1 [ class "title" ] [ text "Users" ]
-            ]
-        , div [ class "column" ]
-            [ div [ class "block is-pulled-right" ]
-                [ bButton "Register User" R.registerPath "is-success"
-                , bButton "Approve MES" R.mesPath "is-link"
-                , bButton "Go to games" R.homePath "is-link"
-                , a ([ class "button is-link", onClick Logout ])
-                    [ text "Logout" ]
+            [ h1 [ class "title" ] [ text "Admin" ]
+            , div [ class "field" ]
+                [ a
+                    [ class "button"
+                    , href R.registerPath
+                    , R.onLinkClick <| UpdateLocation R.registerPath
+                    ]
+                    [ span [ class "icon is-small" ]
+                        [ i [ class "fa fa-user-o" ]
+                            []
+                        ]
+                    , span []
+                        [ text "Register User" ]
+                    ]
+                , text " "
+                , a
+                    [ class "button"
+                    , href R.mesPath
+                    , R.onLinkClick <| UpdateLocation R.mesPath
+                    ]
+                    [ span [ class "icon is-small" ]
+                        [ i [ class "fa fa-comments-o" ]
+                            []
+                        ]
+                    , span []
+                        [ text "Approve MES" ]
+                    ]
+                , text " "
+                , a
+                    [ class "button"
+                    , href R.homePath
+                    , R.onLinkClick <| UpdateLocation R.homePath
+                    ]
+                    [ span [ class "icon is-small" ]
+                        [ i [ class "fa fa-gamepad" ]
+                            []
+                        ]
+                    , span []
+                        [ text "Participant View" ]
+                    ]
+                , text " "
+                , a [ class "button", onClick Logout ]
+                    [ span [ class "icon is-small" ]
+                        [ i [ class "fa fa-sign-out" ]
+                            []
+                        ]
+                    , span []
+                        [ text "Logout" ]
+                    ]
                 ]
             ]
         ]
