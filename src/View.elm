@@ -18,7 +18,7 @@ bigLogo : String -> Html Msg
 bigLogo filesrv =
     p [ style [ ( "text-align", "center" ) ] ]
         [ img
-            [ class "logo is-vcentered"
+            [ class "logo is-vcentered text-focus-in"
             , src (filesrv ++ "/repo/logo.svg")
             , style [ ( "max-width", "300px" ) ]
             ]
@@ -53,7 +53,7 @@ loginPageButtonClass loading =
 
 loginPageBoxForm : Model -> Html Msg
 loginPageBoxForm model =
-    div [ class "box", marginS ]
+    div [ class "box scale-in-center", marginS ]
         [ Html.form
             [ onSubmit TryLogin ]
             [ p [ class "control" ]
