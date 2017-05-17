@@ -29,6 +29,7 @@ subscriptions model =
         [ Keyboard.downs M.Presses
         , ticker model.gameState
         , Port.status M.SetStatus
+        , Port.loading M.LoadingImages
         ]
 
 
@@ -101,6 +102,7 @@ init flags location =
                 , tmpUserEdit = Nothing
                 }
             , loadTime = flags.time
+            , loadingImages = Nothing
             }
     in
         ( baseModel, commands_ )

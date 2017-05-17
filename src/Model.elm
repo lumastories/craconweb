@@ -48,6 +48,7 @@ type alias Model =
     , statements : Maybe (List MesAnswer)
     , request : Maybe String
     , loadTime : Time.Time
+    , loadingImages : Maybe String
     }
 
 
@@ -57,6 +58,7 @@ type Msg
     | FillTmpUserEdit String
     | GroupChanged (Maybe String)
     | SetStatus String
+    | LoadingImages String
     | UpdateEmail String
     | UpdatePassword String
     | TryLogin
