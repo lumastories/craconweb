@@ -82,7 +82,7 @@ userEncoder u_ =
                 , ( "firstName", JE.string u_.firstName )
                 , ( "lastName", JE.string u_.lastName )
                 , ( "groupId", JE.string u_.groupId )
-                  -- , ( "password", JE.string u_.password )
+                , ( "password", JE.string u_.password )
                 ]
           )
         ]
