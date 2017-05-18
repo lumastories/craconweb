@@ -45,6 +45,16 @@ type Direction
     | Right
 
 
+flipDirection : Direction -> Direction
+flipDirection direction =
+    case direction of
+        Left ->
+            Right
+
+        Right ->
+            Left
+
+
 type Layout
     = Info BorderType String
     | Single BorderType Image
