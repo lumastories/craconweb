@@ -11,16 +11,40 @@ type GameState msg
     = NotPlaying
     | Loading (Game msg) (RemoteData.WebData Session)
     | Playing (Game msg) Session
-    | Saving State Session (RemoteData.WebData Session)
-    | Saved State Session
+    | Saving State Session (RemoteData.WebData ( Session, List Cycle ))
+    | Saved State { session : Session, cycles : List Cycle }
 
 
 type alias Session =
     { id : String
     , userId : String
     , gameId : String
+    , seed : Int
     , start : Time
     , end : Maybe Time
+    }
+
+
+type alias Cycle =
+    { id : String
+    , sessionId : String
+    , sort : Int
+    , fixation : Maybe Time
+    , selection : Maybe Time
+    , pictures : Maybe Time
+    , redcross : Maybe Time
+    , probe : Maybe Time
+    , border : Maybe Time
+    , timeout : Maybe Time
+    , width : Maybe Int
+    , height : Maybe Int
+    , blue : Bool
+    , dash : Bool
+    , probeIndex : Maybe Int
+    , targetIndex : Int
+    , selectedIndex : Int
+    , startIndex : Int
+    , images : List String
     }
 
 
