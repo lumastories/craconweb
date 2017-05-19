@@ -33,7 +33,7 @@ sessionDecoder =
 cycleDecoder : Decoder Game.Cycle
 cycleDecoder =
     decode Game.Cycle
-        |> required "id" JD.string
+        |> required "id" (JD.maybe JD.string)
         |> required "gsessionId" JD.string
         |> required "sort" JD.int
         |> required "fixation" (stringToFloatDecoder |> JD.map numberToMaybe)
@@ -43,9 +43,11 @@ cycleDecoder =
         |> required "probe" (stringToFloatDecoder |> JD.map numberToMaybe)
         |> required "border" (stringToFloatDecoder |> JD.map numberToMaybe)
         |> required "timeout" (stringToFloatDecoder |> JD.map numberToMaybe)
+        |> required "rest" (stringToFloatDecoder |> JD.map numberToMaybe)
         |> required "width" (JD.int |> JD.map numberToMaybe)
         |> required "height" (JD.int |> JD.map numberToMaybe)
         |> required "blue" JD.bool
+        |> required "grey" JD.bool
         |> required "dash" JD.bool
         |> required "probeIndex" (JD.int |> JD.map numberToMaybe)
         |> required "targetIndex" JD.int

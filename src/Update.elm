@@ -21,6 +21,7 @@ import Game.Implementations.StopSignal
 import Game.Implementations.DotProbe
 import Game.Implementations.VisualSearch
 import Helpers
+import Game.Cycle
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -1134,6 +1135,9 @@ gameDataSaved state session remoteData model =
 saveGameData : Game.State -> Game.Session -> Model -> ( Model, Cmd Msg )
 saveGameData state session model =
     let
+        _ =
+            Debug.log "log" state.log
+
         updatedModel =
             { model | gameState = Game.Saving state session RemoteData.Loading }
     in
@@ -1160,7 +1164,7 @@ saveGameDataCmd state session model =
                 }
 
         cycles =
-            []
+            Game.Cycle.generate session.id state.log
     in
         Task.map2 (,) endSessionTask postCyclesTask
             |> Task.map (\( a, b ) -> RemoteData.map2 (,) a b)

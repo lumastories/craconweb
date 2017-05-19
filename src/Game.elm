@@ -26,7 +26,7 @@ type alias Session =
 
 
 type alias Cycle =
-    { id : String
+    { id : Maybe String
     , sessionId : String
     , sort : Int
     , fixation : Maybe Time
@@ -36,9 +36,11 @@ type alias Cycle =
     , probe : Maybe Time
     , border : Maybe Time
     , timeout : Maybe Time
+    , rest : Maybe Time
     , width : Maybe Int
     , height : Maybe Int
     , blue : Bool
+    , grey : Bool
     , dash : Bool
     , probeIndex : Maybe Int
     , targetIndex : Int
@@ -79,11 +81,21 @@ flipDirection direction =
             Left
 
 
+directionToIndex : Direction -> Int
+directionToIndex direction =
+    case direction of
+        Left ->
+            0
+
+        Right ->
+            1
+
+
 type Layout
     = Info BorderType String
     | Single BorderType Image
     | LeftOrRight BorderType Direction Image
-    | LeftRight BorderType Image Image
+    | LeftRight BorderType Direction Image Image
     | SelectGrid BorderType { columns : Int, images : List Image, goIndex : Int }
     | RedCross BorderType
     | Fixation BorderType
@@ -122,7 +134,8 @@ type alias State =
     , trialStart : Time
     , segmentStart : Time
     , currTime : Time
-    , log : List LogEntry
+    , log : List LogEntry -- deprecated: in favor of `cycles`
+    , cycles : List Cycle
     , trialResult : Result
     , currentSeed : Random.Seed
     }
@@ -385,6 +398,7 @@ emptyState initialSeed time =
     , segmentStart = time
     , currTime = time
     , log = []
+    , cycles = []
     , trialResult = NoResult
     , currentSeed = Random.initialSeed initialSeed
     }

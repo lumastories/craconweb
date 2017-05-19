@@ -67,7 +67,7 @@ view { gameState, initMsg, intIndicationMsg } =
                         Just (Game.Single borderType image) ->
                             viewSingleLayout borderType image
 
-                        Just (Game.LeftRight borderType lImage rImage) ->
+                        Just (Game.LeftRight borderType direction lImage rImage) ->
                             viewLeftRightLayout borderType lImage rImage
 
                         Just (Game.LeftOrRight borderType direction image) ->
