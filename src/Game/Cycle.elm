@@ -94,7 +94,15 @@ beginDisplay { sessionId, time, maybeLayout } cycles =
             cycles
 
         ( Just (Game.Single borderType image), cycle :: tail ) ->
-            ({ cycle | pictures = Just time, images = [ image.id ], startIndex = 0, targetIndex = 0, selectedIndex = 0 } :: tail)
+            ({ cycle
+                | pictures = Just time
+                , images = [ image.id ]
+                , startIndex = 0
+                , targetIndex = 0
+                , selectedIndex = 0
+             }
+                :: tail
+            )
                 |> beginBorder { borderType = borderType, time = time }
 
         ( Just (Game.LeftOrRight borderType direction image), cycle :: tail ) ->
@@ -102,17 +110,34 @@ beginDisplay { sessionId, time, maybeLayout } cycles =
                 targetIndex =
                     Game.directionToIndex direction
             in
-                { cycle | pictures = Just time, images = [ image.id ], startIndex = targetIndex, targetIndex = targetIndex, selectedIndex = 0 }
+                { cycle
+                    | pictures = Just time
+                    , images = [ image.id ]
+                    , startIndex = targetIndex
+                    , targetIndex = targetIndex
+                    , selectedIndex = 0
+                }
                     :: tail
                     |> beginBorder { borderType = borderType, time = time }
 
         ( Just (Game.LeftRight borderType direction leftImage rightImage), cycle :: tail ) ->
-            { cycle | pictures = Just time, images = [ leftImage.id, rightImage.id ], startIndex = 0, targetIndex = Game.directionToIndex direction }
+            { cycle
+                | pictures = Just time
+                , images = [ leftImage.id, rightImage.id ]
+                , startIndex = 0
+                , targetIndex = Game.directionToIndex direction
+            }
                 :: tail
                 |> beginBorder { borderType = borderType, time = time }
 
         ( Just (Game.SelectGrid borderType { columns, images, goIndex }), cycle :: tail ) ->
-            { cycle | pictures = Just time, images = List.map .id images, startIndex = 0, targetIndex = goIndex, selectedIndex = 0 }
+            { cycle
+                | pictures = Just time
+                , images = List.map .id images
+                , startIndex = 0
+                , targetIndex = goIndex
+                , selectedIndex = 0
+            }
                 :: tail
                 |> beginBorder { borderType = borderType, time = time }
 
@@ -127,7 +152,10 @@ beginDisplay { sessionId, time, maybeLayout } cycles =
                 |> beginBorder { borderType = borderType, time = time }
 
         ( Just (Game.Probe borderType direction), cycle :: tail ) ->
-            { cycle | probe = Just time, probeIndex = Just (Game.directionToIndex direction) }
+            { cycle
+                | probe = Just time
+                , probeIndex = Just (Game.directionToIndex direction)
+            }
                 :: tail
                 |> beginBorder { borderType = borderType, time = time }
 
