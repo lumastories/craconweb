@@ -672,7 +672,7 @@ You will see pictures presented in either a dark blue or light gray border. Pres
                                 , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
                                 , seedInt = seed
                                 , currentTime = time
-                                , gameDuration = 5 * Time.minute
+                                , gameDuration = 0.1 * Time.minute
                                 , redCrossDuration = 500 * Time.millisecond
                                 }
                             )
@@ -754,7 +754,7 @@ You will see pictures on the left and right side of the screen, followed by a do
                                 , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
                                 , seedInt = round time
                                 , currentTime = time
-                                , gameDuration = 0.1 * Time.minute
+                                , gameDuration = 5 * Time.minute
                                 }
                             )
                     )
