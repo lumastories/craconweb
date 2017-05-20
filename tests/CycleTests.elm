@@ -79,5 +79,40 @@ all =
                             , BeginTrial 1495240100139
                             ]
                         )
+            , test "Incorrect Go" <|
+                \() ->
+                    Expect.equal
+                        [ { id = Nothing
+                          , sessionId = "sessionId"
+                          , sort = 0
+                          , fixation = Nothing
+                          , selection = Just 1495248757557
+                          , pictures = Just 1495248756701
+                          , redcross = Just 1495248757557
+                          , probe = Nothing
+                          , border = Just 1495248756701
+                          , timeout = Nothing
+                          , rest = Just 1495248758455
+                          , width = Nothing
+                          , height = Nothing
+                          , blue = False
+                          , grey = False
+                          , dash = False
+                          , probeIndex = Nothing
+                          , targetIndex = 1
+                          , selectedIndex = 0
+                          , startIndex = 1
+                          , images = [ "755506963820219512" ]
+                          }
+                        ]
+                        (Game.Cycle.generate "sessionId"
+                            [ EndTrial 1495248758455
+                            , BeginDisplay (Just (RedCross Black)) 1495248757557
+                            , AcceptDirection { desired = Right, actual = Left } 1495248757557
+                            , BeginInput 1495248756701
+                            , BeginDisplay (Just (LeftOrRight Black Right { url = "http://localhost:8654/repo/e310af4d3a76f05b81b1e41e0921e8c5.png", id = "755506963820219512" })) 1495248756701
+                            , BeginTrial 1495248756701
+                            ]
+                        )
             ]
         ]
