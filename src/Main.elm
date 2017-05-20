@@ -29,9 +29,12 @@ subscriptions model =
         [ Keyboard.downs M.Presses
         , ticker model.gameState
         , Port.status M.SetStatus
-        , Port.loading M.LoadingImages
+        , checkIfImagesLoaded model.imagesLoaded
         ]
 
+checkIfImagesLoaded are_loaded =
+    if are_loaded then
+        Time.every second Port
 
 ticker : Game.GameState M.Msg -> Sub M.Msg
 ticker gameState =
@@ -102,7 +105,7 @@ init flags location =
                 , tmpUserEdit = Nothing
                 }
             , loadTime = flags.time
-            , loadingImages = Nothing
+            , imagesLoaded = False
             }
     in
         ( baseModel, commands_ )

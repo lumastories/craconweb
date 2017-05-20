@@ -40,29 +40,23 @@ app.ports.clear.subscribe(function(i) {
 
 app.ports.ping.subscribe(function(nothing) {
     document.getElementById("ping").play()
-})
+});
+
+var preloadedImages = new Array();
 
 app.ports.preload.subscribe(function(urls) {
-    urlsLen = urls.length;
-    loadedImages = new Array()
-    for (i = 0; i < urlsLen; i++) {
-        loadedImages[i] = new Image();
-        loadedImages[i].src = urls[i];
-    };
-
-    function checkIfComplete() {
-        for (var i = 0; i < urlsLen; i++) {
-            if (!loadedImages[i].complete) {
-                var percentage = i * 100.0 / (urlsLen);
-                percentage = percentage.toFixed(0).toString() + ' %';
-                app.ports.loading.send("Loading... " + percentage);
-                setTimeout('checkIfComplete()', 20);
-                return;
-            }
-        }
-    }
-    checkIfComplete();
+     preloadedImages = urls.map( function (url) {
+        i = new Image();
+        i.src = url;
+    });
 });
+
+app.ports.loaded.subscribe(function(nil){
+    return preloadedImages.reduce(function (acc, cur) { return cur.complete && acc; }, true);
+});
+
+
+
 
 
 /**

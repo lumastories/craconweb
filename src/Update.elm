@@ -149,8 +149,8 @@ update msg model =
                 , Cmd.none
                 )
 
-        LoadingImages percent ->
-            ( { model | loadingImages = Just percent }, Cmd.none )
+        SetImagsLoaded is_loaded ->
+            ( { model | imagesLoaded = is_loaded }, Cmd.none )
 
         MesQuerysResp (Err err) ->
             let
