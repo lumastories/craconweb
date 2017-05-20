@@ -32,13 +32,13 @@ fillCycles sessionId logEntry cycles =
             cycles
 
         Game.AcceptIndication { desired } time ->
-            cycles
+            acceptIndication { desired = desired, time = time } cycles
 
         Game.AcceptDirection { desired, actual } time ->
-            cycles
+            acceptDirection { desired = desired, actual = actual, time = time } cycles
 
         Game.AcceptSelection { desired, actual } time ->
-            cycles
+            acceptSelection { desired = desired, actual = actual, time = time } cycles
 
         Game.Timeout { desired } time ->
             timeout time cycles
@@ -98,9 +98,13 @@ beginDisplay { sessionId, time, maybeLayout } cycles =
                 |> beginBorder { borderType = borderType, time = time }
 
         ( Just (Game.LeftOrRight borderType direction image), cycle :: tail ) ->
-            { cycle | pictures = Just time, images = [ image.id ], startIndex = Game.directionToIndex direction, targetIndex = 0, selectedIndex = 0 }
-                :: tail
-                |> beginBorder { borderType = borderType, time = time }
+            let
+                targetIndex =
+                    Game.directionToIndex direction
+            in
+                { cycle | pictures = Just time, images = [ image.id ], startIndex = targetIndex, targetIndex = targetIndex, selectedIndex = 0 }
+                    :: tail
+                    |> beginBorder { borderType = borderType, time = time }
 
         ( Just (Game.LeftRight borderType direction leftImage rightImage), cycle :: tail ) ->
             { cycle | pictures = Just time, images = [ leftImage.id, rightImage.id ], startIndex = 0, targetIndex = Game.directionToIndex direction }
@@ -170,3 +174,33 @@ timeout time cycles =
 
         cycle :: tail ->
             { cycle | timeout = Just time } :: tail
+
+
+acceptDirection : { desired : Game.Direction, actual : Game.Direction, time : Time } -> List Game.Cycle -> List Game.Cycle
+acceptDirection { desired, actual, time } cycles =
+    case cycles of
+        [] ->
+            cycles
+
+        cycle :: tail ->
+            { cycle | selection = Just time, selectedIndex = Game.directionToIndex actual } :: tail
+
+
+acceptIndication : { desired : Bool, time : Time } -> List Game.Cycle -> List Game.Cycle
+acceptIndication { desired, time } cycles =
+    case cycles of
+        [] ->
+            cycles
+
+        cycle :: tail ->
+            cycles
+
+
+acceptSelection : { desired : Int, actual : Int, time : Time } -> List Game.Cycle -> List Game.Cycle
+acceptSelection { desired, actual, time } cycles =
+    case cycles of
+        [] ->
+            cycles
+
+        cycle :: tail ->
+            cycles

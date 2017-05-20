@@ -203,11 +203,21 @@ oneOf logics state input =
 
 
 log : (Time -> LogEntry) -> State -> Game msg
-log logEntry state =
+log =
+    logWithCondition (always True)
+
+
+logWithCondition : (State -> Bool) -> (Time -> LogEntry) -> State -> Game msg
+logWithCondition enabled logEntry state =
     Card.card
         Nothing
         (\_ ->
-            ( Complete { state | log = logEntry state.currTime :: state.log }
+            ( Complete
+                (if enabled state then
+                    { state | log = logEntry state.currTime :: state.log }
+                 else
+                    state
+                )
             , Cmd.none
             )
         )
@@ -349,20 +359,27 @@ resultTimeout desired expiration state input =
             ( True, newState )
 
 
-trialFailed : Logic
-trialFailed state input =
+isFailed : State -> Bool
+isFailed state =
     case state.trialResult of
         NoResult ->
-            ( False, state )
+            False
 
         BoolResult True ->
-            ( False, state )
+            False
 
         BoolResult False ->
-            ( True, state )
+            True
 
         SelectResult { result } ->
-            ( not result, state )
+            not result
+
+
+trialFailed : Logic
+trialFailed state input =
+    state
+        |> isFailed
+        |> flip (,) state
 
 
 showZoom : Logic

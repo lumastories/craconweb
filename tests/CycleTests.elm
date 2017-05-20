@@ -30,7 +30,7 @@ all =
                           , grey = False
                           , dash = False
                           , probeIndex = Nothing
-                          , targetIndex = 0
+                          , targetIndex = 1
                           , selectedIndex = 0
                           , startIndex = 1
                           , images = [ "6920533513820449510" ]
@@ -43,6 +43,40 @@ all =
                             , BeginInput 1495162244273
                             , BeginDisplay (Just (LeftOrRight Black Right { url = "http://localhost:8654/repo/36ba69efa7c71b0430cb0a5ecfaff5be.png", id = "6920533513820449510" })) 1495162244273
                             , BeginTrial 1495162244273
+                            ]
+                        )
+            , test "Correct Go" <|
+                \() ->
+                    Expect.equal
+                        [ { id = Nothing
+                          , sessionId = "sessionId"
+                          , sort = 0
+                          , fixation = Nothing
+                          , selection = Just 1495240100609
+                          , pictures = Just 1495240100139
+                          , redcross = Nothing
+                          , probe = Nothing
+                          , border = Just 1495240100139
+                          , timeout = Nothing
+                          , rest = Just 1495240100609
+                          , width = Nothing
+                          , height = Nothing
+                          , blue = False
+                          , grey = False
+                          , dash = False
+                          , probeIndex = Nothing
+                          , targetIndex = 0
+                          , selectedIndex = 0
+                          , startIndex = 0
+                          , images = [ "2543813863820289509" ]
+                          }
+                        ]
+                        (Game.Cycle.generate "sessionId"
+                            [ EndTrial 1495240100609
+                            , AcceptDirection { desired = Left, actual = Left } 1495240100609
+                            , BeginInput 1495240100139
+                            , BeginDisplay (Just (LeftOrRight Black Left { url = "http://localhost:8654/repo/e585413c320e34313f1bed18dba2945a.png", id = "2543813863820289509" })) 1495240100139
+                            , BeginTrial 1495240100139
                             ]
                         )
             ]
