@@ -159,6 +159,8 @@ beginDisplay { sessionId, time, maybeLayout } cycles =
                             , startIndex = 0
                             , targetIndex = goIndex
                             , selectedIndex = 0
+                            , width = Just columns
+                            , height = Just (List.length images // columns)
                         }
                     else
                         cycle
@@ -274,4 +276,4 @@ acceptSelection { desired, actual, time } cycles =
             cycles
 
         cycle :: tail ->
-            Debug.crash "Game.Cycle.acceptSelection"
+            { cycle | selection = Just time, selectedIndex = actual } :: tail

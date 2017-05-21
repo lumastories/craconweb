@@ -672,7 +672,7 @@ You will see pictures presented in either a dark blue or light gray border. Pres
                                 , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
                                 , seedInt = seed
                                 , currentTime = time
-                                , gameDuration = 0.1 * Time.minute
+                                , gameDuration = 5 * Time.minute
                                 , redCrossDuration = 500 * Time.millisecond
                                 }
                             )
@@ -1135,9 +1135,6 @@ gameDataSaved state session remoteData model =
 saveGameData : Game.State -> Game.Session -> Model -> ( Model, Cmd Msg )
 saveGameData state session model =
     let
-        _ =
-            Debug.log "log" state.log
-
         updatedModel =
             { model | gameState = Game.Saving state session RemoteData.Loading }
     in
