@@ -434,7 +434,7 @@ postCycles { session, cycles, token, httpsrv } =
     in
         postRequest
             { endpoint = httpsrv ++ "/gsession/" ++ session.id ++ "/gcycles"
-            , decoder = JD.list Json.cycleDecoder
+            , decoder = JD.at [ "gcycles" ] (JD.list Json.cycleDecoder)
             , token = token
             , json = json
             }

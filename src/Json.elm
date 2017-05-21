@@ -35,25 +35,25 @@ cycleDecoder =
     decode Game.Cycle
         |> required "id" (JD.maybe JD.string)
         |> required "gsessionId" JD.string
-        |> required "sort" JD.int
-        |> required "fixation" (stringToFloatDecoder |> JD.map numberToMaybe)
-        |> required "selection" (stringToFloatDecoder |> JD.map numberToMaybe)
-        |> required "pictures" (stringToFloatDecoder |> JD.map numberToMaybe)
-        |> required "redcross" (stringToFloatDecoder |> JD.map numberToMaybe)
-        |> required "probe" (stringToFloatDecoder |> JD.map numberToMaybe)
-        |> required "border" (stringToFloatDecoder |> JD.map numberToMaybe)
-        |> required "timeout" (stringToFloatDecoder |> JD.map numberToMaybe)
-        |> required "rest" (stringToFloatDecoder |> JD.map numberToMaybe)
-        |> required "width" (JD.int |> JD.map numberToMaybe)
-        |> required "height" (JD.int |> JD.map numberToMaybe)
-        |> required "blue" JD.bool
-        |> required "grey" JD.bool
-        |> required "dash" JD.bool
-        |> required "probeIndex" (JD.int |> JD.map numberToMaybe)
-        |> required "targetIndex" JD.int
-        |> required "selectedIndex" JD.int
-        |> required "startIndex" JD.int
-        |> required "ugimageIds" (JD.list JD.string)
+        |> optional "sort" JD.int 0
+        |> optional "fixation" (stringToFloatDecoder |> JD.map numberToMaybe) Nothing
+        |> optional "selection" (stringToFloatDecoder |> JD.map numberToMaybe) Nothing
+        |> optional "pictures" (stringToFloatDecoder |> JD.map numberToMaybe) Nothing
+        |> optional "redcross" (stringToFloatDecoder |> JD.map numberToMaybe) Nothing
+        |> optional "probe" (stringToFloatDecoder |> JD.map numberToMaybe) Nothing
+        |> optional "border" (stringToFloatDecoder |> JD.map numberToMaybe) Nothing
+        |> optional "timeout" (stringToFloatDecoder |> JD.map numberToMaybe) Nothing
+        |> optional "rest" (stringToFloatDecoder |> JD.map numberToMaybe) Nothing
+        |> optional "width" (JD.int |> JD.map numberToMaybe) Nothing
+        |> optional "height" (JD.int |> JD.map numberToMaybe) Nothing
+        |> optional "blue" JD.bool False
+        |> optional "grey" JD.bool False
+        |> optional "dash" JD.bool False
+        |> optional "probeIndex" (JD.int |> JD.map numberToMaybe) Nothing
+        |> optional "targetIndex" JD.int 0
+        |> optional "selectedIndex" JD.int 0
+        |> optional "startIndex" JD.int 0
+        |> optional "ugimageIds" (JD.list JD.string) []
 
 
 stringToFloatDecoder : Decoder Float
