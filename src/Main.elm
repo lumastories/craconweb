@@ -26,7 +26,7 @@ main =
 subscriptions : M.Model -> Sub M.Msg
 subscriptions model =
     Sub.batch
-        [ Keyboard.presses M.Presses
+        [ Keyboard.downs M.Presses
         , ticker model.gameState
         , Port.status M.SetStatus
         ]

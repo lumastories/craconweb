@@ -1069,10 +1069,10 @@ presses keyCode model =
 
         ( newModel2, cmd2 ) =
             case keyCode of
-                99 ->
+                67 ->
                     handleInput (Game.Direction Game.Left) newModel1
 
-                109 ->
+                77 ->
                     handleInput (Game.Direction Game.Right) newModel1
 
                 _ ->
