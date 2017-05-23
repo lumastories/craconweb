@@ -11,16 +11,42 @@ type GameState msg
     = NotPlaying
     | Loading (Game msg) (RemoteData.WebData Session)
     | Playing (Game msg) Session
-    | Saving State Session (RemoteData.WebData Session)
-    | Saved State Session
+    | Saving State Session (RemoteData.WebData ( Session, List Cycle ))
+    | Saved State { session : Session, cycles : List Cycle }
 
 
 type alias Session =
     { id : String
     , userId : String
     , gameId : String
+    , seed : Int
     , start : Time
     , end : Maybe Time
+    }
+
+
+type alias Cycle =
+    { id : Maybe String
+    , sessionId : String
+    , sort : Int
+    , fixation : Maybe Time
+    , selection : Maybe Time
+    , pictures : Maybe Time
+    , redcross : Maybe Time
+    , probe : Maybe Time
+    , border : Maybe Time
+    , timeout : Maybe Time
+    , rest : Maybe Time
+    , width : Maybe Int
+    , height : Maybe Int
+    , blue : Bool
+    , grey : Bool
+    , dash : Bool
+    , probeIndex : Maybe Int
+    , targetIndex : Int
+    , selectedIndex : Int
+    , startIndex : Int
+    , images : List String
     }
 
 
@@ -55,11 +81,21 @@ flipDirection direction =
             Left
 
 
+directionToIndex : Direction -> Int
+directionToIndex direction =
+    case direction of
+        Left ->
+            0
+
+        Right ->
+            1
+
+
 type Layout
     = Info BorderType String
     | Single BorderType Image
     | LeftOrRight BorderType Direction Image
-    | LeftRight BorderType Image Image
+    | LeftRight BorderType Direction Image Image
     | SelectGrid BorderType { columns : Int, images : List Image, goIndex : Int }
     | RedCross BorderType
     | Fixation BorderType
@@ -98,7 +134,8 @@ type alias State =
     , trialStart : Time
     , segmentStart : Time
     , currTime : Time
-    , log : List LogEntry
+    , log : List LogEntry -- deprecated: in favor of `cycles`
+    , cycles : List Cycle
     , trialResult : Result
     , currentSeed : Random.Seed
     }
@@ -166,11 +203,21 @@ oneOf logics state input =
 
 
 log : (Time -> LogEntry) -> State -> Game msg
-log logEntry state =
+log =
+    logWithCondition (always True)
+
+
+logWithCondition : (State -> Bool) -> (Time -> LogEntry) -> State -> Game msg
+logWithCondition enabled logEntry state =
     Card.card
         Nothing
         (\_ ->
-            ( Complete { state | log = logEntry state.currTime :: state.log }
+            ( Complete
+                (if enabled state then
+                    { state | log = logEntry state.currTime :: state.log }
+                 else
+                    state
+                )
             , Cmd.none
             )
         )
@@ -312,20 +359,27 @@ resultTimeout desired expiration state input =
             ( True, newState )
 
 
-trialFailed : Logic
-trialFailed state input =
+isFailed : State -> Bool
+isFailed state =
     case state.trialResult of
         NoResult ->
-            ( False, state )
+            False
 
         BoolResult True ->
-            ( False, state )
+            False
 
         BoolResult False ->
-            ( True, state )
+            True
 
         SelectResult { result } ->
-            ( not result, state )
+            not result
+
+
+trialFailed : Logic
+trialFailed state input =
+    state
+        |> isFailed
+        |> flip (,) state
 
 
 showZoom : Logic
@@ -361,6 +415,7 @@ emptyState initialSeed time =
     , segmentStart = time
     , currTime = time
     , log = []
+    , cycles = []
     , trialResult = NoResult
     , currentSeed = Random.initialSeed initialSeed
     }

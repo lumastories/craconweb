@@ -67,7 +67,7 @@ view { gameState, initMsg, intIndicationMsg } =
                         Just (Game.Single borderType image) ->
                             viewSingleLayout borderType image
 
-                        Just (Game.LeftRight borderType lImage rImage) ->
+                        Just (Game.LeftRight borderType direction lImage rImage) ->
                             viewLeftRightLayout borderType lImage rImage
 
                         Just (Game.LeftOrRight borderType direction image) ->
@@ -101,12 +101,12 @@ view { gameState, initMsg, intIndicationMsg } =
                 , savingStatus = remoteData
                 }
 
-        Game.Saved state session ->
+        Game.Saved state data ->
             viewResult state
-                session
+                data.session
                 { percentCorrect = Game.Result.percentCorrect state
                 , averageResponseTimeResult = Game.Result.averageResponseTimeInMillisecond state
-                , savingStatus = RemoteData.Success session
+                , savingStatus = RemoteData.Success data
                 }
 
         Game.NotPlaying ->
@@ -119,7 +119,7 @@ view { gameState, initMsg, intIndicationMsg } =
                 ]
 
 
-viewResult : Game.State -> Game.Session -> { a | percentCorrect : Float, averageResponseTimeResult : Result String Float, savingStatus : RemoteData.WebData Game.Session } -> Html Msg
+viewResult : Game.State -> Game.Session -> { a | percentCorrect : Float, averageResponseTimeResult : Result String Float, savingStatus : RemoteData.WebData b } -> Html Msg
 viewResult state session { percentCorrect, averageResponseTimeResult, savingStatus } =
     let
         averageResponseTime =

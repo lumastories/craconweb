@@ -17,6 +17,7 @@ module Api
         , isAdmin
         , startSession
         , endSession
+        , postCycles
         )
 
 import Entity
@@ -389,13 +390,14 @@ jwtDecoded token =
     Jwt.decodeToken M.jwtDecoder token
 
 
-startSession : { token : String, userId : String, gameId : String, start : Time, httpsrv : String } -> Task Never (RemoteData.WebData Game.Session)
-startSession { token, userId, gameId, start, httpsrv } =
+startSession : { token : String, userId : String, gameId : String, start : Time, httpsrv : String, seed : Int } -> Task Never (RemoteData.WebData Game.Session)
+startSession { token, userId, gameId, start, httpsrv, seed } =
     let
         json =
             Json.sessionEncoder
                 { userId = userId
                 , gameId = gameId
+                , seed = seed
                 , start = start
                 , end = Nothing
                 }
@@ -418,6 +420,21 @@ endSession { session, token, httpsrv } =
         putRequest
             { endpoint = httpsrv ++ "/gsession/" ++ session.id
             , decoder = Json.sessionDecoder
+            , token = token
+            , json = json
+            }
+            |> RemoteData.fromTask
+
+
+postCycles : { session : Game.Session, cycles : List Game.Cycle, token : String, httpsrv : String } -> Task Never (RemoteData.WebData (List Game.Cycle))
+postCycles { session, cycles, token, httpsrv } =
+    let
+        json =
+            Json.cyclesEncoder session cycles
+    in
+        postRequest
+            { endpoint = httpsrv ++ "/gsession/" ++ session.id ++ "/gcycles"
+            , decoder = JD.at [ "gcycles" ] (JD.list Json.cycleDecoder)
             , token = token
             , json = json
             }

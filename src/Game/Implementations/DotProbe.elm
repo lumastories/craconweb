@@ -107,10 +107,10 @@ trial { fixationDuration, imageDuration, goTrial, gameDuration, goImage, noGoIma
         trial =
             case direction of
                 Game.Left ->
-                    Just (LeftRight borderless goImage noGoImage)
+                    Just (LeftRight borderless direction goImage noGoImage)
 
                 Game.Right ->
-                    Just (LeftRight borderless noGoImage goImage)
+                    Just (LeftRight borderless direction noGoImage goImage)
 
         fixation =
             Just (Fixation borderless)

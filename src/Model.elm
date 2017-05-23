@@ -70,9 +70,9 @@ type Msg
     | InitGoNoGo
     | InitDotProbe
     | InitVisualSearch
-    | StartSession { gameId : String, game : Game.Game Msg, time : Time.Time }
+    | StartSession { gameId : String, game : Game.Game Msg, time : Time.Time, seed : Int }
     | StartSessionResp (Game.Game Msg) (RemoteData.WebData Game.Session)
-    | SessionSaved Game.State Game.Session (RemoteData.WebData Game.Session)
+    | GameDataSaved Game.State Game.Session (RemoteData.WebData ( Game.Session, List Game.Cycle ))
     | ResendSession Game.State Game.Session
     | AuthResp (Result Http.Error Entity.Auth)
     | PublicMesResp (Result Http.Error (List MesAnswer))

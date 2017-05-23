@@ -17,12 +17,14 @@ import Game
         , emptyState
         , segment
         , log
+        , logWithCondition
         , addRests
         , info
         , onIndication
         , timeout
         , resultTimeout
         , startSession
+        , isFailed
         , trialFailed
         , leftOrRight
         , onDirection
@@ -122,6 +124,6 @@ trial { borderDelay, totalDuration, goTrial, gameDuration, redCrossDuration } im
             |> andThen (log BeginInput)
             |> andThen (log (BeginDisplay bordered))
             |> andThen (segment [ onIndication goTrial, resultTimeout (not goTrial) totalDuration ] bordered)
-            |> andThen (log (BeginDisplay redCross))
+            |> andThen (logWithCondition isFailed (BeginDisplay redCross))
             |> andThen (segment [ trialFailed, timeout (totalDuration + redCrossDuration) ] redCross)
             |> andThen (log EndTrial)
