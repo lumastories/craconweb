@@ -27,6 +27,9 @@ port status : (String -> msg) -> Sub msg
 -- Task Server path, id of form, jwt token
 
 
+port loaded : () -> Cmd msg
+
+
 port upload : ( String, String, String ) -> Cmd msg
 
 

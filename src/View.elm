@@ -201,6 +201,14 @@ homePage model =
         , navBar model
         , homePageBody model
         , Parts.notification model.glitching "is-danger"
+        , Parts.modal
+            [ h1 [ class "title is-1 white" ]
+                [ i [ class "fa fa-spinner fa-spin fa-lg fa-fw" ]
+                    []
+                , br [] []
+                , model.loadingImages |> Maybe.withDefault "" |> text
+                ]
+            ]
         ]
 
 

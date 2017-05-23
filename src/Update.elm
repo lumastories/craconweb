@@ -149,6 +149,9 @@ update msg model =
                 , Cmd.none
                 )
 
+        SetImagsLoaded is_loaded ->
+            ( { model | imagesLoaded = is_loaded }, Cmd.none )
+
         MesQuerysResp (Err err) ->
             let
                 _ =
