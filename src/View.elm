@@ -18,7 +18,7 @@ bigLogo : String -> Html Msg
 bigLogo filesrv =
     p [ style [ ( "text-align", "center" ) ] ]
         [ img
-            [ class "logo is-vcentered text-focus-in"
+            [ class "logo is-vcentered"
             , src (filesrv ++ "/repo/logo.svg")
             , style [ ( "max-width", "300px" ) ]
             ]
@@ -29,7 +29,7 @@ bigLogo filesrv =
 loginPage : Model -> Html Msg
 loginPage model =
     section []
-        [ div [ class "container" ]
+        [ div [ class "container scale-in-center" ]
             [ div [ class "columns is-desktop" ]
                 [ div [ class "column is-half is-offset-one-quarter" ]
                     [ bigLogo model.filesrv
@@ -53,7 +53,7 @@ loginPageButtonClass loading =
 
 loginPageBoxForm : Model -> Html Msg
 loginPageBoxForm model =
-    div [ class "box scale-in-center", marginS ]
+    div [ class "box", marginS ]
         [ Html.form
             [ onSubmit TryLogin ]
             [ p [ class "control" ]
@@ -371,7 +371,7 @@ badgesPage : Model -> Html Msg
 badgesPage model =
     basicPage model
         [ div
-            [ class "container" ]
+            [ class "container swing-in-top-fwd" ]
             [ h1 [ class "title is-1" ] [ text "Badges" ]
             , div []
                 [ div [ class "columns" ]
