@@ -225,8 +225,11 @@ update msg model =
             in
                 ( { model | adminModel = adminModel_ }, Cmd.none )
 
-        UserEditResp _ ->
-            model ! []
+        UserEditResp (Ok _) ->
+            { model | informing = Nothing } ! []
+
+        UserEditResp (Err err) ->
+            { model | informing = Just (Helpers.httpHumanError err) } ! []
 
         TryPutUser ->
             case model.adminModel.tmpUserEdit of
@@ -234,7 +237,7 @@ update msg model =
                     model ! []
 
                 Just user ->
-                    ( model
+                    ( { model | informing = Just "Saving User..." }
                     , Task.attempt UserEditResp
                         (Api.updateUser
                             { url = model.httpsrv
@@ -447,22 +450,22 @@ update msg model =
             )
 
         -- LOGIN
-        UpdateEmail newEmail ->
+        UpdateEmail username ->
             let
-                authRecord_ =
-                    model.authRecord
+                login_ =
+                    model.login
             in
-                ( { model | authRecord = { authRecord_ | email = newEmail } }
+                ( { model | login = { login_ | username = username } }
                 , Cmd.none
                 )
 
         UpdatePassword newPassword ->
             let
-                authRecord_ =
-                    model.authRecord
+                login_ =
+                    model.login
             in
                 ( { model
-                    | authRecord = { authRecord_ | password = newPassword }
+                    | login = { login_ | password = newPassword }
                   }
                 , Cmd.none
                 )
@@ -473,7 +476,7 @@ update msg model =
                     Task.attempt AuthResp
                         (Api.createAuthRecord
                             model.httpsrv
-                            model.authRecord
+                            model.login
                         )
             in
                 ( { model | loading = Just "loading..." }, cmd )
@@ -487,10 +490,10 @@ update msg model =
             in
                 ( Empty.emptyModel model, Cmd.batch cmds )
 
-        AuthResp (Ok auth) ->
+        AuthResp (Ok token) ->
             let
                 jwtdecoded_ =
-                    Api.jwtDecoded auth.token
+                    Api.jwtDecoded token
 
                 ( model_, command_ ) =
                     case jwtdecoded_ of
@@ -509,12 +512,12 @@ update msg model =
                                 ( { model
                                     | loading = Nothing
                                     , visitor = LoggedIn jwt
-                                    , jwtencoded = auth.token
+                                    , jwtencoded = token
                                     , glitching = Nothing
                                   }
                                 , Cmd.batch
-                                    [ Port.set ( "token", tokenEncoder auth.token )
-                                    , Api.fetchAll model.httpsrv jwt auth.token
+                                    [ Port.set ( "token", tokenEncoder token )
+                                    , Api.fetchAll model.httpsrv jwt token
                                     , skipToAdmin jwt
                                     ]
                                 )
@@ -978,8 +981,6 @@ missing : Entity.UserRecord -> Bool
 missing ur =
     List.member ""
         [ ur.username
-        , ur.email
-        , ur.firstName
         , ur.groupId
         , ur.password
         ]

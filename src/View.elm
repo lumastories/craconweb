@@ -59,7 +59,7 @@ loginPageBoxForm model =
             [ p [ class "control" ]
                 [ input
                     [ class "input"
-                    , placeholder "Email"
+                    , placeholder "Username"
                     , type_ "text"
                     , onInput UpdateEmail
                     ]

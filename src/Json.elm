@@ -10,6 +10,8 @@ module Json
         , cycleDecoder
         , badgeRulesDecoder
         , badgesDecoder
+        , loginEncoder
+        , authDecoder
         )
 
 import Json.Decode as JD exposing (Decoder)
@@ -165,6 +167,19 @@ userEncoder u_ =
                 ]
           )
         ]
+
+
+loginEncoder : M.Login -> JE.Value
+loginEncoder l_ =
+    JE.object
+        [ ( "username", JE.string l_.username )
+        , ( "password", JE.string l_.password )
+        ]
+
+
+authDecoder : Decoder String
+authDecoder =
+    JD.field "token" JD.string
 
 
 badgeRulesDecoder : Decoder (List M.BadgeRule)

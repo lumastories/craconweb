@@ -271,8 +271,17 @@ editUser exp con informing tasksrv user ugimgsets =
     basicAdminPage Nothing
         [ divColumns
             [ div [ class "column is-half is-offset-one-quarter" ]
-                [ Parts.notification informing "is-warning is-small"
-                , userForm user exp con
+                [ Parts.notification informing "is-info is-small"
+                , userForm user
+                    exp
+                    con
+                    (case informing of
+                        Nothing ->
+                            False
+
+                        Just _ ->
+                            True
+                    )
                 ]
             ]
         , divColumns
@@ -287,8 +296,9 @@ userForm :
     Model.UserEdit
     -> Maybe String
     -> Maybe String
+    -> Bool
     -> Html Msg
-userForm user exp con =
+userForm user exp con saving =
     Html.form []
         [ div [ class "columns" ]
             [ div [ class "column" ]
@@ -358,7 +368,6 @@ userForm user exp con =
             [ div [ class "column" ]
                 [ p [ class "control" ]
                     [ label_ "Group"
-                      -- TODO make dropdown update user
                     , span
                         [ class "select" ]
                         [ groupsDropDown exp con user.groupId ]
@@ -366,7 +375,15 @@ userForm user exp con =
                 ]
             ]
         , a
-            [ class "button is-primary", onClick TryPutUser ]
+            [ class <|
+                "button is-primary "
+                    ++ (if saving then
+                            "is-loading"
+                        else
+                            ""
+                       )
+            , onClick TryPutUser
+            ]
             [ text "Save User" ]
         ]
 
@@ -480,7 +497,7 @@ userEmailPassReg =
             , textInput "username" "joey123"
             ]
         , div [ class "column" ]
-            [ label_ "Email *"
+            [ label_ "Email"
             , emailInput "email" "joe@example.com"
             ]
         , div [ class "column" ]

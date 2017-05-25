@@ -192,15 +192,15 @@ fetchMesQuerys b =
 
 createAuthRecord :
     String
-    -> Entity.AuthRecord
-    -> Task Http.Error Entity.Auth
-createAuthRecord httpsrv authRecord =
+    -> M.Login
+    -> Task Http.Error String
+createAuthRecord httpsrv login =
     Http.request
         { method = "POST"
         , headers = []
         , url = httpsrv ++ "/auth"
-        , body = (Entity.authRecordEncoder authRecord |> Http.jsonBody)
-        , expect = Http.expectJson Entity.authDecoder
+        , body = Http.jsonBody <| Json.loginEncoder login
+        , expect = Http.expectJson Json.authDecoder
         , timeout = Nothing
         , withCredentials = False
         }

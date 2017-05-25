@@ -71,7 +71,7 @@ init flags location =
             , visitor = visitor_
             , isMenuActive = False
             , user = Nothing
-            , authRecord = Empty.emptyAuthRecord
+            , login = { username = "", password = "" }
             , ugimages_v = Nothing
             , ugimages_i = Nothing
             , ugimages_f = Nothing
