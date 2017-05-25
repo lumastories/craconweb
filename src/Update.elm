@@ -27,6 +27,13 @@ import Game.Cycle
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        BadgesResp badges_ ->
+            let
+                _ =
+                    Debug.log "badges" badges_
+            in
+                model ! []
+
         BadgeRulesResp badgeRules_ ->
             let
                 _ =

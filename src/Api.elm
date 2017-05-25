@@ -85,6 +85,7 @@ userOnly httpsrv token sub =
     , Task.attempt M.InvalidResp (fetchInvalid httpsrv token sub)
     , Task.attempt M.MesAnswersResp (fetchMesAnswersByUser { url = httpsrv, token = token, sub = sub })
     , (fetchBadgeRules { url = httpsrv, token = token, sub = sub })
+    , (fetchBadgesByUserId { url = httpsrv, token = token, sub = sub })
     ]
 
 
@@ -144,6 +145,7 @@ fetchMesAnswers b =
     getRequest b.token (b.url ++ "/mesanswers?userEach=true&createdEach=true&public=false") M.mesAnswersDecoder
 
 
+fetchBadgeRules : M.Base -> Cmd M.Msg
 fetchBadgeRules { url, token, sub } =
     Http.request
         { method = "GET"
@@ -156,6 +158,21 @@ fetchBadgeRules { url, token, sub } =
         }
         |> RemoteData.sendRequest
         |> Cmd.map M.BadgeRulesResp
+
+
+fetchBadgesByUserId : M.Base -> Cmd M.Msg
+fetchBadgesByUserId { url, token, sub } =
+    Http.request
+        { method = "GET"
+        , headers = defaultHeaders token
+        , url = (url ++ "/user/" ++ sub ++ "/badges")
+        , body = Http.emptyBody
+        , expect = Http.expectJson Json.badgesDecoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
+        |> RemoteData.sendRequest
+        |> Cmd.map M.BadgesResp
 
 
 fetchPublicMesAnswers : M.Base -> Task Http.Error (List M.MesAnswer)

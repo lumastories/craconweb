@@ -94,6 +94,7 @@ type Msg
     | ValidResp (Result ValuationsError (List Entity.Ugimage))
     | InvalidResp (Result ValuationsError (List Entity.Ugimage))
     | BadgeRulesResp (RemoteData.WebData (List BadgeRule))
+    | BadgesResp (RemoteData.WebData (List String))
     | TryRegisterUser
     | SetRegistration String String
     | TryCsvUpload
@@ -110,10 +111,6 @@ type alias BadgeRule =
     { id : String
     , name : String
     , dscript : String
-    , image : String
-    , accur : Int
-    , created : String
-    , updated : String
     }
 
 

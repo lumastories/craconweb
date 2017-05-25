@@ -60,7 +60,7 @@ loginPageBoxForm model =
                 [ input
                     [ class "input"
                     , placeholder "Email"
-                    , type_ "email"
+                    , type_ "text"
                     , onInput UpdateEmail
                     ]
                     []
