@@ -48,6 +48,7 @@ type alias Model =
     , statements : Maybe (List MesAnswer)
     , request : Maybe String
     , loadTime : Time.Time
+    , badgeRules : RemoteData.WebData (List BadgeRule)
     }
 
 
@@ -92,6 +93,7 @@ type Msg
     | FillerResp (Result ValuationsError (List Entity.Ugimage))
     | ValidResp (Result ValuationsError (List Entity.Ugimage))
     | InvalidResp (Result ValuationsError (List Entity.Ugimage))
+    | BadgeRulesResp (RemoteData.WebData (List BadgeRule))
     | TryRegisterUser
     | SetRegistration String String
     | TryCsvUpload
@@ -102,6 +104,17 @@ type Msg
     | TrySubmitMesAnswer
     | SetRequestNothing
     | SetTmpUserEdit String String
+
+
+type alias BadgeRule =
+    { id : String
+    , name : String
+    , dscript : String
+    , image : String
+    , accur : Int
+    , created : String
+    , updated : String
+    }
 
 
 type alias AdminModel =

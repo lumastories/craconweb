@@ -84,6 +84,7 @@ userOnly httpsrv token sub =
     , Task.attempt M.ValidResp (fetchValid httpsrv token sub)
     , Task.attempt M.InvalidResp (fetchInvalid httpsrv token sub)
     , Task.attempt M.MesAnswersResp (fetchMesAnswersByUser { url = httpsrv, token = token, sub = sub })
+    , (fetchBadgeRules { url = httpsrv, token = token, sub = sub })
     ]
 
 
@@ -141,6 +142,20 @@ createMesAnswer b answer sub =
 fetchMesAnswers : M.Base -> Task Http.Error (List M.MesAnswer)
 fetchMesAnswers b =
     getRequest b.token (b.url ++ "/mesanswers?userEach=true&createdEach=true&public=false") M.mesAnswersDecoder
+
+
+fetchBadgeRules { url, token, sub } =
+    Http.request
+        { method = "GET"
+        , headers = defaultHeaders token
+        , url = (url ++ "/badgerules?sortEach=true")
+        , body = Http.emptyBody
+        , expect = Http.expectJson Json.badgeRulesDecoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
+        |> RemoteData.sendRequest
+        |> Cmd.map M.BadgeRulesResp
 
 
 fetchPublicMesAnswers : M.Base -> Task Http.Error (List M.MesAnswer)
@@ -343,20 +358,6 @@ createUserRecord httpsrv token user =
         |> Http.toTask
 
 
-getRequest : String -> String -> JD.Decoder a -> Task Http.Error a
-getRequest token endpoint jsonDecoder =
-    Http.request
-        { method = "GET"
-        , headers = defaultHeaders token
-        , url = endpoint
-        , body = Http.emptyBody
-        , expect = Http.expectJson jsonDecoder
-        , timeout = Nothing
-        , withCredentials = False
-        }
-        |> Http.toTask
-
-
 isAdmin : M.JwtPayload -> Bool
 isAdmin jwt =
     List.map .name jwt.roles |> List.member "admin"
@@ -463,6 +464,20 @@ putRequest { endpoint, decoder, token, json } =
         , url = endpoint
         , body = json |> Http.jsonBody
         , expect = Http.expectJson decoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
+        |> Http.toTask
+
+
+getRequest : String -> String -> JD.Decoder a -> Task Http.Error a
+getRequest token endpoint jsonDecoder =
+    Http.request
+        { method = "GET"
+        , headers = defaultHeaders token
+        , url = endpoint
+        , body = Http.emptyBody
+        , expect = Http.expectJson jsonDecoder
         , timeout = Nothing
         , withCredentials = False
         }

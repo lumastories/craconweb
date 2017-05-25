@@ -8,6 +8,7 @@ module Json
         , mesEncoder
         , userEncoder
         , cycleDecoder
+        , badgeRulesDecoder
         )
 
 import Json.Decode as JD exposing (Decoder)
@@ -163,6 +164,23 @@ userEncoder u_ =
                 ]
           )
         ]
+
+
+badgeRulesDecoder : Decoder (List M.BadgeRule)
+badgeRulesDecoder =
+    JD.field "badgerules" (JD.list badgeRuleDecoder)
+
+
+badgeRuleDecoder : Decoder M.BadgeRule
+badgeRuleDecoder =
+    decode M.BadgeRule
+        |> required "id" JD.string
+        |> required "name" JD.string
+        |> required "dscript" JD.string
+        |> required "image" JD.string
+        |> optional "accur" JD.int 0
+        |> required "created" JD.string
+        |> required "updated" JD.string
 
 
 

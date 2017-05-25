@@ -11,6 +11,7 @@ import Update
 import View
 import Port
 import AnimationFrame
+import RemoteData
 
 
 main : Program Flags M.Model M.Msg
@@ -101,6 +102,7 @@ init flags location =
                 , tmpUserEdit = Nothing
                 }
             , loadTime = flags.time
+            , badgeRules = RemoteData.Loading
             }
     in
         ( baseModel, commands_ )
