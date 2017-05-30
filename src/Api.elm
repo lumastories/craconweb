@@ -84,6 +84,8 @@ userOnly httpsrv token sub =
     , Task.attempt M.ValidResp (fetchValid httpsrv token sub)
     , Task.attempt M.InvalidResp (fetchInvalid httpsrv token sub)
     , Task.attempt M.MesAnswersResp (fetchMesAnswersByUser { url = httpsrv, token = token, sub = sub })
+    , (fetchBadgeRules { url = httpsrv, token = token, sub = sub })
+    , (fetchBadgesByUserId { url = httpsrv, token = token, sub = sub })
     ]
 
 
@@ -143,6 +145,36 @@ fetchMesAnswers b =
     getRequest b.token (b.url ++ "/mesanswers?userEach=true&createdEach=true&public=false") M.mesAnswersDecoder
 
 
+fetchBadgeRules : M.Base -> Cmd M.Msg
+fetchBadgeRules { url, token, sub } =
+    Http.request
+        { method = "GET"
+        , headers = defaultHeaders token
+        , url = (url ++ "/badgerules?sortEach=true")
+        , body = Http.emptyBody
+        , expect = Http.expectJson Json.badgeRulesDecoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
+        |> RemoteData.sendRequest
+        |> Cmd.map M.BadgeRulesResp
+
+
+fetchBadgesByUserId : M.Base -> Cmd M.Msg
+fetchBadgesByUserId { url, token, sub } =
+    Http.request
+        { method = "GET"
+        , headers = defaultHeaders token
+        , url = (url ++ "/user/" ++ sub ++ "/badges")
+        , body = Http.emptyBody
+        , expect = Http.expectJson Json.badgesDecoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
+        |> RemoteData.sendRequest
+        |> Cmd.map M.BadgesResp
+
+
 fetchPublicMesAnswers : M.Base -> Task Http.Error (List M.MesAnswer)
 fetchPublicMesAnswers b =
     getRequest b.token (b.url ++ "/mesanswers?userEach=true&createdEach=true&public=true") M.mesAnswersDecoder
@@ -160,15 +192,15 @@ fetchMesQuerys b =
 
 createAuthRecord :
     String
-    -> Entity.AuthRecord
-    -> Task Http.Error Entity.Auth
-createAuthRecord httpsrv authRecord =
+    -> M.Login
+    -> Task Http.Error String
+createAuthRecord httpsrv login =
     Http.request
         { method = "POST"
         , headers = []
         , url = httpsrv ++ "/auth"
-        , body = (Entity.authRecordEncoder authRecord |> Http.jsonBody)
-        , expect = Http.expectJson Entity.authDecoder
+        , body = Http.jsonBody <| Json.loginEncoder login
+        , expect = Http.expectJson Json.authDecoder
         , timeout = Nothing
         , withCredentials = False
         }
@@ -343,20 +375,6 @@ createUserRecord httpsrv token user =
         |> Http.toTask
 
 
-getRequest : String -> String -> JD.Decoder a -> Task Http.Error a
-getRequest token endpoint jsonDecoder =
-    Http.request
-        { method = "GET"
-        , headers = defaultHeaders token
-        , url = endpoint
-        , body = Http.emptyBody
-        , expect = Http.expectJson jsonDecoder
-        , timeout = Nothing
-        , withCredentials = False
-        }
-        |> Http.toTask
-
-
 isAdmin : M.JwtPayload -> Bool
 isAdmin jwt =
     List.map .name jwt.roles |> List.member "admin"
@@ -463,6 +481,20 @@ putRequest { endpoint, decoder, token, json } =
         , url = endpoint
         , body = json |> Http.jsonBody
         , expect = Http.expectJson decoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
+        |> Http.toTask
+
+
+getRequest : String -> String -> JD.Decoder a -> Task Http.Error a
+getRequest token endpoint jsonDecoder =
+    Http.request
+        { method = "GET"
+        , headers = defaultHeaders token
+        , url = endpoint
+        , body = Http.emptyBody
+        , expect = Http.expectJson jsonDecoder
         , timeout = Nothing
         , withCredentials = False
         }

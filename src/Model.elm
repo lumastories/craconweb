@@ -21,7 +21,7 @@ type alias Model =
     , visitor : Visitor
     , isMenuActive : Bool
     , user : Maybe Entity.User
-    , authRecord : Entity.AuthRecord
+    , login : Login
     , ugimages_v : Maybe (List Entity.Ugimage)
     , ugimages_i : Maybe (List Entity.Ugimage)
     , ugimages_f : Maybe (List Entity.Ugimage)
@@ -48,6 +48,7 @@ type alias Model =
     , statements : Maybe (List MesAnswer)
     , request : Maybe String
     , loadTime : Time.Time
+    , badgeRules : RemoteData.WebData (List BadgeRule)
     }
 
 
@@ -74,7 +75,7 @@ type Msg
     | StartSessionResp (Game.Game Msg) (RemoteData.WebData Game.Session)
     | GameDataSaved Game.State Game.Session (RemoteData.WebData ( Game.Session, List Game.Cycle ))
     | ResendSession Game.State Game.Session
-    | AuthResp (Result Http.Error Entity.Auth)
+    | AuthResp (Result Http.Error String)
     | PublicMesResp (Result Http.Error (List MesAnswer))
     | UserResp (Result Http.Error Entity.User)
     | GameResp (Result Http.Error Entity.Game)
@@ -92,6 +93,8 @@ type Msg
     | FillerResp (Result ValuationsError (List Entity.Ugimage))
     | ValidResp (Result ValuationsError (List Entity.Ugimage))
     | InvalidResp (Result ValuationsError (List Entity.Ugimage))
+    | BadgeRulesResp (RemoteData.WebData (List BadgeRule))
+    | BadgesResp (RemoteData.WebData (List String))
     | TryRegisterUser
     | SetRegistration String String
     | TryCsvUpload
@@ -102,6 +105,19 @@ type Msg
     | TrySubmitMesAnswer
     | SetRequestNothing
     | SetTmpUserEdit String String
+
+
+type alias Login =
+    { username : String
+    , password : String
+    }
+
+
+type alias BadgeRule =
+    { id : String
+    , name : String
+    , dscript : String
+    }
 
 
 type alias AdminModel =

@@ -16,7 +16,7 @@ emptyModel model =
         , users = []
         , isMenuActive = False
         , user = Nothing
-        , authRecord = emptyAuthRecord
+        , login = { username = "", password = "" }
         , loading = Nothing
         , glitching = Nothing
         , gameState = Game.NotPlaying
@@ -32,13 +32,6 @@ emptyUserRecord =
     , avatar = ""
     , groupId = ""
     , roles = []
-    , password = ""
-    }
-
-
-emptyAuthRecord : Entity.AuthRecord
-emptyAuthRecord =
-    { email = ""
     , password = ""
     }
 

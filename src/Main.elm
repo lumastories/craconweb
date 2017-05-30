@@ -11,6 +11,7 @@ import Update
 import View
 import Port
 import AnimationFrame
+import RemoteData
 
 
 main : Program Flags M.Model M.Msg
@@ -70,7 +71,7 @@ init flags location =
             , visitor = visitor_
             , isMenuActive = False
             , user = Nothing
-            , authRecord = Empty.emptyAuthRecord
+            , login = { username = "", password = "" }
             , ugimages_v = Nothing
             , ugimages_i = Nothing
             , ugimages_f = Nothing
@@ -101,6 +102,7 @@ init flags location =
                 , tmpUserEdit = Nothing
                 }
             , loadTime = flags.time
+            , badgeRules = RemoteData.Loading
             }
     in
         ( baseModel, commands_ )
