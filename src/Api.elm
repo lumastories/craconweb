@@ -296,9 +296,9 @@ fetchUgimages httpsrv token limit gimgtypeSlug ugimgsetId =
         (httpsrv
             ++ "/ugimgset/"
             ++ ugimgsetId
-            ++ "/ugimages?valDesc=true&limit="
+            ++ "/ugimages?ratingDesc=true&limit="
             ++ limit
-            ++ "&valEach=true&gimgtypeSlug="
+            ++ "&ratingEach=true&gimgtypeSlug="
             ++ gimgtypeSlug
         )
         M.ugimageDecoder
