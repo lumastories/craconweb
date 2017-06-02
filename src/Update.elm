@@ -163,13 +163,6 @@ update msg model =
                 , Cmd.none
                 )
 
-        MesQuerysResp (Err err) ->
-            let
-                _ =
-                    Debug.log "e" err
-            in
-                model ! []
-
         UpdateMesAnswer a ->
             ( { model | mesAnswer = Maybe.map (up_essay a) model.mesAnswer }, Cmd.none )
 
@@ -351,13 +344,6 @@ update msg model =
 
         PublicMesResp (Ok publicMes) ->
             ( { model | statements = Just publicMes }, Cmd.none )
-
-        PublicMesResp (Err err) ->
-            let
-                _ =
-                    Debug.log "public" err
-            in
-                model ! []
 
         PublishMes id ->
             case model.adminModel.mesAnswers of
@@ -648,11 +634,13 @@ update msg model =
             (httpErrorState model err)
 
         MesResp (Err err) ->
-            let
-                _ =
-                    Debug.log "resp:" err
-            in
-                (httpErrorState model err)
+            (httpErrorState model err)
+
+        PublicMesResp (Err err) ->
+            (httpErrorState model err)
+
+        MesQuerysResp (Err err) ->
+            (httpErrorState model err)
 
         PutMesResp (Err err) ->
             (httpErrorState model err)

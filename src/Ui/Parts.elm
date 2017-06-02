@@ -26,7 +26,7 @@ notification notifText mods =
                 ]
 
         Nothing ->
-            div [] []
+            text ""
 
 
 notificationRemoteData : RemoteData.WebData a -> Html Msg
