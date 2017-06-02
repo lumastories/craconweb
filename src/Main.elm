@@ -30,6 +30,7 @@ subscriptions model =
         [ Keyboard.downs M.Presses
         , ticker model.gameState
         , Port.status M.SetStatus
+        , Port.readyStateStatus M.GotReadyStateStatus
         ]
 
 
@@ -53,7 +54,7 @@ init flags location =
                 Ok jwt ->
                     ( R.parseLocation location
                     , M.LoggedIn jwt
-                    , Api.fetchAll httpsrv jwt flags.token
+                    , Cmd.batch [ Api.fetchAll httpsrv jwt flags.token, Port.readyStateCheck () ]
                     )
 
                 Err _ ->
@@ -62,7 +63,7 @@ init flags location =
                     , Navigation.newUrl R.loginPath
                     )
 
-        baseModel =
+        model_ =
             { httpsrv = httpsrv
             , tasksrv = tasksrv
             , filesrv = filesrv
@@ -103,9 +104,10 @@ init flags location =
                 }
             , loadTime = flags.time
             , badgeRules = RemoteData.Loading
+            , domLoaded = False
             }
     in
-        ( baseModel, commands_ )
+        ( model_, commands_ )
 
 
 type alias Flags =

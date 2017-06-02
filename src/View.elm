@@ -201,7 +201,17 @@ homePage model =
         , navBar model
         , homePageBody model
         , Parts.notification model.glitching "is-danger"
+        , loading model.domLoaded
         ]
+
+
+loading is_loading =
+    case is_loading of
+        False ->
+            Parts.modal [ h1 [ class "title white" ] [ text "Loading games..." ] ]
+
+        True ->
+            text ""
 
 
 homePageBody : Model -> Html Msg

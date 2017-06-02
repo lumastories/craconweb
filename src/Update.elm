@@ -423,6 +423,14 @@ update msg model =
             )
 
         -- SHARED
+        GotReadyStateStatus loaded ->
+            case loaded of
+                True ->
+                    ( { model | domLoaded = True }, Cmd.none )
+
+                False ->
+                    ( { model | domLoaded = False }, Port.readyStateCheck () )
+
         ResetNotifications ->
             ( { model
                 | glitching = Nothing
@@ -536,7 +544,7 @@ update msg model =
             ( { model
                 | user = Just user_
               }
-            , Cmd.none
+            , Port.readyStateCheck ()
             )
 
         StartSession data ->
