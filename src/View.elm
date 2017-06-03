@@ -380,10 +380,7 @@ badgesPage model =
         ]
 
 
-bgColors =
-    [ "#FF738F", "#F2E86B", "#94FFF7", "#f4c6ee", "#39e17e", "#C784FF" ]
-
-
+tryUnlock : List a -> { dscript : String, id : a, name : String } -> { name : String, dscript : String, unlocked : Bool, fg : String, bg : String }
 tryUnlock ids b =
     let
         b_ =
@@ -397,6 +394,10 @@ tryUnlock ids b =
                 { b_ | unlocked = False }
 
 
+rules :
+    RemoteData.RemoteData e (List { dscript : String, id : a, name : String })
+    -> RemoteData.RemoteData e1 (List a)
+    -> List (Html Msg)
 rules badges earned =
     case badges of
         RemoteData.Success badges_ ->
@@ -413,6 +414,14 @@ rules badges earned =
             [ text "" ]
 
 
+badgeBox :
+    { bg : String
+    , dscript : String
+    , fg : String
+    , name : String
+    , unlocked : Bool
+    }
+    -> Html msg
 badgeBox b =
     let
         ( wobble, icon ) =

@@ -4,7 +4,6 @@ module Ui.Parts
         , linkAttrs
         , notificationRemoteData
         , modal
-        , grid4
         , grid
         )
 
@@ -69,9 +68,6 @@ modal children =
 grid num children =
     (List.map (div [ class "columns" ]) (List.map column children |> List.Extra.greedyGroupsOf num))
 
-
-grid4 children =
-    (List.map (div [ class "columns" ]) (List.map column children |> List.Extra.greedyGroupsOf 4))
 
 
 column : Html Msg -> Html Msg
