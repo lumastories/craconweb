@@ -109,8 +109,7 @@ editPath =
     "/edit/"
 
 
-{-|
-Define how to match urls
+{-| Define how to match urls
 -}
 matchers : Parser (Route -> a) a
 matchers =

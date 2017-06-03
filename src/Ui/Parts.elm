@@ -4,6 +4,7 @@ module Ui.Parts
         , linkAttrs
         , notificationRemoteData
         , modal
+        , grid
         )
 
 import Html exposing (..)
@@ -13,6 +14,7 @@ import Html.Events exposing (onClick)
 import Routing as R
 import RemoteData
 import Helpers
+import List.Extra
 
 
 notification : Maybe String -> String -> Html Msg
@@ -61,3 +63,14 @@ modal children =
             [ class "modal-content" ]
             children
         ]
+
+
+grid num children =
+    (List.map (div [ class "columns" ]) (List.map column children |> List.Extra.greedyGroupsOf num))
+
+
+
+column : Html Msg -> Html Msg
+column col =
+    div [ class "column" ]
+        [ col ]
