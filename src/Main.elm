@@ -103,6 +103,7 @@ init flags location =
                 }
             , loadTime = flags.time
             , badgeRules = RemoteData.Loading
+            , badgesEarned = RemoteData.Loading
             }
     in
         ( baseModel, commands_ )

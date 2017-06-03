@@ -49,6 +49,7 @@ type alias Model =
     , request : Maybe String
     , loadTime : Time.Time
     , badgeRules : RemoteData.WebData (List BadgeRule)
+    , badgesEarned : RemoteData.WebData (List String)
     }
 
 

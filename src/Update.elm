@@ -27,19 +27,11 @@ import Game.Cycle
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        BadgesResp badges_ ->
-            let
-                _ =
-                    Debug.log "badges" badges_
-            in
-                model ! []
+        BadgesResp badges ->
+            { model | badgesEarned = badges } ! []
 
         BadgeRulesResp badgeRules_ ->
-            let
-                _ =
-                    Debug.log "BAAADDGGEEES" badgeRules_
-            in
-                { model | badgeRules = badgeRules_ } ! []
+            { model | badgeRules = badgeRules_ } ! []
 
         MesAnswersResp (Ok myAnswers) ->
             let
@@ -47,13 +39,6 @@ update msg model =
                     (Task.attempt MesQuerysResp (Api.fetchMesQuerys { url = model.httpsrv, token = model.jwtencoded, sub = "" }))
             in
                 ( { model | mesAnswers = Just myAnswers }, cmd )
-
-        MesAnswersResp (Err oops) ->
-            let
-                _ =
-                    Debug.log "oops" oops
-            in
-                model ! []
 
         SetTmpUserEdit key value ->
             let
@@ -631,6 +616,9 @@ update msg model =
             (httpErrorState model err)
 
         RoleResp (Err err) ->
+            (httpErrorState model err)
+
+        MesAnswersResp (Err err) ->
             (httpErrorState model err)
 
         MesResp (Err err) ->
