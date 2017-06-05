@@ -2,7 +2,6 @@ module Result.GoNoGoTests exposing (all)
 
 import Test exposing (..)
 import Expect
-import Game exposing (LogEntry(..), BorderType(..), Layout(..), Direction(..))
 import Game.Result
 
 

@@ -106,9 +106,12 @@ isGoNoGoCorrect cycle =
 
 isStopSignalCorrect : Game.Cycle -> Bool
 isStopSignalCorrect cycle =
-    Debug.crash "isStopSignalCorrect"
+    if cycle.blue then
+        isNothing cycle.timeout
+    else
+        isJust cycle.timeout
 
 
 isVisualSearchCorrect : Game.Cycle -> Bool
 isVisualSearchCorrect cycle =
-    Debug.crash "isVisualSearchCorrect"
+    isNothing cycle.timeout && (cycle.targetIndex == cycle.selectedIndex)

@@ -37,7 +37,7 @@ update msg model =
                 cmd =
                     Task.attempt MesQuerysResp (Api.fetchMesQuerys { url = model.httpsrv, token = model.jwtencoded, sub = "" })
             in
-            ( { model | mesAnswers = Just myAnswers }, cmd )
+                ( { model | mesAnswers = Just myAnswers }, cmd )
 
         SetTmpUserEdit key value ->
             let
@@ -69,9 +69,9 @@ update msg model =
                                 _ ->
                                     Just tue_
             in
-            ( { model | adminModel = { adminModel_ | tmpUserEdit = tue_ } }
-            , Cmd.none
-            )
+                ( { model | adminModel = { adminModel_ | tmpUserEdit = tue_ } }
+                , Cmd.none
+                )
 
         FillTmpUserEdit userId ->
             let
@@ -98,9 +98,9 @@ update msg model =
                             , Navigation.newUrl (R.editPath ++ u.id)
                             )
             in
-            ( { model | adminModel = up_tmpUserEdit model.adminModel tmpUser }
-            , cmd
-            )
+                ( { model | adminModel = up_tmpUserEdit model.adminModel tmpUser }
+                , cmd
+                )
 
         EditUserResp (Ok user) ->
             model ! []
@@ -138,13 +138,13 @@ update msg model =
                         Just q ->
                             Just (newMesAnswerWithqueryId q.id)
             in
-            ( { model
-                | mesQuerys = Just unanswered
-                , mesQuery = mesQuery_
-                , mesAnswer = mesAnswer_
-              }
-            , Cmd.none
-            )
+                ( { model
+                    | mesQuerys = Just unanswered
+                    , mesQuery = mesQuery_
+                    , mesAnswer = mesAnswer_
+                  }
+                , Cmd.none
+                )
 
         UpdateMesAnswer a ->
             ( { model | mesAnswer = Maybe.map (up_essay a) model.mesAnswer }, Cmd.none )
@@ -199,7 +199,7 @@ update msg model =
                 adminModel_ =
                     { adminModel | tmpUserRecord = user_, tmpUserEdit = userEdit_ }
             in
-            ( { model | adminModel = adminModel_ }, Cmd.none )
+                ( { model | adminModel = adminModel_ }, Cmd.none )
 
         UserEditResp (Ok _) ->
             { model | informing = Nothing } ! []
@@ -238,7 +238,7 @@ update msg model =
                 resp =
                     errorCodeEncoder response
             in
-            ( { model | informing = Just resp.error }, Cmd.none )
+                ( { model | informing = Just resp.error }, Cmd.none )
 
         -- ADMIN
         GroupResp (Ok group) ->
@@ -299,7 +299,7 @@ update msg model =
                         _ ->
                             tmpUserRecord_old
             in
-            ( { model | adminModel = { adminModel_ | tmpUserRecord = tmpUserRecord_ } }, Cmd.none )
+                ( { model | adminModel = { adminModel_ | tmpUserRecord = tmpUserRecord_ } }, Cmd.none )
 
         EditUserAccount key value ->
             model ! []
@@ -357,29 +357,29 @@ update msg model =
                                 Just mesA ->
                                     { model | adminModel = up_mesAnswers model.adminModel (List.filter (\m -> m.id /= id) mesA) }
                     in
-                    case mesAns of
-                        Nothing ->
-                            model ! []
+                        case mesAns of
+                            Nothing ->
+                                model ! []
 
-                        Just mesAnswer ->
-                            ( model_
-                            , Task.attempt PutMesResp
-                                (Api.updateMesStatus
-                                    { url = model.httpsrv
-                                    , token = model.jwtencoded
-                                    , sub = userId
-                                    }
-                                    id
-                                    mesAnswer
+                            Just mesAnswer ->
+                                ( model_
+                                , Task.attempt PutMesResp
+                                    (Api.updateMesStatus
+                                        { url = model.httpsrv
+                                        , token = model.jwtencoded
+                                        , sub = userId
+                                        }
+                                        id
+                                        mesAnswer
+                                    )
                                 )
-                            )
 
         PutMesResp (Ok r) ->
             let
                 l =
                     Debug.log "change publicity of MES" r
             in
-            model ! []
+                model ! []
 
         RegisterUserResp (Ok newUser) ->
             ( { model
@@ -410,7 +410,7 @@ update msg model =
                     [ Navigation.newUrl path
                     ]
             in
-            ( model, Cmd.batch cmds )
+                ( model, Cmd.batch cmds )
 
         OnUpdateLocation location ->
             ( { model
@@ -427,20 +427,20 @@ update msg model =
                 login_ =
                     model.login
             in
-            ( { model | login = { login_ | username = username } }
-            , Cmd.none
-            )
+                ( { model | login = { login_ | username = username } }
+                , Cmd.none
+                )
 
         UpdatePassword newPassword ->
             let
                 login_ =
                     model.login
             in
-            ( { model
-                | login = { login_ | password = newPassword }
-              }
-            , Cmd.none
-            )
+                ( { model
+                    | login = { login_ | password = newPassword }
+                  }
+                , Cmd.none
+                )
 
         TryLogin ->
             let
@@ -451,7 +451,7 @@ update msg model =
                             model.login
                         )
             in
-            ( { model | loading = Just "loading..." }, cmd )
+                ( { model | loading = Just "loading..." }, cmd )
 
         Logout ->
             let
@@ -460,7 +460,7 @@ update msg model =
                     , Navigation.newUrl "/login"
                     ]
             in
-            ( Empty.emptyModel model, Cmd.batch cmds )
+                ( Empty.emptyModel model, Cmd.batch cmds )
 
         AuthResp (Ok token) ->
             let
@@ -481,18 +481,18 @@ update msg model =
                                     else
                                         Navigation.newUrl R.homePath
                             in
-                            ( { model
-                                | loading = Nothing
-                                , visitor = LoggedIn jwt
-                                , jwtencoded = token
-                                , glitching = Nothing
-                              }
-                            , Cmd.batch
-                                [ Port.set ( "token", tokenEncoder token )
-                                , Api.fetchAll model.httpsrv jwt token
-                                , skipToAdmin jwt
-                                ]
-                            )
+                                ( { model
+                                    | loading = Nothing
+                                    , visitor = LoggedIn jwt
+                                    , jwtencoded = token
+                                    , glitching = Nothing
+                                  }
+                                , Cmd.batch
+                                    [ Port.set ( "token", tokenEncoder token )
+                                    , Api.fetchAll model.httpsrv jwt token
+                                    , skipToAdmin jwt
+                                    ]
+                                )
 
                         Err err ->
                             ( { model
@@ -502,7 +502,7 @@ update msg model =
                             , Cmd.none
                             )
             in
-            ( model_, command_ )
+                ( model_, command_ )
 
         UserResp (Ok user_) ->
             { model | user = Just user_ } ! []
@@ -646,26 +646,26 @@ initStopSignal model =
                             seed =
                                 round time
                         in
-                        ( time
-                        , seed
-                        , Game.Implementations.StopSignal.init
-                            { borderDelay = 100 * Time.millisecond
-                            , totalDuration = 1000 * Time.millisecond
-                            , infoString = """
+                            ( time
+                            , seed
+                            , Game.Implementations.StopSignal.init
+                                { borderDelay = 100 * Time.millisecond
+                                , totalDuration = 1000 * Time.millisecond
+                                , infoString = """
 <h3 class="title">Instructions</h3>
 You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a grey border. Go as fast as you can, but don't sacrifice accuracy for speed.
 <br>
 <br>
 **Press any key to continue.**
                                     """
-                            , responseImages = getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault []
-                            , nonResponseImages = getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault []
-                            , seedInt = seed
-                            , currentTime = time
-                            , gameDuration = 5 * Time.minute
-                            , redCrossDuration = 500 * Time.millisecond
-                            }
-                        )
+                                , responseImages = getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault []
+                                , nonResponseImages = getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault []
+                                , seedInt = seed
+                                , currentTime = time
+                                , gameDuration = 5 * Time.minute
+                                , redCrossDuration = 500 * Time.millisecond
+                                }
+                            )
                     )
                 |> Task.perform (\( time, seed, game ) -> StartSession { gameId = gameEntity.id, game = game, time = time, seed = seed })
             )
@@ -686,11 +686,11 @@ initGoNoGo model =
                             seed =
                                 round time
                         in
-                        ( time
-                        , seed
-                        , Game.Implementations.GoNoGo.init
-                            { totalDuration = 1250 * Time.millisecond
-                            , infoString = """
+                            ( time
+                            , seed
+                            , Game.Implementations.GoNoGo.init
+                                { totalDuration = 1250 * Time.millisecond
+                                , infoString = """
 <h3 class="title">Instructions</h3>
 <p>You will see pictures either on the left or right side of the screen, surrounded by a solid or dashed border. Press <span class="highlight"><strong>c</strong></span> when the picture is on the left side of the screen or <span class="highlight"><strong>m</strong></span> when the picture is on the right side of the screen. BUT only if you see a <span style="border: 1px solid rgb(0, 0, 0); padding: 2px;">solid border</span> around the picture. Do not press if you see a <span style="border: 1px dashed rgb(0, 0, 0); padding: 2px;">dashed border</span>. Go as fast as you can, but don't sacrifice accuracy for speed.<div>
 <br>
@@ -698,15 +698,15 @@ initGoNoGo model =
 <strong>Press any key to continue.</strong></div>
 </p>
 """
-                            , responseImages = getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault []
-                            , nonResponseImages = getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault []
-                            , fillerImages = getFullImagePathsNew model.filesrv model.ugimages_f |> Maybe.withDefault []
-                            , seedInt = round time
-                            , currentTime = time
-                            , gameDuration = 0.1 * Time.minute
-                            , redCrossDuration = 500 * Time.millisecond
-                            }
-                        )
+                                , responseImages = getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault []
+                                , nonResponseImages = getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault []
+                                , fillerImages = getFullImagePathsNew model.filesrv model.ugimages_f |> Maybe.withDefault []
+                                , seedInt = round time
+                                , currentTime = time
+                                , gameDuration = 5 * Time.minute
+                                , redCrossDuration = 500 * Time.millisecond
+                                }
+                            )
                     )
                 |> Task.perform (\( time, seed, game ) -> StartSession { gameId = gameEntity.id, game = game, time = time, seed = seed })
             )
@@ -727,12 +727,12 @@ initDotProbe model =
                             seed =
                                 round time
                         in
-                        ( time
-                        , seed
-                        , Game.Implementations.DotProbe.init
-                            { fixationDuration = 500 * Time.millisecond
-                            , imageDuration = 500 * Time.millisecond
-                            , infoString = """
+                            ( time
+                            , seed
+                            , Game.Implementations.DotProbe.init
+                                { fixationDuration = 500 * Time.millisecond
+                                , imageDuration = 500 * Time.millisecond
+                                , infoString = """
 <h3 class="title">Instructions</h3>
 You will see pictures on the left and right side of the screen, followed by a dot on the left or right side of the screen. Press the <span class="highlight"><strong>c</strong></span> if the dot is on the left side of the screen or <span class="highlight"><strong>m</strong></span> when the dot is on the right side of the screen. Go as fast as you can, but don't sacrifice accuracy for speed.<div>
 <br>
@@ -740,13 +740,13 @@ You will see pictures on the left and right side of the screen, followed by a do
 <strong>Press any key to continue.</strong>
 </div>
         """
-                            , responseImages = getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault []
-                            , nonResponseImages = getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault []
-                            , seedInt = round time
-                            , currentTime = time
-                            , gameDuration = 5 * Time.minute
-                            }
-                        )
+                                , responseImages = getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault []
+                                , nonResponseImages = getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault []
+                                , seedInt = round time
+                                , currentTime = time
+                                , gameDuration = 5 * Time.minute
+                                }
+                            )
                     )
                 |> Task.perform (\( time, seed, game ) -> StartSession { gameId = gameEntity.id, game = game, time = time, seed = seed })
             )
@@ -767,13 +767,13 @@ initVisualSearch model =
                             seed =
                                 round time
                         in
-                        ( time
-                        , seed
-                        , Game.Implementations.VisualSearch.init
-                            { fixationDuration = 500 * Time.millisecond
-                            , imageDuration = 3000 * Time.millisecond
-                            , zoomDuration = 1000 * Time.millisecond
-                            , infoString = """
+                            ( time
+                            , seed
+                            , Game.Implementations.VisualSearch.init
+                                { fixationDuration = 500 * Time.millisecond
+                                , imageDuration = 3000 * Time.millisecond
+                                , zoomDuration = 1000 * Time.millisecond
+                                , infoString = """
 <h3 class="title">Instructions</h3>
 You will see a grid of images. Select the target image as quickly as you can.
 <br>
@@ -781,13 +781,13 @@ You will see a grid of images. Select the target image as quickly as you can.
 <strong>Press any key to continue.</strong>
 </div>
 """
-                            , responseImages = getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault []
-                            , nonResponseImages = getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault []
-                            , seedInt = round time
-                            , currentTime = time
-                            , gameDuration = 5 * Time.minute
-                            }
-                        )
+                                , responseImages = getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault []
+                                , nonResponseImages = getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault []
+                                , seedInt = round time
+                                , currentTime = time
+                                , gameDuration = 5 * Time.minute
+                                }
+                            )
                     )
                 |> Task.perform (\( time, seed, game ) -> StartSession { gameId = gameEntity.id, game = game, time = time, seed = seed })
             )
@@ -1011,12 +1011,12 @@ handleInput input model =
                         updatedModel =
                             { model | gameState = Game.Saving state updatedSession RemoteData.Loading }
                     in
-                    ( updatedModel
-                    , Cmd.batch
-                        [ cmd
-                        , saveGameDataCmd state updatedSession updatedModel
-                        ]
-                    )
+                        ( updatedModel
+                        , Cmd.batch
+                            [ cmd
+                            , saveGameDataCmd state updatedSession updatedModel
+                            ]
+                        )
 
                 ( Game.Card.Continue _ newGame, cmd ) ->
                     ( { model | gameState = Game.Playing newGame session }, cmd )
@@ -1046,7 +1046,7 @@ getFullImagePathsNew prefix maybeUgimages =
                         , id = ugimage.id
                         }
     in
-    Maybe.map toImages maybeUgimages
+        Maybe.map toImages maybeUgimages
 
 
 presses : number -> Model -> ( Model, Cmd Msg )
@@ -1066,7 +1066,7 @@ presses keyCode model =
                 _ ->
                     ( newModel1, Cmd.none )
     in
-    ( newModel2, Cmd.batch [ cmd1, cmd2 ] )
+        ( newModel2, Cmd.batch [ cmd1, cmd2 ] )
 
 
 handleIntIndicationUpdate : Int -> Model -> ( Model, Cmd Msg )
@@ -1085,19 +1085,19 @@ startSessionResp game remoteData model =
         updatedModel =
             { model | gameState = Game.Loading game remoteData }
     in
-    case remoteData of
-        RemoteData.Success session ->
-            playGame game session updatedModel
+        case remoteData of
+            RemoteData.Success session ->
+                playGame game session updatedModel
 
-        RemoteData.Failure err ->
-            { updatedModel | glitching = Just <| Helpers.httpHumanError err }
-                ! []
+            RemoteData.Failure err ->
+                { updatedModel | glitching = Just <| Helpers.httpHumanError err }
+                    ! []
 
-        RemoteData.Loading ->
-            updatedModel ! []
+            RemoteData.Loading ->
+                updatedModel ! []
 
-        RemoteData.NotAsked ->
-            updatedModel ! []
+            RemoteData.NotAsked ->
+                updatedModel ! []
 
 
 gameDataSaved : Game.State -> Game.Session -> RemoteData.WebData ( Game.Session, List Game.Cycle ) -> Model -> ( Model, Cmd Msg )
@@ -1106,18 +1106,18 @@ gameDataSaved state session remoteData model =
         updatedModel =
             { model | gameState = Game.Saving state session remoteData }
     in
-    case remoteData of
-        RemoteData.Success ( session, cycles ) ->
-            { model | gameState = Game.Saved state { session = session, cycles = cycles } } ! []
+        case remoteData of
+            RemoteData.Success ( session, cycles ) ->
+                { model | gameState = Game.Saved state { session = session, cycles = cycles } } ! []
 
-        RemoteData.Failure err ->
-            { updatedModel | glitching = Just <| Helpers.httpHumanError err } ! []
+            RemoteData.Failure err ->
+                { updatedModel | glitching = Just <| Helpers.httpHumanError err } ! []
 
-        RemoteData.Loading ->
-            updatedModel ! []
+            RemoteData.Loading ->
+                updatedModel ! []
 
-        RemoteData.NotAsked ->
-            updatedModel ! []
+            RemoteData.NotAsked ->
+                updatedModel ! []
 
 
 saveGameData : Game.State -> Game.Session -> Model -> ( Model, Cmd Msg )
@@ -1126,8 +1126,8 @@ saveGameData state session model =
         updatedModel =
             { model | gameState = Game.Saving state session RemoteData.Loading }
     in
-    updatedModel
-        ! [ saveGameDataCmd state session updatedModel ]
+        updatedModel
+            ! [ saveGameDataCmd state session updatedModel ]
 
 
 saveGameDataCmd : Game.State -> Game.Session -> Model -> Cmd Msg
@@ -1151,6 +1151,6 @@ saveGameDataCmd state session model =
         cycles =
             Game.Cycle.generate session.id state.log
     in
-    Task.map2 (,) endSessionTask postCyclesTask
-        |> Task.map (\( a, b ) -> RemoteData.map2 (,) a b)
-        |> Task.perform (GameDataSaved state session)
+        Task.map2 (,) endSessionTask postCyclesTask
+            |> Task.map (\( a, b ) -> RemoteData.map2 (,) a b)
+            |> Task.perform (GameDataSaved state session)
