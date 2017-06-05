@@ -1,18 +1,14 @@
 module Game.Result
     exposing
-        ( filterResults
+        ( averageResponseTimeInMillisecond
         , percentCorrect
-        , averageResponseTimeInMillisecond
+        , isCorrect
         )
 
 import Game
-
-
-filterResults : Game.State -> List Game.LogEntry
-filterResults state =
-    state.log
-        |> List.filter isResult
-        |> List.reverse
+import Game.Cycle
+import Entity
+import Maybe.Extra exposing (isJust, isNothing)
 
 
 averageResponseTimeInMillisecond : Game.State -> Result String Float
@@ -59,84 +55,60 @@ averageResponseTimeInMillisecond state =
             Ok <| List.sum responseTimes / toFloat totalResponses
 
 
-percentCorrect : Game.State -> Float
-percentCorrect state =
+percentCorrect : { gameSlug : String } -> Game.State -> Float
+percentCorrect gameSlug state =
     let
-        results =
-            state.log |> List.filter isResult
+        cycles =
+            state.log |> Game.Cycle.generate ""
 
         totalAnswer =
-            List.length results
+            List.length cycles
 
         correctAnswers =
-            results |> List.filter isCorrect |> List.length
+            cycles
+                |> List.filter (isCorrect gameSlug)
+                |> List.length
     in
         (toFloat correctAnswers / toFloat totalAnswer) * 100
 
 
-isCorrect : Game.LogEntry -> Bool
-isCorrect logEntry =
-    case logEntry of
-        Game.BeginSession _ _ ->
+isCorrect : { gameSlug : String } -> Game.Cycle -> Bool
+isCorrect { gameSlug } cycle =
+    case gameSlug of
+        "dotprobe" ->
+            isDotProbeCorrect cycle
+
+        "gonogo" ->
+            isGoNoGoCorrect cycle
+
+        "stopsignal" ->
+            isStopSignalCorrect cycle
+
+        "visualsearch" ->
+            isVisualSearchCorrect cycle
+
+        _ ->
             False
 
-        Game.EndSession _ ->
-            False
 
-        Game.BeginTrial _ ->
-            False
-
-        Game.EndTrial _ ->
-            False
-
-        Game.BeginDisplay _ _ ->
-            False
-
-        Game.BeginInput _ ->
-            False
-
-        Game.AcceptIndication { desired } _ ->
-            desired
-
-        Game.AcceptDirection { desired, actual } _ ->
-            desired == actual
-
-        Game.AcceptSelection { desired, actual } _ ->
-            desired == actual
-
-        Game.Timeout { desired } _ ->
-            desired
+isDotProbeCorrect : Game.Cycle -> Bool
+isDotProbeCorrect cycle =
+    Debug.crash "isDotProbeCorrect"
 
 
-isResult : Game.LogEntry -> Bool
-isResult logEntry =
-    case logEntry of
-        Game.BeginSession _ _ ->
-            False
+isGoNoGoCorrect : Game.Cycle -> Bool
+isGoNoGoCorrect cycle =
+    if not cycle.dash then
+        (isNothing cycle.timeout) && (cycle.selectedIndex == cycle.targetIndex)
+    else
+        (isJust cycle.timeout)
 
-        Game.EndSession _ ->
-            False
 
-        Game.BeginTrial _ ->
-            False
+isStopSignalCorrect : Game.Cycle -> Bool
+isStopSignalCorrect cycle =
+    Debug.crash "isStopSignalCorrect"
 
-        Game.EndTrial _ ->
-            False
 
-        Game.BeginDisplay _ _ ->
-            False
-
-        Game.BeginInput _ ->
-            False
-
-        Game.AcceptIndication _ _ ->
-            True
-
-        Game.AcceptDirection _ _ ->
-            True
-
-        Game.AcceptSelection _ _ ->
-            True
-
-        Game.Timeout _ _ ->
-            True
+isVisualSearchCorrect : Game.Cycle -> Bool
+isVisualSearchCorrect cycle =
+    Debug.crash "isVisualSearchCorrect"

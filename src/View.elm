@@ -478,16 +478,36 @@ game model title initMsg =
                 [ title_
                 , case model.activeRoute of
                     R.GameRouteSs ->
-                        Game.view { gameState = model.gameState, initMsg = initMsg, intIndicationMsg = IntIndication }
+                        Game.view
+                            { gameState = model.gameState
+                            , initMsg = initMsg
+                            , intIndicationMsg = IntIndication
+                            , gameSlug = model.stopsignalGame |> Maybe.map .slug |> Maybe.withDefault "stopsignal"
+                            }
 
                     R.GameRouteGn ->
-                        Game.view { gameState = model.gameState, initMsg = initMsg, intIndicationMsg = IntIndication }
+                        Game.view
+                            { gameState = model.gameState
+                            , initMsg = initMsg
+                            , intIndicationMsg = IntIndication
+                            , gameSlug = model.gonogoGame |> Maybe.map .slug |> Maybe.withDefault "gonogo"
+                            }
 
                     R.GameRouteDp ->
-                        Game.view { gameState = model.gameState, initMsg = initMsg, intIndicationMsg = IntIndication }
+                        Game.view
+                            { gameState = model.gameState
+                            , initMsg = initMsg
+                            , intIndicationMsg = IntIndication
+                            , gameSlug = model.dotprobeGame |> Maybe.map .slug |> Maybe.withDefault "dotprobe"
+                            }
 
                     R.GameRouteVs ->
-                        Game.view { gameState = model.gameState, initMsg = initMsg, intIndicationMsg = IntIndication }
+                        Game.view
+                            { gameState = model.gameState
+                            , initMsg = initMsg
+                            , intIndicationMsg = IntIndication
+                            , gameSlug = model.visualsearchGame |> Maybe.map .slug |> Maybe.withDefault "visualsearch"
+                            }
 
                     _ ->
                         text "Invalid Game"

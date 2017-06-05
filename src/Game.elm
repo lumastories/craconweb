@@ -134,8 +134,7 @@ type alias State =
     , trialStart : Time
     , segmentStart : Time
     , currTime : Time
-    , log : List LogEntry -- deprecated: in favor of `cycles`
-    , cycles : List Cycle
+    , log : List LogEntry
     , trialResult : Result
     , currentSeed : Random.Seed
     }
@@ -415,7 +414,6 @@ emptyState initialSeed time =
     , segmentStart = time
     , currTime = time
     , log = []
-    , cycles = []
     , trialResult = NoResult
     , currentSeed = Random.initialSeed initialSeed
     }
