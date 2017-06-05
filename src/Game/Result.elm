@@ -93,7 +93,7 @@ isCorrect { gameSlug } cycle =
 
 isDotProbeCorrect : Game.Cycle -> Bool
 isDotProbeCorrect cycle =
-    Debug.crash "isDotProbeCorrect"
+    cycle.targetIndex == cycle.selectedIndex
 
 
 isGoNoGoCorrect : Game.Cycle -> Bool

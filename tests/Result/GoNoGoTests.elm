@@ -108,7 +108,7 @@ noGoTests =
         [ test "Timeout/Correct NoGo" <|
             \() ->
                 Expect.true "Timeout nogo is correct"
-                    (Game.Result.isCorrect { gameSlug = "gonogo " }
+                    (Game.Result.isCorrect { gameSlug = "gonogo" }
                         { id = Nothing
                         , sessionId = "sessionId"
                         , sort = 0
@@ -135,7 +135,7 @@ noGoTests =
         , test "Incorrect NoGo" <|
             \() ->
                 Expect.false "Incorrect NoGo"
-                    (Game.Result.isCorrect { gameSlug = "gonogo " }
+                    (Game.Result.isCorrect { gameSlug = "gonogo" }
                         { id = Nothing
                         , sessionId = "sessionId"
                         , sort = 0
