@@ -14,19 +14,24 @@ import Json.Encode as JE
 type alias Group =
     { id :
         String
-        -- 1
+
+    -- 1
     , name :
         String
-        -- 2
+
+    -- 2
     , slug :
         String
-        -- 3
+
+    -- 3
     , created :
         Maybe Timestamp
-        -- 4
+
+    -- 4
     , updated :
         Maybe Timestamp
-        -- 5
+
+    -- 5
     }
 
 
@@ -57,10 +62,12 @@ groupEncoder v =
 type alias GroupRecord =
     { name :
         String
-        -- 1
+
+    -- 1
     , slug :
         String
-        -- 2
+
+    -- 2
     }
 
 
@@ -85,7 +92,8 @@ groupRecordEncoder v =
 type alias GroupRequest =
     { groupSlug :
         String
-        -- 1
+
+    -- 1
     }
 
 
@@ -108,13 +116,16 @@ groupRequestEncoder v =
 type alias Role =
     { id :
         String
-        -- 1
+
+    -- 1
     , name :
         String
-        -- 2
+
+    -- 2
     , weight :
         Int
-        -- 3
+
+    -- 3
     }
 
 
@@ -141,7 +152,8 @@ roleEncoder v =
 type alias RoleRequest =
     { roleName :
         String
-        -- 1
+
+    -- 1
     }
 
 
@@ -164,43 +176,56 @@ roleRequestEncoder v =
 type alias User =
     { id :
         String
-        -- 1
+
+    -- 1
     , username :
         String
-        -- 2
+
+    -- 2
     , email :
         String
-        -- 3
+
+    -- 3
     , firstName :
         String
-        -- 4
+
+    -- 4
     , lastName :
         String
-        -- 5
+
+    -- 5
     , avatar :
         String
-        -- 6
+
+    -- 6
     , groupId :
         String
-        -- 7
+
+    -- 7
     , roles :
         List Role
-        -- 8
+
+    -- 8
     , lastLogin :
         Maybe Timestamp
-        -- 9
+
+    -- 9
     , blocked :
         Maybe Timestamp
-        -- 10
+
+    -- 10
     , created :
         Maybe Timestamp
-        -- 11
+
+    -- 11
     , updated :
         Maybe Timestamp
-        -- 12
+
+    -- 12
     , deleted :
         Maybe Timestamp
-        -- 13
+
+    -- 13
     }
 
 
@@ -247,28 +272,36 @@ userEncoder v =
 type alias UserRecord =
     { username :
         String
-        -- 1
+
+    -- 1
     , email :
         String
-        -- 2
+
+    -- 2
     , firstName :
         String
-        -- 3
+
+    -- 3
     , lastName :
         String
-        -- 4
+
+    -- 4
     , avatar :
         String
-        -- 5
+
+    -- 5
     , groupId :
         String
-        -- 6
+
+    -- 6
     , roles :
         List String
-        -- 7
+
+    -- 7
     , password :
         String
-        -- 8
+
+    -- 8
     }
 
 
@@ -305,10 +338,12 @@ userRecordEncoder v =
 type alias UserRecorder =
     { userId :
         String
-        -- 1
+
+    -- 1
     , userRecord :
         Maybe UserRecord
-        -- 2
+
+    -- 2
     }
 
 
@@ -333,7 +368,8 @@ userRecorderEncoder v =
 type alias UserRequest =
     { userId :
         String
-        -- 1
+
+    -- 1
     }
 
 
@@ -356,10 +392,12 @@ userRequestEncoder v =
 type alias UserPassResetRecord =
     { userEmail :
         String
-        -- 1
+
+    -- 1
     , proof :
         String
-        -- 2
+
+    -- 2
     }
 
 
@@ -384,7 +422,8 @@ userPassResetRecordEncoder v =
 type alias Users =
     { users :
         List User
-        -- 1
+
+    -- 1
     }
 
 
@@ -407,7 +446,8 @@ usersEncoder v =
 type alias UsersRecord =
     { records :
         List UserRecord
-        -- 1
+
+    -- 1
     }
 
 
@@ -430,28 +470,36 @@ usersRecordEncoder v =
 type alias UsersReferral =
     { groupId :
         String
-        -- 1
+
+    -- 1
     , roleId :
         String
-        -- 2
+
+    -- 2
     , createdFirst :
         Maybe Timestamp
-        -- 3
+
+    -- 3
     , createdFinal :
         Maybe Timestamp
-        -- 4
+
+    -- 4
     , createdEach :
         Bool
-        -- 5
+
+    -- 5
     , createdDesc :
         Bool
-        -- 6
+
+    -- 6
     , limit :
         Int
-        -- 7
+
+    -- 7
     , skip :
         Int
-        -- 8
+
+    -- 8
     }
 
 
@@ -488,7 +536,8 @@ usersReferralEncoder v =
 type alias UserRedactor =
     { userId :
         String
-        -- 1
+
+    -- 1
     }
 
 
@@ -511,7 +560,8 @@ userRedactorEncoder v =
 type alias Auth =
     { token :
         String
-        -- 1
+
+    -- 1
     }
 
 
@@ -534,10 +584,12 @@ authEncoder v =
 type alias AuthRecord =
     { email :
         String
-        -- 1
+
+    -- 1
     , password :
         String
-        -- 2
+
+    -- 2
     }
 
 
@@ -562,7 +614,8 @@ authRecordEncoder v =
 type alias AuthRedactor =
     { authToken :
         String
-        -- 1
+
+    -- 1
     }
 
 
@@ -585,64 +638,84 @@ authRedactorEncoder v =
 type alias Game =
     { id :
         String
-        -- 1
+
+    -- 1
     , name :
         String
-        -- 2
+
+    -- 2
     , slug :
         String
-        -- 3
+
+    -- 3
     , dscript :
         String
-        -- 4
+
+    -- 4
     , instruct :
         String
-        -- 5
+
+    -- 5
     , icon :
         String
-        -- 6
+
+    -- 6
     , reactDur :
         Int
-        -- 7
+
+    -- 7
     , sessDur :
         Int
-        -- 8
+
+    -- 8
     , trialDur :
         Int
-        -- 9
+
+    -- 9
     , offsetDur :
         Int
-        -- 10
+
+    -- 10
     , fixDur :
         Int
-        -- 11
+
+    -- 11
     , fixImg :
         String
-        -- 12
+
+    -- 12
     , durInc :
         Int
-        -- 13
+
+    -- 13
     , durDec :
         Int
-        -- 14
+
+    -- 14
     , incTrigger :
         Int
-        -- 15
+
+    -- 15
     , decTrigger :
         Int
-        -- 16
+
+    -- 16
     , blocked :
         Maybe Timestamp
-        -- 17
+
+    -- 17
     , created :
         Maybe Timestamp
-        -- 18
+
+    -- 18
     , updated :
         Maybe Timestamp
-        -- 19
+
+    -- 19
     , deleted :
         Maybe Timestamp
-        -- 20
+
+    -- 20
     }
 
 
@@ -703,7 +776,8 @@ gameEncoder v =
 type alias GameRequest =
     { gameSlug :
         String
-        -- 1
+
+    -- 1
     }
 
 
@@ -726,22 +800,28 @@ gameRequestEncoder v =
 type alias Ginstruct =
     { id :
         String
-        -- 1
+
+    -- 1
     , gameId :
         String
-        -- 2
+
+    -- 2
     , groupId :
         String
-        -- 3
+
+    -- 3
     , instruct :
         String
-        -- 4
+
+    -- 4
     , created :
         Maybe Timestamp
-        -- 5
+
+    -- 5
     , updated :
         Maybe Timestamp
-        -- 6
+
+    -- 6
     }
 
 
@@ -774,7 +854,8 @@ ginstructEncoder v =
 type alias Ginstructs =
     { ginstructs :
         List Ginstruct
-        -- 1
+
+    -- 1
     }
 
 
@@ -797,13 +878,16 @@ ginstructsEncoder v =
 type alias GameGroupGinstructRecord =
     { gameId :
         String
-        -- 1
+
+    -- 1
     , groupId :
         String
-        -- 2
+
+    -- 2
     , instruct :
         String
-        -- 3
+
+    -- 3
     }
 
 
@@ -830,10 +914,12 @@ gameGroupGinstructRecordEncoder v =
 type alias GameGroupGinstructsReferral =
     { gameId :
         String
-        -- 1
+
+    -- 1
     , groupId :
         String
-        -- 2
+
+    -- 2
     }
 
 
@@ -858,25 +944,32 @@ gameGroupGinstructsReferralEncoder v =
 type alias Gsession =
     { id :
         String
-        -- 1
+
+    -- 1
     , userId :
         String
-        -- 2
+
+    -- 2
     , gameId :
         String
-        -- 3
+
+    -- 3
     , start :
         String
-        -- 4
+
+    -- 4
     , end :
         String
-        -- 5
+
+    -- 5
     , created :
         Maybe Timestamp
-        -- 6
+
+    -- 6
     , updated :
         Maybe Timestamp
-        -- 7
+
+    -- 7
     }
 
 
@@ -911,7 +1004,8 @@ gsessionEncoder v =
 type alias Gsessions =
     { gsessions :
         List Gsession
-        -- 1
+
+    -- 1
     }
 
 
@@ -934,40 +1028,52 @@ gsessionsEncoder v =
 type alias GsessionsReferral =
     { userId :
         String
-        -- 1
+
+    -- 1
     , userEach :
         Bool
-        -- 2
+
+    -- 2
     , gameId :
         String
-        -- 3
+
+    -- 3
     , gameEach :
         Bool
-        -- 4
+
+    -- 4
     , hasEnd :
         Bool
-        -- 5
+
+    -- 5
     , hasEndEach :
         Bool
-        -- 6
+
+    -- 6
     , createdFirst :
         Maybe Timestamp
-        -- 7
+
+    -- 7
     , createdFinal :
         Maybe Timestamp
-        -- 8
+
+    -- 8
     , createdEach :
         Bool
-        -- 9
+
+    -- 9
     , createdDesc :
         Bool
-        -- 10
+
+    -- 10
     , limit :
         Int
-        -- 11
+
+    -- 11
     , skip :
         Int
-        -- 12
+
+    -- 12
     }
 
 
@@ -1012,16 +1118,20 @@ gsessionsReferralEncoder v =
 type alias UserGsessionRecord =
     { userId :
         String
-        -- 1
+
+    -- 1
     , gameId :
         String
-        -- 2
+
+    -- 2
     , start :
         String
-        -- 3
+
+    -- 3
     , end :
         String
-        -- 4
+
+    -- 4
     }
 
 
@@ -1050,10 +1160,12 @@ userGsessionRecordEncoder v =
 type alias GsessionRecorder =
     { gsessionId :
         String
-        -- 1
+
+    -- 1
     , userGsessionRecord :
         Maybe UserGsessionRecord
-        -- 2
+
+    -- 2
     }
 
 
@@ -1078,52 +1190,68 @@ gsessionRecorderEncoder v =
 type alias Gcycle =
     { id :
         String
-        -- 1
+
+    -- 1
     , gsessionId :
         String
-        -- 2
+
+    -- 2
     , report :
         String
-        -- 3
+
+    -- 3
     , fixation :
         String
-        -- 4
+
+    -- 4
     , selection :
         String
-        -- 5
+
+    -- 5
     , instruct :
         String
-        -- 6
+
+    -- 6
     , jitter :
         String
-        -- 7
+
+    -- 7
     , pictures :
         String
-        -- 8
+
+    -- 8
     , filler :
         String
-        -- 9
+
+    -- 9
     , cross :
         String
-        -- 10
+
+    -- 10
     , picnobord :
         String
-        -- 11
+
+    -- 11
     , picbord :
         String
-        -- 12
+
+    -- 12
     , xCoords :
         Int
-        -- 13
+
+    -- 13
     , yCoords :
         Int
-        -- 14
+
+    -- 14
     , blue :
         Bool
-        -- 15
+
+    -- 15
     , reasonId :
         String
-        -- 16
+
+    -- 16
     }
 
 
@@ -1176,49 +1304,64 @@ gcycleEncoder v =
 type alias GsessionGcycleRecord =
     { gsessionId :
         String
-        -- 1
+
+    -- 1
     , report :
         String
-        -- 2
+
+    -- 2
     , fixation :
         String
-        -- 3
+
+    -- 3
     , selection :
         String
-        -- 4
+
+    -- 4
     , instruct :
         String
-        -- 5
+
+    -- 5
     , jitter :
         String
-        -- 6
+
+    -- 6
     , pictures :
         String
-        -- 7
+
+    -- 7
     , filler :
         String
-        -- 8
+
+    -- 8
     , cross :
         String
-        -- 9
+
+    -- 9
     , picnobord :
         String
-        -- 10
+
+    -- 10
     , picbord :
         String
-        -- 11
+
+    -- 11
     , xCoords :
         Int
-        -- 12
+
+    -- 12
     , yCoords :
         Int
-        -- 13
+
+    -- 13
     , blue :
         Bool
-        -- 14
+
+    -- 14
     , reasonId :
         String
-        -- 15
+
+    -- 15
     }
 
 
@@ -1269,7 +1412,8 @@ gsessionGcycleRecordEncoder v =
 type alias Gcycles =
     { gcycles :
         List Gcycle
-        -- 1
+
+    -- 1
     }
 
 
@@ -1292,10 +1436,12 @@ gcyclesEncoder v =
 type alias GsessionGcyclesRecord =
     { gsessionId :
         String
-        -- 1
+
+    -- 1
     , records :
         List GsessionGcycleRecord
-        -- 2
+
+    -- 2
     }
 
 
@@ -1320,10 +1466,12 @@ gsessionGcyclesRecordEncoder v =
 type alias Gimgtype =
     { id :
         String
-        -- 1
+
+    -- 1
     , slug :
         String
-        -- 2
+
+    -- 2
     }
 
 
@@ -1348,7 +1496,8 @@ gimgtypeEncoder v =
 type alias Gimgtypes =
     { gimgtypes :
         List Gimgtype
-        -- 1
+
+    -- 1
     }
 
 
@@ -1371,7 +1520,8 @@ gimgtypesEncoder v =
 type alias GimgtypeRequest =
     { gimgtypeSlug :
         String
-        -- 1
+
+    -- 1
     }
 
 
@@ -1394,25 +1544,32 @@ gimgtypeRequestEncoder v =
 type alias Gimage =
     { id :
         String
-        -- 1
+
+    -- 1
     , name :
         String
-        -- 2
+
+    -- 2
     , path :
         String
-        -- 3
+
+    -- 3
     , gimgtypeId :
         String
-        -- 4
+
+    -- 4
     , created :
         Maybe Timestamp
-        -- 5
+
+    -- 5
     , updated :
         Maybe Timestamp
-        -- 6
+
+    -- 6
     , deleted :
         Maybe Timestamp
-        -- 7
+
+    -- 7
     }
 
 
@@ -1447,13 +1604,16 @@ gimageEncoder v =
 type alias GimageRecord =
     { name :
         String
-        -- 1
+
+    -- 1
     , path :
         String
-        -- 2
+
+    -- 2
     , gimgtypeId :
         String
-        -- 3
+
+    -- 3
     }
 
 
@@ -1480,7 +1640,8 @@ gimageRecordEncoder v =
 type alias GimageRequest =
     { gimageName :
         String
-        -- 1
+
+    -- 1
     }
 
 
@@ -1503,19 +1664,24 @@ gimageRequestEncoder v =
 type alias Ugimgset =
     { id :
         String
-        -- 1
+
+    -- 1
     , ref :
         String
-        -- 2
+
+    -- 2
     , userId :
         String
-        -- 3
+
+    -- 3
     , created :
         Maybe Timestamp
-        -- 4
+
+    -- 4
     , updated :
         Maybe Timestamp
-        -- 5
+
+    -- 5
     }
 
 
@@ -1546,7 +1712,8 @@ ugimgsetEncoder v =
 type alias Ugimgsets =
     { ugimgsets :
         List Ugimgset
-        -- 1
+
+    -- 1
     }
 
 
@@ -1569,10 +1736,12 @@ ugimgsetsEncoder v =
 type alias UserUgimgsetRecord =
     { userId :
         String
-        -- 1
+
+    -- 1
     , ref :
         String
-        -- 2
+
+    -- 2
     }
 
 
@@ -1597,10 +1766,12 @@ userUgimgsetRecordEncoder v =
 type alias UserUgimgsetRequest =
     { userId :
         String
-        -- 1
+
+    -- 1
     , ugimgsetRef :
         String
-        -- 2
+
+    -- 2
     }
 
 
@@ -1625,25 +1796,32 @@ userUgimgsetRequestEncoder v =
 type alias UserUgimgsetsReferral =
     { userId :
         String
-        -- 1
+
+    -- 1
     , createdFirst :
         Maybe Timestamp
-        -- 2
+
+    -- 2
     , createdFinal :
         Maybe Timestamp
-        -- 3
+
+    -- 3
     , createdEach :
         Bool
-        -- 4
+
+    -- 4
     , createdDesc :
         Bool
-        -- 5
+
+    -- 5
     , limit :
         Int
-        -- 6
+
+    -- 6
     , skip :
         Int
-        -- 7
+
+    -- 7
     }
 
 
@@ -1678,16 +1856,20 @@ userUgimgsetsReferralEncoder v =
 type alias Ugimage =
     { id :
         String
-        -- 1
+
+    -- 1
     , gimage :
         Maybe Gimage
-        -- 2
+
+    -- 2
     , ugimgsetId :
         String
-        -- 3
+
+    -- 3
     , val :
         Int
-        -- 4
+
+    -- 4
     }
 
 
@@ -1716,7 +1898,8 @@ ugimageEncoder v =
 type alias Ugimages =
     { ugimages :
         List Ugimage
-        -- 1
+
+    -- 1
     }
 
 
@@ -1739,13 +1922,16 @@ ugimagesEncoder v =
 type alias UgimgsetUgimageRecord =
     { gimageName :
         String
-        -- 1
+
+    -- 1
     , ugimgsetId :
         String
-        -- 2
+
+    -- 2
     , val :
         Int
-        -- 3
+
+    -- 3
     }
 
 
@@ -1772,28 +1958,36 @@ ugimgsetUgimageRecordEncoder v =
 type alias UgimgsetUgimagesReferral =
     { ugimgsetId :
         String
-        -- 1
+
+    -- 1
     , gimgtypeSlug :
         String
-        -- 2
+
+    -- 2
     , valFirst :
         Int
-        -- 3
+
+    -- 3
     , valFinal :
         Int
-        -- 4
+
+    -- 4
     , valEach :
         Bool
-        -- 5
+
+    -- 5
     , valDesc :
         Bool
-        -- 6
+
+    -- 6
     , limit :
         Int
-        -- 7
+
+    -- 7
     , skip :
         Int
-        -- 8
+
+    -- 8
     }
 
 

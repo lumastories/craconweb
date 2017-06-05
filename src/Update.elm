@@ -27,19 +27,11 @@ import Game.Cycle
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        BadgesResp badges_ ->
-            let
-                _ =
-                    Debug.log "badges" badges_
-            in
-                model ! []
+        BadgesResp badges ->
+            { model | badgesEarned = badges } ! []
 
         BadgeRulesResp badgeRules_ ->
-            let
-                _ =
-                    Debug.log "BAAADDGGEEES" badgeRules_
-            in
-                { model | badgeRules = badgeRules_ } ! []
+            { model | badgeRules = badgeRules_ } ! []
 
         MesAnswersResp (Ok myAnswers) ->
             let
@@ -47,13 +39,6 @@ update msg model =
                     (Task.attempt MesQuerysResp (Api.fetchMesQuerys { url = model.httpsrv, token = model.jwtencoded, sub = "" }))
             in
                 ( { model | mesAnswers = Just myAnswers }, cmd )
-
-        MesAnswersResp (Err oops) ->
-            let
-                _ =
-                    Debug.log "oops" oops
-            in
-                model ! []
 
         SetTmpUserEdit key value ->
             let
@@ -162,13 +147,6 @@ update msg model =
                   }
                 , Cmd.none
                 )
-
-        MesQuerysResp (Err err) ->
-            let
-                _ =
-                    Debug.log "e" err
-            in
-                model ! []
 
         UpdateMesAnswer a ->
             ( { model | mesAnswer = Maybe.map (up_essay a) model.mesAnswer }, Cmd.none )
@@ -351,13 +329,6 @@ update msg model =
 
         PublicMesResp (Ok publicMes) ->
             ( { model | statements = Just publicMes }, Cmd.none )
-
-        PublicMesResp (Err err) ->
-            let
-                _ =
-                    Debug.log "public" err
-            in
-                model ! []
 
         PublishMes id ->
             case model.adminModel.mesAnswers of
@@ -646,12 +617,17 @@ update msg model =
         RoleResp (Err err) ->
             (httpErrorState model err)
 
+        MesAnswersResp (Err err) ->
+            (httpErrorState model err)
+
         MesResp (Err err) ->
-            let
-                _ =
-                    Debug.log "resp:" err
-            in
-                (httpErrorState model err)
+            (httpErrorState model err)
+
+        PublicMesResp (Err err) ->
+            (httpErrorState model err)
+
+        MesQuerysResp (Err err) ->
+            (httpErrorState model err)
 
         PutMesResp (Err err) ->
             (httpErrorState model err)

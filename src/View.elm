@@ -12,6 +12,7 @@ import Ui.Card as Card
 import Ui.Admin as Admin
 import Ui.Parts as Parts
 import List.Extra
+import RemoteData
 
 
 bigLogo : String -> Html Msg
@@ -385,50 +386,65 @@ badgesPage model =
             [ class "container swing-in-top-fwd" ]
             [ h1 [ class "title is-1" ] [ text "Badges" ]
             , div []
-                [ div [ class "columns" ]
-                    [ div [ class "column" ]
-                        [ div [ class "box badge1" ]
-                            [ h1 [ class "title is-1" ] [ text "Log in ", i [ class "fa fa-unlock" ] [] ]
-                            , p [] [ text "You logged on to the site, congratulations." ]
-                            ]
-                        ]
-                    , div [ class "column" ]
-                        [ div [ class "box badge2" ]
-                            [ h1 [ class "title is-1" ] [ text "90% ", i [ class "fa fa-lock" ] [] ]
-                            , p [] [ text "Reach 90% accuracy to unlock this badge!" ]
-                            ]
-                        ]
-                    , div [ class "column" ]
-                        [ div [ class "box badge3" ]
-                            [ h1 [ class "title is-1" ] [ text "80% ", i [ class "fa fa-lock" ] [] ]
-                            , p [] [ text "Reach 80% accuracy to unlock this badge!" ]
-                            ]
-                        ]
-                    ]
-                , div
-                    [ class "columns" ]
-                    [ div [ class "column" ]
-                        [ div [ class "box badge4" ]
-                            [ h1 [ class "title is-1" ] [ text "Try all games ", i [ class "fa fa-lock" ] [] ]
-                            , p [] [ text "Try all the games to earn this" ]
-                            ]
-                        ]
-                    , div [ class "column" ]
-                        [ div [ class "box badge5" ]
-                            [ h1 [ class "title is-1" ] [ text "3-day streak ", i [ class "fa fa-lock" ] [] ]
-                            , p [] [ text "Play three days in a row to earn this one." ]
-                            ]
-                        ]
-                    , div [ class "column" ]
-                        [ div [ class "box badge6" ]
-                            [ h1 [ class "title is-1" ] [ text "7-day streak ", i [ class "fa fa-lock" ] [] ]
-                            , p [] [ text "Play a game 7 days in a row to earn this badge!" ]
-                            ]
-                        ]
-                    ]
-                ]
+                (rules model.badgeRules model.badgesEarned)
             ]
         ]
+
+
+tryUnlock : List a -> { dscript : String, id : a, name : String } -> { name : String, dscript : String, unlocked : Bool, fg : String, bg : String }
+tryUnlock ids b =
+    let
+        b_ =
+            { name = b.name, dscript = b.dscript, unlocked = True, fg = "#000", bg = "#eee" }
+    in
+        case List.member b.id ids of
+            True ->
+                { b_ | unlocked = True, bg = "#F2E86B" }
+
+            False ->
+                { b_ | unlocked = False }
+
+
+rules :
+    RemoteData.RemoteData e (List { dscript : String, id : a, name : String })
+    -> RemoteData.RemoteData e1 (List a)
+    -> List (Html Msg)
+rules badges earned =
+    case badges of
+        RemoteData.Success badges_ ->
+            case earned of
+                RemoteData.Success earned_ ->
+                    List.map (tryUnlock earned_) badges_
+                        |> List.map badgeBox
+                        |> Parts.grid 3
+
+                _ ->
+                    [ text "" ]
+
+        _ ->
+            [ text "" ]
+
+
+badgeBox :
+    { bg : String
+    , dscript : String
+    , fg : String
+    , name : String
+    , unlocked : Bool
+    }
+    -> Html msg
+badgeBox b =
+    let
+        ( wobble, icon ) =
+            if b.unlocked then
+                ( "wobble-hor-bottom", i [ class "fa fa-unlock" ] [] )
+            else
+                ( "", i [ class "fa fa-lock" ] [] )
+    in
+        div [ class <| "box " ++ wobble, style [ ( "background-color", b.bg ), ( "color", b.fg ) ] ]
+            [ h1 [ class "title is-1", style [ ( "color", b.fg ) ] ] [ text <| b.name ++ " ", icon ]
+            , p [] [ text b.dscript ]
+            ]
 
 
 settingsPage : Model -> Html Msg

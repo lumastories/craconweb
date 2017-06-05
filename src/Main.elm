@@ -103,8 +103,9 @@ init flags location =
                 , tmpUserEdit = Nothing
                 }
             , loadTime = flags.time
-            , badgeRules = RemoteData.Loading
             , domLoaded = False
+            , badgeRules = RemoteData.NotAsked
+            , badgesEarned = RemoteData.NotAsked
             }
     in
         ( model_, commands_ )

@@ -50,6 +50,7 @@ type alias Model =
     , loadTime : Time.Time
     , badgeRules : RemoteData.WebData (List BadgeRule)
     , domLoaded : Bool
+    , badgesEarned : RemoteData.WebData (List String)
     }
 
 
