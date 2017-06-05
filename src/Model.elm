@@ -106,7 +106,7 @@ type Msg
     | TrySubmitMesAnswer
     | SetRequestNothing
     | SetTmpUserEdit String String
-    | GotReadyStateStatus Bool
+    | DomLoaded Bool
 
 
 type alias Login =

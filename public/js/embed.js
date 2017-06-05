@@ -26,20 +26,11 @@ var app = Elm.Main.fullscreen(flags)
 // Ports
 
 
-
-app.ports.readyStateCheck.subscribe(function(nil) {
-
-    function sendStatus(status) {
-        app.ports.readyStateStatus.send(status);
-    }
-
-    if (document.readyState === "complete") {
-        sendStatus(true); // loaded. stop checking from elm
-    } else {
-        sendStatus(false); // keep checking from elm
-    }
-});
-
+document.onreadystatechange = function () {
+  if (document.readyState === "complete") {
+    app.ports.domLoaded.send(true);
+  }
+}
 
 app.ports.set.subscribe(function(keyValue) {
     var [key, value] = keyValue

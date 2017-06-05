@@ -201,14 +201,15 @@ homePage model =
         , navBar model
         , homePageBody model
         , Parts.notification model.glitching "is-danger"
-        , loading model.domLoaded
+        , loading_screen model.domLoaded
         ]
 
 
-loading is_loading =
+loading_screen : Bool -> Html msg
+loading_screen is_loading =
     case is_loading of
         False ->
-            Parts.modal [ h1 [ class "title white" ] [ text "Loading games..." ] ]
+            Parts.modal [ section [ class "modal-card-body" ] [ h1 [ class "title" ] [ text "Loading games...", i [ class "fa fa-loading fa-spin" ] [] ] ] ]
 
         True ->
             text ""

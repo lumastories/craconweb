@@ -30,7 +30,7 @@ subscriptions model =
         [ Keyboard.downs M.Presses
         , ticker model.gameState
         , Port.status M.SetStatus
-        , Port.readyStateStatus M.GotReadyStateStatus
+        , Port.domLoaded M.DomLoaded
         ]
 
 
@@ -54,7 +54,7 @@ init flags location =
                 Ok jwt ->
                     ( R.parseLocation location
                     , M.LoggedIn jwt
-                    , Cmd.batch [ Api.fetchAll httpsrv jwt flags.token, Port.readyStateCheck () ]
+                    , Api.fetchAll httpsrv jwt flags.token
                     )
 
                 Err _ ->

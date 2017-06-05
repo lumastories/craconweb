@@ -20,7 +20,7 @@ type alias Value =
 port status : (String -> msg) -> Sub msg
 
 
-port readyStateStatus : (Bool -> msg) -> Sub msg
+port domLoaded : (Bool -> msg) -> Sub msg
 
 
 
@@ -28,9 +28,6 @@ port readyStateStatus : (Bool -> msg) -> Sub msg
    To Js
 -}
 -- Task Server path, id of form, jwt token
-
-
-port readyStateCheck : () -> Cmd msg
 
 
 port upload : ( String, String, String ) -> Cmd msg
