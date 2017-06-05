@@ -394,6 +394,9 @@ update msg model =
             )
 
         -- SHARED
+        DomLoaded loaded ->
+            ( { model | domLoaded = loaded }, Cmd.none )
+
         ResetNotifications ->
             ( { model
                 | glitching = Nothing
@@ -504,11 +507,7 @@ update msg model =
                 ( model_, command_ )
 
         UserResp (Ok user_) ->
-            ( { model
-                | user = Just user_
-              }
-            , Cmd.none
-            )
+            { model | user = Just user_ } ! []
 
         StartSession data ->
             startSession data model

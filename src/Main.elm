@@ -30,6 +30,7 @@ subscriptions model =
         [ Keyboard.downs M.Presses
         , ticker model.gameState
         , Port.status M.SetStatus
+        , Port.domLoaded M.DomLoaded
         ]
 
 
@@ -62,7 +63,7 @@ init flags location =
                     , Navigation.newUrl R.loginPath
                     )
 
-        baseModel =
+        model_ =
             { httpsrv = httpsrv
             , tasksrv = tasksrv
             , filesrv = filesrv
@@ -102,11 +103,12 @@ init flags location =
                 , tmpUserEdit = Nothing
                 }
             , loadTime = flags.time
+            , domLoaded = False
             , badgeRules = RemoteData.NotAsked
             , badgesEarned = RemoteData.NotAsked
             }
     in
-        ( baseModel, commands_ )
+        ( model_, commands_ )
 
 
 type alias Flags =

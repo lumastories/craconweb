@@ -49,6 +49,7 @@ type alias Model =
     , request : Maybe String
     , loadTime : Time.Time
     , badgeRules : RemoteData.WebData (List BadgeRule)
+    , domLoaded : Bool
     , badgesEarned : RemoteData.WebData (List String)
     }
 
@@ -106,6 +107,7 @@ type Msg
     | TrySubmitMesAnswer
     | SetRequestNothing
     | SetTmpUserEdit String String
+    | DomLoaded Bool
 
 
 type alias Login =

@@ -20,6 +20,9 @@ type alias Value =
 port status : (String -> msg) -> Sub msg
 
 
+port domLoaded : (Bool -> msg) -> Sub msg
+
+
 
 {-
    To Js
