@@ -286,7 +286,7 @@ editUser exp con informing tasksrv user ugimgsets =
             ]
         , divColumns
             [ div [ class "column is-half is-offset-one-quarter" ]
-                [ editUserForm tasksrv user.id
+                [ uploadCsvForm tasksrv user.id
                 ]
             ]
         ]
@@ -375,21 +375,15 @@ userForm user exp con saving =
                 ]
             ]
         , a
-            [ class <|
-                "button is-primary "
-                    ++ (if saving then
-                            "is-loading"
-                        else
-                            ""
-                       )
+            [ class "button is-primary"
             , onClick TryPutUser
             ]
             [ text "Save User" ]
         ]
 
 
-editUserForm : String -> String -> Html Msg
-editUserForm tasksrv userId =
+uploadCsvForm : String -> String -> Html Msg
+uploadCsvForm tasksrv userId =
     Html.form
         [ enctype "multipart/form-data"
         , name "csvfile"
