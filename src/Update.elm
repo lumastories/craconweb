@@ -618,13 +618,13 @@ update msg model =
             (httpErrorState model err)
 
         MesAnswersResp (Err err) ->
-            (httpErrorState model err)
+            model ! []
 
         MesResp (Err err) ->
-            (httpErrorState model err)
+            model ! []
 
         PublicMesResp (Err err) ->
-            (httpErrorState model err)
+            model ! []
 
         MesQuerysResp (Err err) ->
             (httpErrorState model err)
