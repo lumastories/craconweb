@@ -293,6 +293,7 @@ viewGridRow { result, columnIndex, goIndex } rowIndex image =
         img
             [ src image.url
             , onClick (SelectInput index)
+            , onTouch (SelectInput index)
             , case result of
                 Game.SelectResult { answer, result } ->
                     if goIndex == index then
