@@ -122,6 +122,15 @@ adminTop user =
                         [ text "Participant View" ]
                     ]
                 , text " "
+                , a [ class "button", onClick InitFmriStopSignal ]
+                    [ span [ class "icon is-small" ]
+                        [ i [ class "fa fa-gamepad" ]
+                            []
+                        ]
+                    , span []
+                        [ text "FMRI" ]
+                    ]
+                , text " "
                 , a [ class "button", onClick Logout ]
                     [ span [ class "icon is-small" ]
                         [ i [ class "fa fa-sign-out" ]

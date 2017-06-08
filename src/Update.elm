@@ -521,7 +521,10 @@ update msg model =
 
         -- TODO fetch configuration from the model
         InitStopSignal ->
-            initStopSignal model
+            initStopSignal { fmri = False } model
+
+        InitFmriStopSignal ->
+            initStopSignal { fmri = True } model
 
         -- TODO fetch configuration from the model
         InitGoNoGo ->
@@ -631,8 +634,8 @@ update msg model =
             httpErrorState model err
 
 
-initStopSignal : Model -> ( Model, Cmd Msg )
-initStopSignal model =
+initStopSignal : { fmri : Bool } -> Model -> ( Model, Cmd Msg )
+initStopSignal { fmri } model =
     case model.stopsignalGame of
         Nothing ->
             model ! []
@@ -644,7 +647,10 @@ initStopSignal model =
                     (\time ->
                         let
                             seed =
-                                round time
+                                if fmri then
+                                    42
+                                else
+                                    round time
                         in
                             ( time
                             , seed
@@ -657,13 +663,14 @@ You will see pictures presented in either a dark blue or light gray border. Pres
 <br>
 <br>
 **Press any key to continue.**
-                                    """
+"""
                                 , responseImages = getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault []
                                 , nonResponseImages = getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault []
                                 , seedInt = seed
                                 , currentTime = time
                                 , gameDuration = 5 * Time.minute
                                 , redCrossDuration = 500 * Time.millisecond
+                                , fmri = fmri
                                 }
                             )
                     )

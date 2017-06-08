@@ -73,6 +73,7 @@ type Msg
     | InitGoNoGo
     | InitDotProbe
     | InitVisualSearch
+    | InitFmriStopSignal
     | StartSession { gameId : String, game : Game.Game Msg, time : Time.Time, seed : Int }
     | StartSessionResp (Game.Game Msg) (RemoteData.WebData Game.Session)
     | GameDataSaved Game.State Game.Session (RemoteData.WebData ( Game.Session, List Game.Cycle ))
