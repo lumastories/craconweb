@@ -14,6 +14,7 @@ import Svg.Attributes as Svg exposing (cy, cx, r)
 import List.Extra
 import RemoteData
 import Model exposing (Msg(..))
+import Json.Decode
 
 
 view :
@@ -210,10 +211,11 @@ viewSingleLayout : BorderType -> Game.Image -> Html Msg
 viewSingleLayout borderType image =
     gameWrapper
         [ border borderType
-            [ onClick IndicationInput ]
+            [ onTouch IndicationInput, onClick IndicationInput ]
             [ img
                 [ src image.url
                 , class "squeezed"
+                , onTouch IndicationInput
                 , onClick IndicationInput
                 ]
                 []
@@ -227,7 +229,7 @@ viewLeftOrRightLayout { borderType, direction, image } =
         [ border borderType
             []
             [ div [ class "columns is-mobile" ]
-                [ div [ class "column", onClick (DirectionInput Game.Left) ]
+                [ div [ class "column", onTouch (DirectionInput Game.Left), onClick (DirectionInput Game.Left) ]
                     [ case direction of
                         Game.Left ->
                             img [ src image.url ] []
@@ -235,7 +237,7 @@ viewLeftOrRightLayout { borderType, direction, image } =
                         Game.Right ->
                             text ""
                     ]
-                , div [ class "column", onClick (DirectionInput Game.Right) ]
+                , div [ class "column", onTouch (DirectionInput Game.Right), onClick (DirectionInput Game.Right) ]
                     [ case direction of
                         Game.Left ->
                             text ""
@@ -319,9 +321,9 @@ viewGridRow { result, columnIndex, goIndex } rowIndex image =
 viewLeftRightLayout : { borderType : BorderType, lImage : Game.Image, rImage : Game.Image } -> Html Msg
 viewLeftRightLayout { borderType, lImage, rImage } =
     div [ class "columns is-mobile" ]
-        [ div [ class "column", onClick (DirectionInput Game.Left) ]
+        [ div [ class "column", onTouch (DirectionInput Game.Left), onClick (DirectionInput Game.Left) ]
             [ img [ src lImage.url ] [] ]
-        , div [ class "column", onClick (DirectionInput Game.Right) ]
+        , div [ class "column", onTouch (DirectionInput Game.Right), onClick (DirectionInput Game.Right) ]
             [ img [ src rImage.url ] [] ]
         ]
 
@@ -343,19 +345,19 @@ viewProbe borderType direction =
         (case direction of
             Game.Left ->
                 [ div
-                    [ class "column", onClick (DirectionInput Game.Left) ]
+                    [ class "column", onTouch (DirectionInput Game.Left), onClick (DirectionInput Game.Left) ]
                     [ div [ class "probe" ] [ probe ] ]
                 , div
-                    [ class "column", onClick (DirectionInput Game.Right) ]
+                    [ class "column", onTouch (DirectionInput Game.Right), onClick (DirectionInput Game.Right) ]
                     [ text "" ]
                 ]
 
             Game.Right ->
                 [ div
-                    [ class "column", onClick (DirectionInput Game.Left) ]
+                    [ class "column", onTouch (DirectionInput Game.Left), onClick (DirectionInput Game.Left) ]
                     [ text "" ]
                 , div
-                    [ class "column", onClick (DirectionInput Game.Right) ]
+                    [ class "column", onTouch (DirectionInput Game.Right), onClick (DirectionInput Game.Right) ]
                     [ div [ class "probe" ] [ probe ] ]
                 ]
         )
@@ -364,3 +366,8 @@ viewProbe borderType direction =
 probe : Svg msg
 probe =
     svg [ Svg.width "20", Svg.height "20" ] [ circle [ cx "10", cy "10", r "10" ] [] ]
+
+
+onTouch : msg -> Html.Attribute msg
+onTouch msg =
+    onWithOptions "touchstart" { stopPropagation = True, preventDefault = True } (Json.Decode.succeed msg)

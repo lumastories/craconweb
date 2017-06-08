@@ -1082,7 +1082,7 @@ handleSelectInput n model =
 
 handleDirectionInput : Game.Direction -> Model -> ( Model, Cmd Msg )
 handleDirectionInput direction model =
-    handleInput (Game.Direction direction) model
+    handleInput (Game.Direction (Debug.log "" direction)) model
 
 
 handleIndicationInput : Model -> ( Model, Cmd Msg )
