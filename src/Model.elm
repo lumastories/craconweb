@@ -68,7 +68,9 @@ type Msg
     | MainMenuToggle
     | NewCurrentTime Time.Time
     | Presses Int
-    | IntIndication Int
+    | SelectInput Int
+    | DirectionInput Game.Direction
+    | IndicationInput
     | InitStopSignal
     | InitGoNoGo
     | InitDotProbe
