@@ -16,8 +16,13 @@ import RemoteData
 import Model exposing (Msg(..))
 
 
-view : { gameState : Game.GameState Msg, initMsg : Msg, intIndicationMsg : Int -> Msg, gameSlug : String } -> Html Msg
-view { gameSlug, gameState, initMsg, intIndicationMsg } =
+view :
+    { gameState : Game.GameState Msg
+    , initMsg : Msg
+    , gameSlug : String
+    }
+    -> Html Msg
+view { gameSlug, gameState, initMsg } =
     case gameState of
         Game.Loading game remoteData ->
             case remoteData of
@@ -62,21 +67,28 @@ view { gameSlug, gameState, initMsg, intIndicationMsg } =
                             text ""
 
                         Just (Game.Info borderType string) ->
-                            Ui.Card.middleBlock [ Markdown.toHtml [] string ]
+                            Ui.Card.middleBlock [ Markdown.toHtml [ onClick IndicationInput ] string ]
 
                         Just (Game.Single borderType image) ->
                             viewSingleLayout borderType image
 
                         Just (Game.LeftRight borderType direction lImage rImage) ->
-                            viewLeftRightLayout borderType lImage rImage
+                            viewLeftRightLayout
+                                { borderType = borderType
+                                , lImage = lImage
+                                , rImage = rImage
+                                }
 
                         Just (Game.LeftOrRight borderType direction image) ->
-                            viewLeftOrRightLayout borderType direction image
+                            viewLeftOrRightLayout
+                                { borderType = borderType
+                                , direction = direction
+                                , image = image
+                                }
 
                         Just (Game.SelectGrid borderType { columns, images, goIndex }) ->
                             viewSelectGridLayout
-                                { intIndicationMsg = intIndicationMsg
-                                , borderType = borderType
+                                { borderType = borderType
                                 , columns = columns
                                 , images = images
                                 , result = state.trialResult
@@ -163,29 +175,29 @@ viewResult state session { percentCorrect, averageResponseTimeResult, savingStat
             ]
 
 
-border : BorderType -> List (Html msg) -> Html msg
-border borderType content =
+border : BorderType -> List (Attribute msg) -> List (Html msg) -> Html msg
+border borderType attributes content =
     case borderType of
         None ->
-            div [ class "imageBox whiteBorder sized" ] content
+            div (class "imageBox whiteBorder sized" :: attributes) content
 
         Grey ->
-            div [ class "imageBox greyBorder sized" ] content
+            div (class "imageBox greyBorder sized" :: attributes) content
 
         Blue ->
-            div [ class "imageBox blueBorder sized" ] content
+            div (class "imageBox blueBorder sized" :: attributes) content
 
         Black ->
-            div [ class "imageBox solidBorder sized" ] content
+            div (class "imageBox solidBorder sized" :: attributes) content
 
         Dashed ->
-            div [ class "imageBox dashedBorder sized" ] content
+            div (class "imageBox dashedBorder sized" :: attributes) content
 
 
 viewRedCross : BorderType -> Html msg
 viewRedCross borderType =
     gameWrapper
-        [ border borderType [ div [ class "redCross" ] [ text "X" ] ]
+        [ border borderType [] [ div [ class "redCross" ] [ text "X" ] ]
         ]
 
 
@@ -194,25 +206,44 @@ gameWrapper game =
     div [ class "gameWrapper" ] game
 
 
-viewSingleLayout : BorderType -> Game.Image -> Html msg
+viewSingleLayout : BorderType -> Game.Image -> Html Msg
 viewSingleLayout borderType image =
-    gameWrapper [ border borderType [ img [ src image.url, class "squeezed" ] [] ] ]
-
-
-viewLeftOrRightLayout : BorderType -> Game.Direction -> Game.Image -> Html msg
-viewLeftOrRightLayout borderType direction image =
     gameWrapper
         [ border borderType
+            [ onClick IndicationInput ]
             [ img
                 [ src image.url
-                , case direction of
-                    Game.Left ->
-                        class "is-pulled-left squeezed"
-
-                    Game.Right ->
-                        class "is-pulled-right squeezed"
+                , class "squeezed"
+                , onClick IndicationInput
                 ]
                 []
+            ]
+        ]
+
+
+viewLeftOrRightLayout : { borderType : BorderType, direction : Game.Direction, image : Game.Image } -> Html Msg
+viewLeftOrRightLayout { borderType, direction, image } =
+    gameWrapper
+        [ border borderType
+            []
+            [ div [ class "columns is-mobile" ]
+                [ div [ class "column", onClick (DirectionInput Game.Left) ]
+                    [ case direction of
+                        Game.Left ->
+                            img [ src image.url ] []
+
+                        Game.Right ->
+                            text ""
+                    ]
+                , div [ class "column", onClick (DirectionInput Game.Right) ]
+                    [ case direction of
+                        Game.Left ->
+                            text ""
+
+                        Game.Right ->
+                            img [ src image.url ] []
+                    ]
+                ]
             ]
         ]
 
@@ -221,15 +252,14 @@ viewLeftOrRightLayout borderType direction image =
 -- VISUAL SEARCH
 
 
-viewSelectGridLayout : { result : Game.Result, intIndicationMsg : Int -> msg, borderType : BorderType, columns : Int, images : List Game.Image, goIndex : Int } -> Html msg
-viewSelectGridLayout { result, intIndicationMsg, borderType, columns, images, goIndex } =
+viewSelectGridLayout : { result : Game.Result, borderType : BorderType, columns : Int, images : List Game.Image, goIndex : Int } -> Html Msg
+viewSelectGridLayout { result, borderType, columns, images, goIndex } =
     div [ class "columns is-mobile" ]
         (List.Extra.groupsOf columns images
             |> List.indexedMap
                 (\col images ->
                     viewGridColumn
                         { result = result
-                        , intIndicationMsg = intIndicationMsg
                         , columnIndex = col
                         , images = images
                         , goIndex = goIndex
@@ -238,14 +268,13 @@ viewSelectGridLayout { result, intIndicationMsg, borderType, columns, images, go
         )
 
 
-viewGridColumn : { result : Game.Result, intIndicationMsg : Int -> msg, columnIndex : Int, images : List Game.Image, goIndex : Int } -> Html msg
-viewGridColumn { result, intIndicationMsg, columnIndex, images, goIndex } =
+viewGridColumn : { result : Game.Result, columnIndex : Int, images : List Game.Image, goIndex : Int } -> Html Msg
+viewGridColumn { result, columnIndex, images, goIndex } =
     div [ class "column" ]
         (images
             |> List.indexedMap
                 (viewGridRow
                     { result = result
-                    , intIndicationMsg = intIndicationMsg
                     , columnIndex = columnIndex
                     , goIndex = goIndex
                     }
@@ -253,15 +282,15 @@ viewGridColumn { result, intIndicationMsg, columnIndex, images, goIndex } =
         )
 
 
-viewGridRow : { result : Game.Result, intIndicationMsg : Int -> msg, columnIndex : Int, goIndex : Int } -> Int -> Game.Image -> Html msg
-viewGridRow { result, intIndicationMsg, columnIndex, goIndex } rowIndex image =
+viewGridRow : { result : Game.Result, columnIndex : Int, goIndex : Int } -> Int -> Game.Image -> Html Msg
+viewGridRow { result, columnIndex, goIndex } rowIndex image =
     let
         index =
             (columnIndex * 4) + rowIndex
     in
         img
             [ src image.url
-            , onClick (intIndicationMsg index)
+            , onClick (SelectInput index)
             , case result of
                 Game.SelectResult { answer, result } ->
                     if goIndex == index then
@@ -287,11 +316,13 @@ viewGridRow { result, intIndicationMsg, columnIndex, goIndex } rowIndex image =
 -- DOT PROBE
 
 
-viewLeftRightLayout : BorderType -> Game.Image -> Game.Image -> Html msg
-viewLeftRightLayout borderType lImage rImage =
+viewLeftRightLayout : { borderType : BorderType, lImage : Game.Image, rImage : Game.Image } -> Html Msg
+viewLeftRightLayout { borderType, lImage, rImage } =
     div [ class "columns is-mobile" ]
-        [ div [ class "column" ] [ img [ src lImage.url ] [] ]
-        , div [ class "column" ] [ img [ src rImage.url ] [] ]
+        [ div [ class "column", onClick (DirectionInput Game.Left) ]
+            [ img [ src lImage.url ] [] ]
+        , div [ class "column", onClick (DirectionInput Game.Right) ]
+            [ img [ src rImage.url ] [] ]
         ]
 
 
@@ -305,26 +336,26 @@ viewFixation borderType =
         ]
 
 
-viewProbe : BorderType -> Game.Direction -> Html msg
+viewProbe : BorderType -> Game.Direction -> Html Msg
 viewProbe borderType direction =
     div
         [ class "columns is-mobile" ]
         (case direction of
             Game.Left ->
                 [ div
-                    [ class "column" ]
+                    [ class "column", onClick (DirectionInput Game.Left) ]
                     [ div [ class "probe" ] [ probe ] ]
                 , div
-                    [ class "column" ]
+                    [ class "column", onClick (DirectionInput Game.Right) ]
                     [ text "" ]
                 ]
 
             Game.Right ->
                 [ div
-                    [ class "column" ]
+                    [ class "column", onClick (DirectionInput Game.Left) ]
                     [ text "" ]
                 , div
-                    [ class "column" ]
+                    [ class "column", onClick (DirectionInput Game.Right) ]
                     [ div [ class "probe" ] [ probe ] ]
                 ]
         )

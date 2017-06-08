@@ -481,7 +481,6 @@ game model title initMsg =
                         Game.view
                             { gameState = model.gameState
                             , initMsg = initMsg
-                            , intIndicationMsg = IntIndication
                             , gameSlug = model.stopsignalGame |> Maybe.map .slug |> Maybe.withDefault "stopsignal"
                             }
 
@@ -489,7 +488,6 @@ game model title initMsg =
                         Game.view
                             { gameState = model.gameState
                             , initMsg = initMsg
-                            , intIndicationMsg = IntIndication
                             , gameSlug = model.gonogoGame |> Maybe.map .slug |> Maybe.withDefault "gonogo"
                             }
 
@@ -497,7 +495,6 @@ game model title initMsg =
                         Game.view
                             { gameState = model.gameState
                             , initMsg = initMsg
-                            , intIndicationMsg = IntIndication
                             , gameSlug = model.dotprobeGame |> Maybe.map .slug |> Maybe.withDefault "dotprobe"
                             }
 
@@ -505,7 +502,6 @@ game model title initMsg =
                         Game.view
                             { gameState = model.gameState
                             , initMsg = initMsg
-                            , intIndicationMsg = IntIndication
                             , gameSlug = model.visualsearchGame |> Maybe.map .slug |> Maybe.withDefault "visualsearch"
                             }
 
