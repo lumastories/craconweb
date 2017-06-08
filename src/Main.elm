@@ -119,27 +119,19 @@ type alias Flags =
 
 servers : String -> ( String, String, String )
 servers hostname =
-    -- case hostname of
-    --     "localhost" ->
-    --         ( "http://localhost:8680"
-    --         , "http://localhost:8668"
-    --         , "http://localhost:8654"
-    --         )
-    --     "127.0.0.1" ->
-    --         ( "http://localhost:8680"
-    --         , "http://localhost:8668"
-    --         , "http://localhost:8654"
-    --         )
-    --     "192.168.86.115" ->
-    ( "http://192.168.86.115:8680"
-    , "http://192.168.86.115:8668"
-    , "http://192.168.86.115:8654"
-    )
-
-
-
--- _ ->
---     ( "https://api.cravecontrol.org"
---     , "https://task.cravecontrol.org"
---     , "https://file.cravecontrol.org"
---     )
+    case hostname of
+        "localhost" ->
+            ( "http://localhost:8680"
+            , "http://localhost:8668"
+            , "http://localhost:8654"
+            )
+        "127.0.0.1" ->
+            ( "http://localhost:8680"
+            , "http://localhost:8668"
+            , "http://localhost:8654"
+            )
+        _ ->
+            ( "https://api.cravecontrol.org"
+            , "https://task.cravecontrol.org"
+            , "https://file.cravecontrol.org"
+            )
