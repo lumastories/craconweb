@@ -16,8 +16,8 @@ import RemoteData
 import Model exposing (Msg(..))
 
 
-view : { gameState : Game.GameState Msg, initMsg : Msg, intIndicationMsg : Int -> Msg } -> Html Msg
-view { gameState, initMsg, intIndicationMsg } =
+view : { gameState : Game.GameState Msg, initMsg : Msg, intIndicationMsg : Int -> Msg, gameSlug : String } -> Html Msg
+view { gameSlug, gameState, initMsg, intIndicationMsg } =
     case gameState of
         Game.Loading game remoteData ->
             case remoteData of
@@ -96,7 +96,7 @@ view { gameState, initMsg, intIndicationMsg } =
         Game.Saving state session remoteData ->
             viewResult state
                 session
-                { percentCorrect = Game.Result.percentCorrect state
+                { percentCorrect = Game.Result.percentCorrect { gameSlug = gameSlug } state
                 , averageResponseTimeResult = Game.Result.averageResponseTimeInMillisecond state
                 , savingStatus = remoteData
                 }
@@ -104,7 +104,7 @@ view { gameState, initMsg, intIndicationMsg } =
         Game.Saved state data ->
             viewResult state
                 data.session
-                { percentCorrect = Game.Result.percentCorrect state
+                { percentCorrect = Game.Result.percentCorrect { gameSlug = gameSlug } state
                 , averageResponseTimeResult = Game.Result.averageResponseTimeInMillisecond state
                 , savingStatus = RemoteData.Success data
                 }

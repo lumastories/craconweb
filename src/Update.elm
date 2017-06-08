@@ -3,25 +3,24 @@ module Update exposing (update)
 import Api
 import Empty
 import Entity
+import Game
+import Game.Card
+import Game.Cycle
+import Game.Implementations.DotProbe
+import Game.Implementations.GoNoGo
+import Game.Implementations.StopSignal
+import Game.Implementations.VisualSearch
+import Helpers
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
 import Model exposing (..)
 import Navigation
-import Navigation
 import Port
+import RemoteData
 import Routing as R
 import Task exposing (Task)
 import Time exposing (Time)
-import RemoteData
-import Game
-import Game.Card
-import Game.Implementations.GoNoGo
-import Game.Implementations.StopSignal
-import Game.Implementations.DotProbe
-import Game.Implementations.VisualSearch
-import Helpers
-import Game.Cycle
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -36,7 +35,7 @@ update msg model =
         MesAnswersResp (Ok myAnswers) ->
             let
                 cmd =
-                    (Task.attempt MesQuerysResp (Api.fetchMesQuerys { url = model.httpsrv, token = model.jwtencoded, sub = "" }))
+                    Task.attempt MesQuerysResp (Api.fetchMesQuerys { url = model.httpsrv, token = model.jwtencoded, sub = "" })
             in
                 ( { model | mesAnswers = Just myAnswers }, cmd )
 
@@ -87,7 +86,7 @@ update msg model =
                             ( Nothing, Cmd.none )
 
                         Just u ->
-                            ( (Just
+                            ( Just
                                 { id = u.id
                                 , username = u.username
                                 , firstName = u.firstName
@@ -96,7 +95,6 @@ update msg model =
                                 , password = ""
                                 , groupId = u.groupId
                                 }
-                              )
                             , Navigation.newUrl (R.editPath ++ u.id)
                             )
             in
@@ -130,10 +128,10 @@ update msg model =
                         |> List.filter (\q -> List.member q.id queryIds |> not)
 
                 mesQuery_ =
-                    (List.head unanswered |> Maybe.map .content)
+                    List.head unanswered |> Maybe.map .content
 
                 mesAnswer_ =
-                    case (List.head unanswered) of
+                    case List.head unanswered of
                         Nothing ->
                             Nothing
 
@@ -159,7 +157,7 @@ update msg model =
                 Just mesAns ->
                     if mesAns.essay == "" then
                         ( { model | request = Just "Please answer the question. Thanks!" }, Cmd.none )
-                    else if (String.length mesAns.essay) < 2 then
+                    else if String.length mesAns.essay < 2 then
                         ( { model | request = Just "Maybe write a little more?" }, Cmd.none )
                     else
                         case model.visitor of
@@ -188,7 +186,7 @@ update msg model =
                     ( model.adminModel, model.adminModel.tmpUserRecord, model.adminModel.tmpUserEdit )
 
                 user_ =
-                    { user | groupId = (Maybe.withDefault "" groupId_) }
+                    { user | groupId = Maybe.withDefault "" groupId_ }
 
                 userEdit_ =
                     case userEdit of
@@ -196,7 +194,7 @@ update msg model =
                             Nothing
 
                         Just u ->
-                            Just { u | groupId = (Maybe.withDefault "" groupId_) }
+                            Just { u | groupId = Maybe.withDefault "" groupId_ }
 
                 adminModel_ =
                     { adminModel | tmpUserRecord = user_, tmpUserEdit = userEdit_ }
@@ -307,7 +305,7 @@ update msg model =
             model ! []
 
         TryRegisterUser ->
-            if (missing model.adminModel.tmpUserRecord) then
+            if missing model.adminModel.tmpUserRecord then
                 ( { model | glitching = Just "* Please fill out required fields." }, Cmd.none )
             else
                 ( { model | loading = Just "loading..." }
@@ -474,11 +472,11 @@ update msg model =
                         Ok jwt ->
                             let
                                 isPowerful roles =
-                                    (List.member "staff" roles)
-                                        || (List.member "admin" roles)
+                                    List.member "staff" roles
+                                        || List.member "admin" roles
 
                                 skipToAdmin jwt =
-                                    if (isPowerful (List.map .name jwt.roles)) then
+                                    if isPowerful (List.map .name jwt.roles) then
                                         Navigation.newUrl R.adminPath
                                     else
                                         Navigation.newUrl R.homePath
@@ -588,49 +586,49 @@ update msg model =
             )
 
         FillerResp (Err err) ->
-            (valuationsErrState model err)
+            valuationsErrState model err
 
         ValidResp (Err err) ->
-            (valuationsErrState model err)
+            valuationsErrState model err
 
         InvalidResp (Err err) ->
-            (valuationsErrState model err)
+            valuationsErrState model err
 
         AuthResp (Err err) ->
-            (httpErrorState model err)
+            httpErrorState model err
 
         UserResp (Err err) ->
-            (httpErrorState model err)
+            httpErrorState model err
 
         GameResp (Err err) ->
-            (httpErrorState model err)
+            httpErrorState model err
 
         UsersResp (Err err) ->
-            (httpErrorState model err)
+            httpErrorState model err
 
         RegisterUserResp (Err err) ->
-            (httpErrorState model err)
+            httpErrorState model err
 
         GroupResp (Err err) ->
-            (httpErrorState model err)
+            httpErrorState model err
 
         RoleResp (Err err) ->
-            (httpErrorState model err)
+            httpErrorState model err
 
         MesAnswersResp (Err err) ->
-            (httpErrorState model err)
+            httpErrorState model err
 
         MesResp (Err err) ->
-            (httpErrorState model err)
+            httpErrorState model err
 
         PublicMesResp (Err err) ->
-            (httpErrorState model err)
+            httpErrorState model err
 
         MesQuerysResp (Err err) ->
-            (httpErrorState model err)
+            httpErrorState model err
 
         PutMesResp (Err err) ->
-            (httpErrorState model err)
+            httpErrorState model err
 
 
 initStopSignal : Model -> ( Model, Cmd Msg )
@@ -660,8 +658,8 @@ You will see pictures presented in either a dark blue or light gray border. Pres
 <br>
 **Press any key to continue.**
                                     """
-                                , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
-                                , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
+                                , responseImages = getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault []
+                                , nonResponseImages = getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault []
                                 , seedInt = seed
                                 , currentTime = time
                                 , gameDuration = 5 * Time.minute
@@ -700,9 +698,9 @@ initGoNoGo model =
 <strong>Press any key to continue.</strong></div>
 </p>
 """
-                                , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
-                                , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
-                                , fillerImages = (getFullImagePathsNew model.filesrv model.ugimages_f |> Maybe.withDefault [])
+                                , responseImages = getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault []
+                                , nonResponseImages = getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault []
+                                , fillerImages = getFullImagePathsNew model.filesrv model.ugimages_f |> Maybe.withDefault []
                                 , seedInt = round time
                                 , currentTime = time
                                 , gameDuration = 5 * Time.minute
@@ -742,8 +740,8 @@ You will see pictures on the left and right side of the screen, followed by a do
 <strong>Press any key to continue.</strong>
 </div>
         """
-                                , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
-                                , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
+                                , responseImages = getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault []
+                                , nonResponseImages = getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault []
                                 , seedInt = round time
                                 , currentTime = time
                                 , gameDuration = 5 * Time.minute
@@ -783,8 +781,8 @@ You will see a grid of images. Select the target image as quickly as you can.
 <strong>Press any key to continue.</strong>
 </div>
 """
-                                , responseImages = (getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault [])
-                                , nonResponseImages = (getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault [])
+                                , responseImages = getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault []
+                                , nonResponseImages = getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault []
                                 , seedInt = round time
                                 , currentTime = time
                                 , gameDuration = 5 * Time.minute
