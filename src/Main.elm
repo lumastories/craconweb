@@ -125,13 +125,11 @@ servers hostname =
             , "http://localhost:8668"
             , "http://localhost:8654"
             )
-
         "127.0.0.1" ->
             ( "http://localhost:8680"
             , "http://localhost:8668"
             , "http://localhost:8654"
             )
-
         _ ->
             ( "https://api.cravecontrol.org"
             , "https://task.cravecontrol.org"

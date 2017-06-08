@@ -483,16 +483,32 @@ game model title initMsg =
                 [ title_
                 , case model.activeRoute of
                     R.GameRouteSs ->
-                        Game.view { gameState = model.gameState, initMsg = initMsg, intIndicationMsg = IntIndication }
+                        Game.view
+                            { gameState = model.gameState
+                            , initMsg = initMsg
+                            , gameSlug = model.stopsignalGame |> Maybe.map .slug |> Maybe.withDefault "stopsignal"
+                            }
 
                     R.GameRouteGn ->
-                        Game.view { gameState = model.gameState, initMsg = initMsg, intIndicationMsg = IntIndication }
+                        Game.view
+                            { gameState = model.gameState
+                            , initMsg = initMsg
+                            , gameSlug = model.gonogoGame |> Maybe.map .slug |> Maybe.withDefault "gonogo"
+                            }
 
                     R.GameRouteDp ->
-                        Game.view { gameState = model.gameState, initMsg = initMsg, intIndicationMsg = IntIndication }
+                        Game.view
+                            { gameState = model.gameState
+                            , initMsg = initMsg
+                            , gameSlug = model.dotprobeGame |> Maybe.map .slug |> Maybe.withDefault "dotprobe"
+                            }
 
                     R.GameRouteVs ->
-                        Game.view { gameState = model.gameState, initMsg = initMsg, intIndicationMsg = IntIndication }
+                        Game.view
+                            { gameState = model.gameState
+                            , initMsg = initMsg
+                            , gameSlug = model.visualsearchGame |> Maybe.map .slug |> Maybe.withDefault "visualsearch"
+                            }
 
                     _ ->
                         text "Invalid Game"
