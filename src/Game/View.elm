@@ -14,7 +14,6 @@ import Svg.Attributes as Svg exposing (cy, cx, r)
 import List.Extra
 import RemoteData
 import Model exposing (Msg(..))
-import Entity
 
 
 view : { gameState : Game.GameState Msg, initMsg : Msg, intIndicationMsg : Int -> Msg, gameSlug : String } -> Html Msg
