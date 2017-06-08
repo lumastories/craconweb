@@ -36,9 +36,11 @@ loginPage model =
                     [ bigLogo model.filesrv
                     , loginPageBoxForm model
                     , Parts.notification model.glitching "is-warning"
-                    , h4 [ class "is-4 subtitle" ]
-                        [ text "Not already a member of the CraveControl study? Click "
-                        , a [ href "https://ori.qualtrics.com/jfe/form/SV_0wxvIDQwmJLlL2B" ] [ text "here" ]
+                    , h4 [ class "is-4 subtitle is-centered", style [ ( "text-align", "center" ) ] ]
+                        [ strong [] [ text "Not already a member of the CraveControl study?" ]
+                        , br [] []
+                        , text "Click "
+                        , a [ href "https://ori.qualtrics.com/jfe/form/SV_0wxvIDQwmJLlL2B", target "_blank" ] [ text "here" ]
                         , text " to see if you’re eligible to participate!"
                         ]
                     ]
