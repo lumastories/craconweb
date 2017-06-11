@@ -36,6 +36,13 @@ loginPage model =
                     [ bigLogo model.filesrv
                     , loginPageBoxForm model
                     , Parts.notification model.glitching "is-warning"
+                    , h4 [ class "is-4 subtitle is-centered", style [ ( "text-align", "center" ) ] ]
+                        [ strong [] [ text "Not already a member of the CraveControl study?" ]
+                        , br [] []
+                        , text "Click "
+                        , a [ href "https://ori.qualtrics.com/jfe/form/SV_0wxvIDQwmJLlL2B", target "_blank" ] [ text "here" ]
+                        , text " to see if you’re eligible to participate!"
+                        ]
                     ]
                 ]
             ]
@@ -481,7 +488,6 @@ game model title initMsg =
                         Game.view
                             { gameState = model.gameState
                             , initMsg = initMsg
-                            , intIndicationMsg = IntIndication
                             , gameSlug = model.stopsignalGame |> Maybe.map .slug |> Maybe.withDefault "stopsignal"
                             }
 
@@ -489,7 +495,6 @@ game model title initMsg =
                         Game.view
                             { gameState = model.gameState
                             , initMsg = initMsg
-                            , intIndicationMsg = IntIndication
                             , gameSlug = model.gonogoGame |> Maybe.map .slug |> Maybe.withDefault "gonogo"
                             }
 
@@ -497,7 +502,6 @@ game model title initMsg =
                         Game.view
                             { gameState = model.gameState
                             , initMsg = initMsg
-                            , intIndicationMsg = IntIndication
                             , gameSlug = model.dotprobeGame |> Maybe.map .slug |> Maybe.withDefault "dotprobe"
                             }
 
@@ -505,7 +509,6 @@ game model title initMsg =
                         Game.view
                             { gameState = model.gameState
                             , initMsg = initMsg
-                            , intIndicationMsg = IntIndication
                             , gameSlug = model.visualsearchGame |> Maybe.map .slug |> Maybe.withDefault "visualsearch"
                             }
 

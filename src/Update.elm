@@ -561,8 +561,14 @@ update msg model =
         Presses keyCode ->
             presses keyCode model
 
-        IntIndication n ->
-            handleIntIndicationUpdate n model
+        SelectInput n ->
+            handleSelectInput n model
+
+        DirectionInput direction ->
+            handleDirectionInput direction model
+
+        IndicationInput ->
+            handleIndicationInput model
 
         MainMenuToggle ->
             ( { model | isMenuActive = not model.isMenuActive }, Cmd.none )
@@ -619,13 +625,13 @@ update msg model =
             httpErrorState model err
 
         MesAnswersResp (Err err) ->
-            httpErrorState model err
+            model ! []
 
         MesResp (Err err) ->
-            httpErrorState model err
+            model ! []
 
         PublicMesResp (Err err) ->
-            httpErrorState model err
+            model ! []
 
         MesQuerysResp (Err err) ->
             httpErrorState model err
@@ -702,7 +708,7 @@ initGoNoGo model =
 <p>You will see pictures either on the left or right side of the screen, surrounded by a solid or dashed border. Press <span class="highlight"><strong>c</strong></span> when the picture is on the left side of the screen or <span class="highlight"><strong>m</strong></span> when the picture is on the right side of the screen. BUT only if you see a <span style="border: 1px solid rgb(0, 0, 0); padding: 2px;">solid border</span> around the picture. Do not press if you see a <span style="border: 1px dashed rgb(0, 0, 0); padding: 2px;">dashed border</span>. Go as fast as you can, but don't sacrifice accuracy for speed.<div>
 <br>
 <br>
-<strong>Press any key to continue.</strong></div>
+<strong>Press any key or tap here to continue.</strong></div>
 </p>
 """
                                 , responseImages = getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault []
@@ -744,7 +750,7 @@ initDotProbe model =
 You will see pictures on the left and right side of the screen, followed by a dot on the left or right side of the screen. Press the <span class="highlight"><strong>c</strong></span> if the dot is on the left side of the screen or <span class="highlight"><strong>m</strong></span> when the dot is on the right side of the screen. Go as fast as you can, but don't sacrifice accuracy for speed.<div>
 <br>
 <br>
-<strong>Press any key to continue.</strong>
+<strong>Press any key or tap here to continue.</strong>
 </div>
         """
                                 , responseImages = getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault []
@@ -785,7 +791,7 @@ initVisualSearch model =
 You will see a grid of images. Select the target image as quickly as you can.
 <br>
 <br>
-<strong>Press any key to continue.</strong>
+<strong>Press any key or tap here to continue.</strong>
 </div>
 """
                                 , responseImages = getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault []
@@ -1076,9 +1082,19 @@ presses keyCode model =
         ( newModel2, Cmd.batch [ cmd1, cmd2 ] )
 
 
-handleIntIndicationUpdate : Int -> Model -> ( Model, Cmd Msg )
-handleIntIndicationUpdate n model =
+handleSelectInput : Int -> Model -> ( Model, Cmd Msg )
+handleSelectInput n model =
     handleInput (Game.Select n) model
+
+
+handleDirectionInput : Game.Direction -> Model -> ( Model, Cmd Msg )
+handleDirectionInput direction model =
+    handleInput (Game.Direction (Debug.log "" direction)) model
+
+
+handleIndicationInput : Model -> ( Model, Cmd Msg )
+handleIndicationInput model =
+    handleInput Game.Indication model
 
 
 handleTimeUpdate : Time -> Model -> ( Model, Cmd Msg )
