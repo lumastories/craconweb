@@ -162,20 +162,28 @@ usersTable model =
                 , th [] [ text "Actions" ]
                 ]
             ]
-        , tbody [] (userRows model.users model.request)
+        , tbody [] (userRows ( Maybe.withDefault "" model.groupIdExp, Maybe.withDefault "" model.groupIdCon ) model.users model.request)
         ]
 
 
-userRows : List Entity.User -> Maybe String -> List (Html Msg)
-userRows users request =
+userRows : ( String, String ) -> List Entity.User -> Maybe String -> List (Html Msg)
+userRows ( expId, conId ) users request =
     let
+        groupToString id =
+            if id == expId then
+                "Experimental"
+            else if id == conId then
+                "Control"
+            else
+                "?"
+
         row user =
             tr []
                 [ td [] [ text user.firstName ]
                 , td [] [ text user.lastName ]
                 , td [] [ text user.username ]
                 , td [] [ text user.email ]
-                , td [] [ text user.groupId ]
+                , td [] [ text <| groupToString user.groupId ]
                 , td []
                     [ a
                         [ class "button is-small"
