@@ -520,11 +520,16 @@ update msg model =
             saveGameData state session model
 
         -- TODO fetch configuration from the model
-        InitStopSignal ->
-            initStopSignal { fmri = False } model
+        InitStopSignal fmri ->
+            initStopSignal fmri model
 
-        InitFmriStopSignal ->
-            initStopSignal { fmri = True } model
+        StartFmri { user } ->
+            ( model
+            , fetchUserImages model.httpsrv model.jwtencoded user
+            )
+
+        FmriImagesResp result ->
+            fmriImagesResp result model
 
         -- TODO fetch configuration from the model
         InitGoNoGo ->
@@ -640,48 +645,81 @@ update msg model =
             httpErrorState model err
 
 
-initStopSignal : { fmri : Bool } -> Model -> ( Model, Cmd Msg )
+initStopSignal : { fmri : Game.Fmri } -> Model -> ( Model, Cmd Msg )
 initStopSignal { fmri } model =
     case model.stopsignalGame of
         Nothing ->
             model ! []
 
         Just gameEntity ->
-            ( model
-            , Time.now
-                |> Task.map
-                    (\time ->
-                        let
-                            seed =
-                                if fmri then
-                                    42
-                                else
-                                    round time
-                        in
-                            ( time
-                            , seed
-                            , Game.Implementations.StopSignal.init
-                                { borderDelay = 100 * Time.millisecond
-                                , totalDuration = 1000 * Time.millisecond
-                                , infoString = """
+            let
+                ugimages_v =
+                    case fmri of
+                        Game.NotFmri ->
+                            model.ugimages_v
+
+                        Game.YesFmri _ ->
+                            model.fmriUserData |> Maybe.map (\{ ugimages_v } -> Just ugimages_v) |> Maybe.withDefault model.ugimages_v
+
+                ugimages_i =
+                    case fmri of
+                        Game.NotFmri ->
+                            model.ugimages_i
+
+                        Game.YesFmri _ ->
+                            model.fmriUserData |> Maybe.map (\{ ugimages_i } -> Just ugimages_i) |> Maybe.withDefault model.ugimages_i
+
+                game time seed =
+                    Game.Implementations.StopSignal.init
+                        { borderDelay = 100 * Time.millisecond
+                        , totalDuration = 1000 * Time.millisecond
+                        , infoString = """
 <h3 class="title">Instructions</h3>
 You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a grey border. Go as fast as you can, but don't sacrifice accuracy for speed.
 <br>
 <br>
 **Press any key to continue.**
 """
-                                , responseImages = getFullImagePathsNew model.filesrv model.ugimages_v |> Maybe.withDefault []
-                                , nonResponseImages = getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault []
-                                , seedInt = seed
-                                , currentTime = time
-                                , gameDuration = 5 * Time.minute
-                                , redCrossDuration = 500 * Time.millisecond
-                                , fmri = fmri
-                                }
+                        , responseImages = getFullImagePathsNew model.filesrv ugimages_v |> Maybe.withDefault []
+                        , nonResponseImages = getFullImagePathsNew model.filesrv ugimages_i |> Maybe.withDefault []
+                        , seedInt = seed
+                        , currentTime = time
+                        , gameDuration = 1 * Time.minute
+                        , redCrossDuration = 500 * Time.millisecond
+                        , fmri = fmri
+                        }
+
+                gameCmd =
+                    Time.now
+                        |> Task.map
+                            (\time ->
+                                let
+                                    seed =
+                                        case fmri of
+                                            Game.YesFmri _ ->
+                                                42
+
+                                            Game.NotFmri ->
+                                                round time
+                                in
+                                    ( time
+                                    , seed
+                                    , game time seed
+                                    )
                             )
-                    )
-                |> Task.perform (\( time, seed, game ) -> StartSession { gameId = gameEntity.id, game = game, time = time, seed = seed })
-            )
+                        |> Task.perform (\( time, seed, game ) -> StartSession { gameId = gameEntity.id, game = game, time = time, seed = seed })
+            in
+                ( model
+                , Cmd.batch
+                    [ gameCmd
+                    , case fmri of
+                        Game.YesFmri _ ->
+                            Navigation.newUrl "stopsignal"
+
+                        Game.NotFmri ->
+                            Cmd.none
+                    ]
+                )
 
 
 initGoNoGo : Model -> ( Model, Cmd Msg )
@@ -982,11 +1020,12 @@ startSession { gameId, game, time, seed } model =
             { model | gameState = Game.Loading game RemoteData.Loading }
                 ! [ Api.startSession
                         { token = model.jwtencoded
-                        , userId = jwt.sub
+                        , userId = model.fmriUserData |> Maybe.map (\{ user } -> user.id) |> Maybe.withDefault jwt.sub
                         , gameId = gameId
                         , start = time
                         , seed = seed
                         , httpsrv = model.httpsrv
+                        , jitter = model.fmriUserData |> Maybe.map (always True) |> Maybe.withDefault False
                         }
                         |> Task.perform (StartSessionResp game)
                   ]
@@ -1066,7 +1105,10 @@ presses : number -> Model -> ( Model, Cmd Msg )
 presses keyCode model =
     let
         ( newModel1, cmd1 ) =
-            handleInput Game.Indication model
+            if (keyCode == 32 || (keyCode >= 48 && keyCode <= 57)) then
+                handleInput Game.Indication model
+            else
+                ( model, Cmd.none )
 
         ( newModel2, cmd2 ) =
             case keyCode of
@@ -1131,7 +1173,11 @@ gameDataSaved state session remoteData model =
     in
         case remoteData of
             RemoteData.Success ( session, cycles ) ->
-                { model | gameState = Game.Saved state { session = session, cycles = cycles } } ! []
+                { model
+                    | gameState = Game.Saved state { session = session, cycles = cycles }
+                    , fmriUserData = Nothing
+                }
+                    ! []
 
             RemoteData.Failure err ->
                 { updatedModel | glitching = Just <| Helpers.httpHumanError err } ! []
@@ -1177,3 +1223,27 @@ saveGameDataCmd state session model =
         Task.map2 (,) endSessionTask postCyclesTask
             |> Task.map (\( a, b ) -> RemoteData.map2 (,) a b)
             |> Task.perform (GameDataSaved state session)
+
+
+fetchUserImages : String -> String -> Entity.User -> Cmd Msg
+fetchUserImages httpsrv token user =
+    Task.map3 (Model.FmriUserData user)
+        (Api.fetchFiller httpsrv token user.id)
+        (Api.fetchValid httpsrv token user.id)
+        (Api.fetchInvalid httpsrv token user.id)
+        |> Task.attempt FmriImagesResp
+
+
+fmriImagesResp : Result ValuationsError Model.FmriUserData -> Model -> ( Model, Cmd Msg )
+fmriImagesResp resp model =
+    case resp of
+        Result.Err error ->
+            valuationsErrState model error
+
+        Result.Ok fmriUserData ->
+            ( { model | fmriUserData = Just fmriUserData }
+            , Cmd.batch
+                [ preloadUgImages model.filesrv (fmriUserData.ugimages_v ++ fmriUserData.ugimages_i ++ fmriUserData.ugimages_f)
+                , Navigation.newUrl "stopsignal"
+                ]
+            )

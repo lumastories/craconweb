@@ -43,7 +43,7 @@ init :
     , currentTime : Time
     , gameDuration : Time
     , redCrossDuration : Time
-    , fmri : Bool
+    , fmri : Game.Fmri
     }
     -> Game msg
 init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages, seedInt, currentTime, gameDuration, redCrossDuration, fmri } =
@@ -81,10 +81,12 @@ init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages
                 |> Maybe.withDefault False
 
         addRests =
-            (if fmri then
-                Game.addRests Nothing (3 * Time.second) (4 * Time.second)
-             else
-                Game.addRests Nothing (500 * Time.millisecond) 0
+            (case fmri of
+                Game.YesFmri _ ->
+                    Game.addRests Nothing (3 * Time.second) (4 * Time.second)
+
+                Game.NotFmri ->
+                    Game.addRests Nothing (500 * Time.millisecond) 0
             )
     in
         Random.List.shuffle trials
