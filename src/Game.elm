@@ -5,6 +5,7 @@ import Random exposing (Generator)
 import Random.Extra
 import Time exposing (Time)
 import RemoteData
+import Entity
 
 
 type GameState msg
@@ -15,6 +16,11 @@ type GameState msg
     | Saved State { session : Session, cycles : List Cycle }
 
 
+type Fmri
+    = YesFmri { user : Entity.User }
+    | NotFmri
+
+
 type alias Session =
     { id : String
     , userId : String
@@ -22,6 +28,7 @@ type alias Session =
     , seed : Int
     , start : Time
     , end : Maybe Time
+    , jitter : Bool
     }
 
 

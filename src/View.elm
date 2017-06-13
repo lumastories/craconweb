@@ -489,6 +489,10 @@ game model title initMsg =
                             { gameState = model.gameState
                             , initMsg = initMsg
                             , gameSlug = model.stopsignalGame |> Maybe.map .slug |> Maybe.withDefault "stopsignal"
+                            , fmri =
+                                model.fmriUserData
+                                    |> Maybe.map (\fmriUserData -> Game.YesFmri { user = fmriUserData.user })
+                                    |> Maybe.withDefault Game.NotFmri
                             }
 
                     R.GameRouteGn ->
@@ -496,6 +500,7 @@ game model title initMsg =
                             { gameState = model.gameState
                             , initMsg = initMsg
                             , gameSlug = model.gonogoGame |> Maybe.map .slug |> Maybe.withDefault "gonogo"
+                            , fmri = Game.NotFmri
                             }
 
                     R.GameRouteDp ->
@@ -503,6 +508,7 @@ game model title initMsg =
                             { gameState = model.gameState
                             , initMsg = initMsg
                             , gameSlug = model.dotprobeGame |> Maybe.map .slug |> Maybe.withDefault "dotprobe"
+                            , fmri = Game.NotFmri
                             }
 
                     R.GameRouteVs ->
@@ -510,6 +516,7 @@ game model title initMsg =
                             { gameState = model.gameState
                             , initMsg = initMsg
                             , gameSlug = model.visualsearchGame |> Maybe.map .slug |> Maybe.withDefault "visualsearch"
+                            , fmri = Game.NotFmri
                             }
 
                     _ ->
@@ -535,7 +542,15 @@ goNoGoGame model =
 
 stopSignalGame : Model -> Html Msg
 stopSignalGame model =
-    game model "Stop Signal" InitStopSignal
+    game model
+        "Stop Signal"
+        (InitStopSignal
+            { fmri =
+                model.fmriUserData
+                    |> Maybe.map (\{ user } -> Game.YesFmri { user = user })
+                    |> Maybe.withDefault Game.NotFmri
+            }
+        )
 
 
 instructionsPage : Model -> Html Msg
@@ -657,7 +672,7 @@ view model =
         page =
             case model.activeRoute of
                 R.AdminRoute ->
-                    Admin.adminPage model
+                    adminView model
 
                 R.StatementsRoute ->
                     statementsPage model
@@ -705,3 +720,13 @@ view model =
                     Admin.mesPage model
     in
         div [] [ page ]
+
+
+adminView : Model -> Html Msg
+adminView model =
+    case model.gameState of
+        Game.NotPlaying ->
+            Admin.adminPage model
+
+        _ ->
+            stopSignalGame model

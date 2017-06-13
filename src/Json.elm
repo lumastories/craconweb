@@ -32,6 +32,7 @@ sessionDecoder =
         |> optional "seed" stringToIntDecoder 0
         |> required "start" stringToFloatDecoder
         |> optional "end" (JD.maybe JD.float) Nothing
+        |> optional "jitter" JD.bool False
 
 
 cycleDecoder : Decoder Game.Cycle
@@ -88,14 +89,15 @@ stringToIntDecoder =
             )
 
 
-sessionEncoder : { a | userId : String, gameId : String, start : Time, end : Maybe Time, seed : Int } -> JE.Value
-sessionEncoder { userId, gameId, start, end, seed } =
+sessionEncoder : { a | userId : String, gameId : String, start : Time, end : Maybe Time, seed : Int, jitter : Bool } -> JE.Value
+sessionEncoder { userId, gameId, start, end, seed, jitter } =
     object
         [ ( "userId", userId |> JE.string )
         , ( "gameId", gameId |> JE.string )
         , ( "seed", seed |> toString |> JE.string )
         , ( "start", start |> toString |> JE.string )
         , ( "end", end |> Maybe.map (toString >> JE.string) |> Maybe.withDefault JE.null )
+        , ( "jitter", jitter |> JE.bool )
         ]
 
 

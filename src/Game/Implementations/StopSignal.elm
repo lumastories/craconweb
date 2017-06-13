@@ -18,7 +18,6 @@ import Game
         , segment
         , log
         , logWithCondition
-        , addRests
         , info
         , onIndication
         , timeout
@@ -44,9 +43,10 @@ init :
     , currentTime : Time
     , gameDuration : Time
     , redCrossDuration : Time
+    , fmri : Game.Fmri
     }
     -> Game msg
-init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages, seedInt, currentTime, gameDuration, redCrossDuration } =
+init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages, seedInt, currentTime, gameDuration, redCrossDuration, fmri } =
     let
         gos =
             responseImages
@@ -79,9 +79,18 @@ init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages
             state.sessionStart
                 |> Maybe.map (\sessionStart -> sessionStart + gameDuration < state.currTime)
                 |> Maybe.withDefault False
+
+        addRests =
+            (case fmri of
+                Game.YesFmri _ ->
+                    Game.addRests Nothing (3 * Time.second) (4 * Time.second)
+
+                Game.NotFmri ->
+                    Game.addRests Nothing (500 * Time.millisecond) 0
+            )
     in
         Random.List.shuffle trials
-            |> Random.andThen (addRests Nothing 500 0)
+            |> Random.andThen addRests
             |> Random.map
                 (\trials ->
                     (info infoString :: startSession :: log (BeginSession { seed = seedInt }) :: trials)

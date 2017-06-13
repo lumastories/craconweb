@@ -51,6 +51,15 @@ type alias Model =
     , badgeRules : RemoteData.WebData (List BadgeRule)
     , domLoaded : Bool
     , badgesEarned : RemoteData.WebData (List String)
+    , fmriUserData : Maybe FmriUserData
+    }
+
+
+type alias FmriUserData =
+    { user : Entity.User
+    , ugimages_v : List Entity.Ugimage
+    , ugimages_i : List Entity.Ugimage
+    , ugimages_f : List Entity.Ugimage
     }
 
 
@@ -71,7 +80,7 @@ type Msg
     | SelectInput Int
     | DirectionInput Game.Direction
     | IndicationInput
-    | InitStopSignal
+    | InitStopSignal { fmri : Game.Fmri }
     | InitGoNoGo
     | InitDotProbe
     | InitVisualSearch
@@ -110,6 +119,8 @@ type Msg
     | SetRequestNothing
     | SetTmpUserEdit String String
     | DomLoaded Bool
+    | StartFmri { user : Entity.User }
+    | FmriImagesResp (Result ValuationsError FmriUserData)
 
 
 type alias Login =

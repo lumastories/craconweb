@@ -18,6 +18,9 @@ module Api
         , startSession
         , endSession
         , postCycles
+        , fetchFiller
+        , fetchValid
+        , fetchInvalid
         )
 
 import Entity
@@ -408,8 +411,8 @@ jwtDecoded token =
     Jwt.decodeToken M.jwtDecoder token
 
 
-startSession : { token : String, userId : String, gameId : String, start : Time, httpsrv : String, seed : Int } -> Task Never (RemoteData.WebData Game.Session)
-startSession { token, userId, gameId, start, httpsrv, seed } =
+startSession : { token : String, userId : String, gameId : String, start : Time, httpsrv : String, seed : Int, jitter : Bool } -> Task Never (RemoteData.WebData Game.Session)
+startSession { token, userId, gameId, start, httpsrv, seed, jitter } =
     let
         json =
             Json.sessionEncoder
@@ -418,6 +421,7 @@ startSession { token, userId, gameId, start, httpsrv, seed } =
                 , seed = seed
                 , start = start
                 , end = Nothing
+                , jitter = jitter
                 }
     in
         postRequest

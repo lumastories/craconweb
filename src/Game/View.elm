@@ -21,9 +21,10 @@ view :
     { gameState : Game.GameState Msg
     , initMsg : Msg
     , gameSlug : String
+    , fmri : Game.Fmri
     }
     -> Html Msg
-view { gameSlug, gameState, initMsg } =
+view { gameSlug, gameState, initMsg, fmri } =
     case gameState of
         Game.Loading game remoteData ->
             case remoteData of
@@ -124,7 +125,13 @@ view { gameSlug, gameState, initMsg } =
 
         Game.NotPlaying ->
             div []
-                [ a
+                [ case fmri of
+                    Game.NotFmri ->
+                        text ""
+
+                    Game.YesFmri { user } ->
+                        h2 [ class "title is-3" ] [ text <| "FMRI for " ++ user.username ]
+                , a
                     [ class "button is-info is-large"
                     , onClick initMsg
                     ]
