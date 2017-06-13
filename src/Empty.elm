@@ -20,6 +20,7 @@ emptyModel model =
         , loading = Nothing
         , glitching = Nothing
         , gameState = Game.NotPlaying
+        , fmriUserData = Nothing
     }
 
 

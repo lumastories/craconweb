@@ -1105,7 +1105,7 @@ presses : number -> Model -> ( Model, Cmd Msg )
 presses keyCode model =
     let
         ( newModel1, cmd1 ) =
-            if (keyCode == 32 || (keyCode >= 48 && keyCode <= 57)) then
+            if (keyCode == 32 {- space -} || (keyCode >= 48 && keyCode <= 57) {- numeric -}) then
                 handleInput Game.Indication model
             else
                 ( model, Cmd.none )
@@ -1113,15 +1113,25 @@ presses keyCode model =
         ( newModel2, cmd2 ) =
             case keyCode of
                 67 ->
+                    {- c -}
                     handleInput (Game.Direction Game.Left) newModel1
 
                 77 ->
+                    {- m -}
                     handleInput (Game.Direction Game.Right) newModel1
 
                 _ ->
                     ( newModel1, Cmd.none )
+
+        cmd3 =
+            case ( keyCode, newModel2.gameState, newModel2.fmriUserData ) of
+                ( 222 {- ' -}, Game.NotPlaying, Just { user } ) ->
+                    Task.perform InitStopSignal (Task.succeed { fmri = Game.YesFmri { user = user } })
+
+                _ ->
+                    Cmd.none
     in
-        ( newModel2, Cmd.batch [ cmd1, cmd2 ] )
+        ( newModel2, Cmd.batch [ cmd1, cmd2, cmd3 ] )
 
 
 handleSelectInput : Int -> Model -> ( Model, Cmd Msg )
@@ -1131,7 +1141,7 @@ handleSelectInput n model =
 
 handleDirectionInput : Game.Direction -> Model -> ( Model, Cmd Msg )
 handleDirectionInput direction model =
-    handleInput (Game.Direction (Debug.log "" direction)) model
+    handleInput (Game.Direction direction) model
 
 
 handleIndicationInput : Model -> ( Model, Cmd Msg )

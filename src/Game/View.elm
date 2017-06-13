@@ -130,7 +130,7 @@ view { gameSlug, gameState, initMsg, fmri } =
                         text ""
 
                     Game.YesFmri { user } ->
-                        h3 [] [ text user.username ]
+                        h2 [ class "title is-3" ] [ text <| "FMRI for " ++ user.username ]
                 , a
                     [ class "button is-info is-large"
                     , onClick initMsg
