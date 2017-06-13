@@ -269,8 +269,8 @@ update msg model =
 
                 tmpUserRecord_old =
                     { tmpUserRecord_old_
-                        | roles = [ model.userRole.id ]
-                        , groupId = Maybe.withDefault "" model.groupIdCon
+                        | roles =
+                            [ model.userRole.id ]
                     }
 
                 tmpUserRecord_ =
@@ -313,7 +313,7 @@ update msg model =
                     (Api.createUserRecord
                         model.httpsrv
                         model.jwtencoded
-                        model.adminModel.tmpUserRecord
+                        (fix_email model.adminModel.tmpUserRecord)
                     )
                 )
 
@@ -1233,6 +1233,13 @@ saveGameDataCmd state session model =
         Task.map2 (,) endSessionTask postCyclesTask
             |> Task.map (\( a, b ) -> RemoteData.map2 (,) a b)
             |> Task.perform (GameDataSaved state session)
+
+
+fix_email ur =
+    if ur.email == "" then
+        { ur | email = (ur.username ++ "@example.com") }
+    else
+        ur
 
 
 fetchUserImages : String -> String -> Entity.User -> Cmd Msg
