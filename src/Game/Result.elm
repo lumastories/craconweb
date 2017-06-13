@@ -7,7 +7,6 @@ module Game.Result
 
 import Game
 import Game.Cycle
-import Entity
 import Maybe.Extra exposing (isJust, isNothing)
 
 
