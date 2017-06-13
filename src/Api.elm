@@ -66,7 +66,6 @@ shared httpsrv token sub =
     , Task.attempt M.GameResp (fetchGame httpsrv token "respondsignal")
     , Task.attempt M.GameResp (fetchGame httpsrv token "visualsearch")
     , Task.attempt M.UserResp (fetchUser httpsrv token sub)
-    , Task.attempt M.MesQuerysResp (fetchMesQuerys { url = httpsrv, token = token, sub = sub })
     , Task.attempt M.PublicMesResp (fetchPublicMesAnswers { url = httpsrv, token = token, sub = sub })
     ]
 
@@ -89,6 +88,7 @@ userOnly httpsrv token sub =
     , Task.attempt M.MesAnswersResp (fetchMesAnswersByUser { url = httpsrv, token = token, sub = sub })
     , (fetchBadgeRules { url = httpsrv, token = token, sub = sub })
     , (fetchBadgesByUserId { url = httpsrv, token = token, sub = sub })
+    , Task.attempt M.MesQuerysResp (fetchMesQuerys { url = httpsrv, token = token, sub = sub })
     ]
 
 
