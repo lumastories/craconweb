@@ -41,7 +41,7 @@ loginPage model =
                         , br [] []
                         , text "Click "
                         , a [ href "https://ori.qualtrics.com/jfe/form/SV_0wxvIDQwmJLlL2B", target "_blank" ] [ text "here" ]
-                        , text " to see if you’re eligible to participate!"
+                        , text " to see if you're eligible to participate!"
                         ]
                     ]
                 ]

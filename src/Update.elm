@@ -1171,7 +1171,7 @@ saveGameDataCmd state session model =
             |> Task.map (\( a, b ) -> RemoteData.map2 (,) a b)
             |> Task.perform (GameDataSaved state session)
 
-
+fix_email : Entity.UserRecord -> Entity.UserRecord
 fix_email ur =
     if ur.email == "" then
         { ur | email = (ur.username ++ "@example.com") }
