@@ -306,6 +306,10 @@ editUser exp con informing tasksrv user ugimgsets =
         , divColumns
             [ div [ class "column is-half is-offset-one-quarter" ]
                 [ uploadCsvForm tasksrv user.id
+                , br [] []
+                , text "Download the control group image set "
+                , a [ href "https://file.cravecontrol.org/controlimgs.csv" ] [ text "csv file" ]
+                , text "."
                 ]
             ]
         ]
@@ -413,7 +417,7 @@ uploadCsvForm tasksrv userId =
         ]
         [ h4
             [ class "title is-4" ]
-            [ text "Upload valuations"
+            [ text "Upload image set"
             ]
         , input
             [ type_ "file"
