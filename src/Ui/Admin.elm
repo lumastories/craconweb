@@ -308,7 +308,7 @@ editUser exp con informing tasksrv user ugimgsets =
                 [ uploadCsvForm tasksrv user.id
                 , br [] []
                 , text "Download the control group image set "
-                , a [ href "https://file.cravecontrol.org/controlimgs.csv" ] [ text "csv file" ]
+                , a [ href "https://file.cravecontrol.org/repo/controlimgs.csv" ] [ text "csv file" ]
                 , text "."
                 ]
             ]
