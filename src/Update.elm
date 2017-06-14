@@ -1244,7 +1244,7 @@ fix_email ur =
 
 fetchUserImages : String -> String -> Entity.User -> Cmd Msg
 fetchUserImages httpsrv token user =
-    Task.map3 (Model.FmriUserData user)
+    Task.map3 (\f v i -> { user = user, ugimages_f = f, ugimages_v = v, ugimages_i = i })
         (Api.fetchFiller httpsrv token user.id)
         (Api.fetchValid httpsrv token user.id)
         (Api.fetchInvalid httpsrv token user.id)
