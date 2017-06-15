@@ -14,13 +14,13 @@ module Api
         , updateUser
         , jwtDecoded
         , okyToky
-        , isAdmin
         , startSession
         , endSession
         , postCycles
         , fetchFiller
         , fetchValid
         , fetchInvalid
+        , fetchFmriUserData
         )
 
 import Entity
@@ -32,9 +32,11 @@ import Model as M
 import Json.Decode as JD
 import Json.Encode as JE
 import RemoteData
+import Routing as R
 import Game
 import Time exposing (Time)
 import Json
+import Helpers exposing (isAdmin, isStaff)
 
 
 {-
@@ -339,6 +341,33 @@ fetchUsers httpsrv token =
         (JD.field "users" (JD.list Entity.userDecoder))
 
 
+fetchUserImages : String -> String -> String -> Cmd M.Msg
+fetchUserImages httpsrv token userId =
+    fetchUser httpsrv token userId
+        |> Task.mapError (M.ReqFail)
+        |> Task.andThen
+            (\user ->
+                (Task.map3 (\f v i -> { user = user, ugimages_f = f, ugimages_v = v, ugimages_i = i })
+                    (fetchFiller httpsrv token userId)
+                    (fetchValid httpsrv token userId)
+                    (fetchInvalid httpsrv token userId)
+                )
+            )
+        |> Task.attempt (RemoteData.fromResult >> M.FmriImagesResp)
+
+
+fetchFmriUserData : M.Model -> ( M.Model, Cmd M.Msg )
+fetchFmriUserData model =
+    case model.activeRoute of
+        R.FmriRoute userId ->
+            ( { model | fmriUserData = RemoteData.Loading }
+            , fetchUserImages model.httpsrv model.jwtencoded userId
+            )
+
+        _ ->
+            ( model, Cmd.none )
+
+
 fetchUsersInRole :
     String
     -> String
@@ -376,16 +405,6 @@ createUserRecord httpsrv token user =
         , withCredentials = False
         }
         |> Http.toTask
-
-
-isAdmin : M.JwtPayload -> Bool
-isAdmin jwt =
-    List.map .name jwt.roles |> List.member "admin"
-
-
-isStaff : M.JwtPayload -> Bool
-isStaff jwt =
-    List.map .name jwt.roles |> List.member "staff"
 
 
 okyToky : Time.Time -> String -> Result String M.JwtPayload

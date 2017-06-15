@@ -52,6 +52,7 @@ type Route
     | RegisterRoute
     | EditUserRoute String
     | MesRoute
+    | FmriRoute String
 
 
 homePath : String
@@ -128,4 +129,5 @@ matchers =
         , map RegisterRoute (s "register")
         , map EditUserRoute (s "edit" </> string)
         , map MesRoute (s "mes")
+        , map FmriRoute (s "fmri" </> string)
         ]

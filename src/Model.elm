@@ -51,7 +51,7 @@ type alias Model =
     , badgeRules : RemoteData.WebData (List BadgeRule)
     , domLoaded : Bool
     , badgesEarned : RemoteData.WebData (List String)
-    , fmriUserData : Maybe FmriUserData
+    , fmriUserData : RemoteData.RemoteData ValuationsError FmriUserData
     }
 
 
@@ -119,8 +119,7 @@ type Msg
     | SetRequestNothing
     | SetTmpUserEdit String String
     | DomLoaded Bool
-    | StartFmri { user : Entity.User }
-    | FmriImagesResp (Result ValuationsError FmriUserData)
+    | FmriImagesResp (RemoteData.RemoteData ValuationsError FmriUserData)
 
 
 type alias Login =

@@ -209,17 +209,17 @@ homePage model =
         , navBar model
         , homePageBody model
         , Parts.notification model.glitching "is-danger"
-        , loading_screen model.domLoaded
+        , loading_screen (not model.domLoaded)
         ]
 
 
 loading_screen : Bool -> Html msg
 loading_screen is_loading =
     case is_loading of
-        False ->
+        True ->
             Parts.modal [ section [ class "modal-card-body" ] [ h1 [ class "title" ] [ text "Loading games...", i [ class "fa fa-loading fa-spin" ] [] ] ] ]
 
-        True ->
+        False ->
             text ""
 
 
@@ -489,10 +489,7 @@ game model title initMsg =
                             { gameState = model.gameState
                             , initMsg = initMsg
                             , gameSlug = model.stopsignalGame |> Maybe.map .slug |> Maybe.withDefault "stopsignal"
-                            , fmri =
-                                model.fmriUserData
-                                    |> Maybe.map (\fmriUserData -> Game.YesFmri { user = fmriUserData.user })
-                                    |> Maybe.withDefault Game.NotFmri
+                            , fmri = Game.NotFmri
                             }
 
                     R.GameRouteGn ->
@@ -519,9 +516,22 @@ game model title initMsg =
                             , fmri = Game.NotFmri
                             }
 
+                    R.FmriRoute _ ->
+                        Game.view
+                            { gameState = model.gameState
+                            , initMsg = initMsg
+                            , gameSlug = model.stopsignalGame |> Maybe.map .slug |> Maybe.withDefault "stopsignal"
+                            , fmri =
+                                model.fmriUserData
+                                    |> RemoteData.toMaybe
+                                    |> Maybe.map (\fmriUserData -> Game.YesFmri { user = fmriUserData.user })
+                                    |> Maybe.withDefault Game.NotFmri
+                            }
+
                     _ ->
                         text "Invalid Game"
                 ]
+            , loading_screen (RemoteData.isLoading model.fmriUserData)
             ]
 
 
@@ -547,6 +557,7 @@ stopSignalGame model =
         (InitStopSignal
             { fmri =
                 model.fmriUserData
+                    |> RemoteData.toMaybe
                     |> Maybe.map (\{ user } -> Game.YesFmri { user = user })
                     |> Maybe.withDefault Game.NotFmri
             }
@@ -718,6 +729,9 @@ view model =
 
                 R.MesRoute ->
                     Admin.mesPage model
+
+                R.FmriRoute userId ->
+                    stopSignalGame model
     in
         div [] [ page ]
 

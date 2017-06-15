@@ -5,6 +5,7 @@ import Model
 import Navigation
 import Routing
 import Game
+import RemoteData
 
 
 emptyModel : Model.Model -> Model.Model
@@ -20,7 +21,10 @@ emptyModel model =
         , loading = Nothing
         , glitching = Nothing
         , gameState = Game.NotPlaying
-        , fmriUserData = Nothing
+        , fmriUserData = RemoteData.NotAsked
+        , ugimages_f = Nothing
+        , ugimages_v = Nothing
+        , ugimages_i = Nothing
     }
 
 
