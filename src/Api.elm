@@ -192,7 +192,7 @@ fetchMesAnswersByUser { url, token, sub } =
 
 fetchMesQuerys : M.Base -> Task Http.Error (List M.MesQuery)
 fetchMesQuerys b =
-    getRequest b.token (b.url ++ "/mesquerys") M.mesQuerysDecoder
+    getRequest b.token (b.url ++ "/mesquerys?sortEach=true") M.mesQuerysDecoder
 
 
 createAuthRecord :
