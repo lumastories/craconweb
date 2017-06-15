@@ -413,13 +413,7 @@ update msg model =
                 ( model, Cmd.batch cmds )
 
         OnUpdateLocation location ->
-            ( { model
-                | activeRoute = R.parseLocation location
-                , isMenuActive = False
-                , gameState = Game.NotPlaying
-              }
-            , Cmd.none
-            )
+            onUpdateLocation location model
 
         -- LOGIN
         UpdateEmail username ->
@@ -523,13 +517,8 @@ update msg model =
         InitStopSignal fmri ->
             initStopSignal fmri model
 
-        StartFmri { user } ->
-            ( model
-            , fetchUserImages model.httpsrv model.jwtencoded user
-            )
-
         FmriImagesResp result ->
-            fmriImagesResp result model
+            ( { model | fmriUserData = result }, Cmd.none )
 
         -- TODO fetch configuration from the model
         InitGoNoGo ->
@@ -659,7 +648,10 @@ initStopSignal { fmri } model =
                             model.ugimages_v
 
                         Game.YesFmri _ ->
-                            model.fmriUserData |> Maybe.map (\{ ugimages_v } -> Just ugimages_v) |> Maybe.withDefault model.ugimages_v
+                            model.fmriUserData
+                                |> RemoteData.toMaybe
+                                |> Maybe.map (\{ ugimages_v } -> Just ugimages_v)
+                                |> Maybe.withDefault model.ugimages_v
 
                 ugimages_i =
                     case fmri of
@@ -667,7 +659,10 @@ initStopSignal { fmri } model =
                             model.ugimages_i
 
                         Game.YesFmri _ ->
-                            model.fmriUserData |> Maybe.map (\{ ugimages_i } -> Just ugimages_i) |> Maybe.withDefault model.ugimages_i
+                            model.fmriUserData
+                                |> RemoteData.toMaybe
+                                |> Maybe.map (\{ ugimages_i } -> Just ugimages_i)
+                                |> Maybe.withDefault model.ugimages_i
 
                 game time seed =
                     Game.Implementations.StopSignal.init
@@ -1020,12 +1015,12 @@ startSession { gameId, game, time, seed } model =
             { model | gameState = Game.Loading game RemoteData.Loading }
                 ! [ Api.startSession
                         { token = model.jwtencoded
-                        , userId = model.fmriUserData |> Maybe.map (\{ user } -> user.id) |> Maybe.withDefault jwt.sub
+                        , userId = model.fmriUserData |> RemoteData.toMaybe |> Maybe.map (\{ user } -> user.id) |> Maybe.withDefault jwt.sub
                         , gameId = gameId
                         , start = time
                         , seed = seed
                         , httpsrv = model.httpsrv
-                        , jitter = model.fmriUserData |> Maybe.map (always True) |> Maybe.withDefault False
+                        , jitter = model.fmriUserData |> RemoteData.toMaybe |> Maybe.map (always True) |> Maybe.withDefault False
                         }
                         |> Task.perform (StartSessionResp game)
                   ]
@@ -1124,7 +1119,7 @@ presses keyCode model =
                     ( newModel1, Cmd.none )
 
         cmd3 =
-            case ( keyCode, newModel2.gameState, newModel2.fmriUserData ) of
+            case ( keyCode, newModel2.gameState, RemoteData.toMaybe newModel2.fmriUserData ) of
                 ( 222 {- ' -}, Game.NotPlaying, Just { user } ) ->
                     Task.perform InitStopSignal (Task.succeed { fmri = Game.YesFmri { user = user } })
 
@@ -1185,7 +1180,7 @@ gameDataSaved state session remoteData model =
             RemoteData.Success ( session, cycles ) ->
                 { model
                     | gameState = Game.Saved state { session = session, cycles = cycles }
-                    , fmriUserData = Nothing
+                    , fmriUserData = RemoteData.NotAsked
                 }
                     ! []
 
@@ -1234,6 +1229,7 @@ saveGameDataCmd state session model =
             |> Task.map (\( a, b ) -> RemoteData.map2 (,) a b)
             |> Task.perform (GameDataSaved state session)
 
+
 fix_email : Entity.UserRecord -> Entity.UserRecord
 fix_email ur =
     if ur.email == "" then
@@ -1242,25 +1238,39 @@ fix_email ur =
         ur
 
 
-fetchUserImages : String -> String -> Entity.User -> Cmd Msg
-fetchUserImages httpsrv token user =
-    Task.map3 (\f v i -> { user = user, ugimages_f = f, ugimages_v = v, ugimages_i = i })
-        (Api.fetchFiller httpsrv token user.id)
-        (Api.fetchValid httpsrv token user.id)
-        (Api.fetchInvalid httpsrv token user.id)
-        |> Task.attempt FmriImagesResp
-
-
-fmriImagesResp : Result ValuationsError Model.FmriUserData -> Model -> ( Model, Cmd Msg )
+fmriImagesResp : RemoteData.RemoteData ValuationsError Model.FmriUserData -> Model -> ( Model, Cmd Msg )
 fmriImagesResp resp model =
     case resp of
-        Result.Err error ->
+        RemoteData.Failure error ->
             valuationsErrState model error
 
-        Result.Ok fmriUserData ->
-            ( { model | fmriUserData = Just fmriUserData }
+        RemoteData.Success fmriUserData ->
+            ( { model | fmriUserData = resp }
             , Cmd.batch
                 [ preloadUgImages model.filesrv (fmriUserData.ugimages_v ++ fmriUserData.ugimages_i ++ fmriUserData.ugimages_f)
                 , Navigation.newUrl "stopsignal"
                 ]
             )
+
+        RemoteData.Loading ->
+            ( model, Cmd.none )
+
+        RemoteData.NotAsked ->
+            ( model, Cmd.none )
+
+
+onUpdateLocation : Navigation.Location -> Model -> ( Model, Cmd Msg )
+onUpdateLocation location model =
+    let
+        updatedModel =
+            { model
+                | activeRoute =
+                    model.visitor
+                        |> Helpers.getJwt
+                        |> Maybe.map (Helpers.checkAccess <| R.parseLocation location)
+                        |> Maybe.withDefault R.LoginRoute
+                , isMenuActive = False
+                , gameState = Game.NotPlaying
+            }
+    in
+        Api.fetchFmriUserData updatedModel

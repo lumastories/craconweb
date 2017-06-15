@@ -184,7 +184,7 @@ userRows ( expId, conId ) users request =
                 , td [] [ text user.lastName ]
                 , td [] [ text user.username ]
                 , td []
-                    [ a [ class "button is-small", onClick (StartFmri { user = user }) ]
+                    [ a [ class "button is-small", onClick (UpdateLocation ("/fmri/" ++ user.id)) ]
                         [ span [ class "icon is-small" ]
                             [ i [ class "fa fa-gamepad" ]
                                 []

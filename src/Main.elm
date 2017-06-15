@@ -12,6 +12,7 @@ import View
 import Port
 import AnimationFrame
 import RemoteData
+import Helpers
 
 
 main : Program Flags M.Model M.Msg
@@ -52,7 +53,7 @@ init flags location =
         ( route_, visitor_, commands_ ) =
             case Api.okyToky flags.time flags.token of
                 Ok jwt ->
-                    ( R.parseLocation location
+                    ( Helpers.checkAccess (R.parseLocation location) jwt
                     , M.LoggedIn jwt
                     , Api.fetchAll httpsrv jwt flags.token
                     )
@@ -106,10 +107,11 @@ init flags location =
             , domLoaded = False
             , badgeRules = RemoteData.NotAsked
             , badgesEarned = RemoteData.NotAsked
-            , fmriUserData = Nothing
+            , fmriUserData = RemoteData.NotAsked
             }
     in
-        ( model_, commands_ )
+        Api.fetchFmriUserData model_
+            |> Tuple.mapSecond (\cmd -> Cmd.batch [ commands_, cmd ])
 
 
 type alias Flags =
