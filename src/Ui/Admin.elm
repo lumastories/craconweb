@@ -156,7 +156,7 @@ usersTable model =
                 [ th [] [ text "First Name" ]
                 , th [] [ text "Last Name" ]
                 , th [] [ text "Username" ]
-                , th [] [ text "FMRI" ]
+                , th [] [ text "fMRI" ]
                 , th [] [ text "Email" ]
                 , th [] [ text "Group" ]
                 , th [] [ text "Actions" ]
@@ -290,6 +290,8 @@ editUser exp con informing tasksrv user ugimgsets =
         [ divColumns
             [ div [ class "column is-half is-offset-one-quarter" ]
                 [ Parts.notification informing "is-info is-small"
+                , backButton
+                , hr [] []
                 , userForm user
                     exp
                     con
@@ -455,7 +457,6 @@ editButtons =
                 ]
             ]
         , text " "
-        , backButton
         ]
 
 

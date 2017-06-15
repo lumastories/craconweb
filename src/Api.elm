@@ -4,6 +4,7 @@ module Api
         , fetchGame
         , fetchUser
         , fetchUsers
+        , fetchUsers_
         , fetchGroup
         , fetchRole
         , fetchMesQuerys
