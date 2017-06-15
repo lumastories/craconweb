@@ -13,7 +13,6 @@ import Html.Events exposing (onClick, onSubmit, onCheck, onInput)
 import Model exposing (Model, Msg(..), AdminModel)
 import Routing as R
 import Ui.Parts as Parts
-import Ui.Card as C
 import Dropdown exposing (Options)
 
 
@@ -63,7 +62,7 @@ mesTable am =
                 |> mesTableHelper
 
         Nothing ->
-            C.middleBlock [ p [] [ text "No statements yet! Check back later." ] ]
+            Parts.middleBlock [ p [] [ text "No statements yet! Check back later." ] ]
 
 
 mesTableHelper : List (Html Msg) -> Html Msg
