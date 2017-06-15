@@ -130,7 +130,12 @@ view { gameSlug, gameState, initMsg, fmri } =
                         text ""
 
                     Game.YesFmri { user } ->
-                        h2 [ class "title is-3" ] [ text <| "FMRI for " ++ user.username ]
+                        div [] [ h2 [ class "title is-3" ] [ text <| "FMRI for " ++ user.username ], Markdown.toHtml [ onClick IndicationInput ] """
+<h3 class="title">Instructions</h3>
+You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a grey border. Go as fast as you can, but don't sacrifice accuracy for speed.
+<br>
+<br>
+""" ]
                 , a
                     [ class "button is-info is-large"
                     , onClick initMsg

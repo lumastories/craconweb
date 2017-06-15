@@ -93,7 +93,13 @@ init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages
             |> Random.andThen addRests
             |> Random.map
                 (\trials ->
-                    (info infoString :: startSession :: log (BeginSession { seed = seedInt }) :: trials)
+                    (case fmri of
+                        Game.NotFmri ->
+                            info infoString :: startSession :: log (BeginSession { seed = seedInt }) :: trials
+
+                        Game.YesFmri _ ->
+                            startSession :: log (BeginSession { seed = seedInt }) :: trials
+                    )
                         |> List.foldl (andThenCheckTimeout isTimeout) (Game.Card.complete (emptyState seedInt currentTime))
                 )
             |> (\generator -> Random.step generator (Random.initialSeed seedInt))
