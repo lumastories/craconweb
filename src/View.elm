@@ -12,7 +12,6 @@ import RemoteData
 import Routing as R
 import Entity
 import Ui.Admin as Admin
-import Ui.Card as Card
 import Ui.Parts as Parts
 
 
@@ -557,7 +556,7 @@ stopSignalGame model =
             game model "Stop Signal" InitStopSignal
 
         Just { user } ->
-            game model "fMRI Stop Signal" (InitFmriStopSignal { user = user })
+            game model "Stop Signal" (InitFmriStopSignal { user = user })
 
 
 instructionsPage : Model -> Html Msg

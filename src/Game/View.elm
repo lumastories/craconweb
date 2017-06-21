@@ -18,7 +18,7 @@ import List.Extra
 import RemoteData
 import Svg exposing (Svg, circle, svg)
 import Svg.Attributes as Svg exposing (cx, cy, r)
-import Ui.Card
+import Model exposing (Msg(..))
 
 
 view :
@@ -129,8 +129,8 @@ view { gameSlug, gameState, initMsg, fmriUser } =
 
         Game.NotPlaying ->
             div []
-                [ case fmri of
-                    Game.NotFmri ->
+                [ case fmriUser of
+                    Nothing ->
                         div []
                             [ a
                                 [ class "button is-info is-large"
@@ -139,7 +139,7 @@ view { gameSlug, gameState, initMsg, fmriUser } =
                                 [ text "Start Game" ]
                             ]
 
-                    Game.YesFmri { user } ->
+                    Just user ->
                         div []
                             [ p [ class "" ]
                                 [ text "fMRI for "
