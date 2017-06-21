@@ -1,18 +1,18 @@
 module View exposing (view)
 
-import Game.View as Game
+import Entity
 import Game
+import Game.View as Game
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Model exposing (..)
-import Routing as R
-import Entity
-import Ui.Card as Card
-import Ui.Admin as Admin
-import Ui.Parts as Parts
 import List.Extra
+import Model exposing (..)
 import RemoteData
+import Routing as R
+import Ui.Admin as Admin
+import Ui.Card as Card
+import Ui.Parts as Parts
 
 
 bigLogo : String -> Html Msg
@@ -123,13 +123,13 @@ isPowerful visitor =
 
 isAdminOrStaff : List String -> Bool
 isAdminOrStaff roles =
-    (List.member "admin" roles) || (List.member "staff" roles)
+    List.member "admin" roles || List.member "staff" roles
 
 
 navToggler : Bool -> Html Msg
 navToggler activeMenu =
     span
-        [ class <| "nav-toggle" ++ (isActive activeMenu), onClick MainMenuToggle ]
+        [ class <| "nav-toggle" ++ isActive activeMenu, onClick MainMenuToggle ]
         [ span [] []
         , span [] []
         , span [] []
@@ -149,13 +149,13 @@ adminLink visitor =
 navRight : Bool -> R.Route -> Visitor -> Html Msg
 navRight activeMenu activeRoute visitor =
     div
-        [ id "nav-menu", class <| "nav-right nav-menu" ++ (isActive activeMenu) ]
+        [ id "nav-menu", class <| "nav-right nav-menu" ++ isActive activeMenu ]
         [ navLink "Games" R.homePath (R.HomeRoute == activeRoute)
         , navLink "Badges" R.badgesPath (R.BadgesRoute == activeRoute)
         , navLink "Instructions" R.instructionsPath (R.InstructionsRoute == activeRoute)
         , navLink "Statements" R.statementsPath (R.StatementsRoute == activeRoute)
         , adminLink visitor
-        , a ([ class "nav-item is-tab", onClick Logout ]) [ text "Logout" ]
+        , a [ class "nav-item is-tab", onClick Logout ] [ text "Logout" ]
         ]
 
 
@@ -168,7 +168,7 @@ navLink text_ path active =
             else
                 "nav-item is-tab"
     in
-        a ([ class class_ ] ++ (Parts.linkAttrs path))
+        a ([ class class_ ] ++ Parts.linkAttrs path)
             [ text text_ ]
 
 
@@ -231,7 +231,7 @@ homePageBody model =
             [ class "hero-body" ]
             [ div
                 [ class "container" ]
-                [ h1 [ class "title is-1" ] [ (welcome model.user) ]
+                [ h1 [ class "title is-1" ] [ welcome model.user ]
                 , homePageGrid model
                 ]
             ]
@@ -242,10 +242,10 @@ welcome : Maybe Entity.User -> Html msg
 welcome user =
     case user of
         Just u ->
-            (text <| "Welcome, " ++ u.firstName)
+            text <| "Welcome, " ++ u.firstName
 
         Nothing ->
-            (text "")
+            text ""
 
 
 homePageGrid : Model -> Html Msg
@@ -489,7 +489,7 @@ game model title initMsg =
                             { gameState = model.gameState
                             , initMsg = initMsg
                             , gameSlug = model.stopsignalGame |> Maybe.map .slug |> Maybe.withDefault "stopsignal"
-                            , fmri = Game.NotFmri
+                            , fmriUser = Nothing
                             }
 
                     R.GameRouteGn ->
@@ -497,7 +497,7 @@ game model title initMsg =
                             { gameState = model.gameState
                             , initMsg = initMsg
                             , gameSlug = model.gonogoGame |> Maybe.map .slug |> Maybe.withDefault "gonogo"
-                            , fmri = Game.NotFmri
+                            , fmriUser = Nothing
                             }
 
                     R.GameRouteDp ->
@@ -505,7 +505,7 @@ game model title initMsg =
                             { gameState = model.gameState
                             , initMsg = initMsg
                             , gameSlug = model.dotprobeGame |> Maybe.map .slug |> Maybe.withDefault "dotprobe"
-                            , fmri = Game.NotFmri
+                            , fmriUser = Nothing
                             }
 
                     R.GameRouteVs ->
@@ -513,7 +513,7 @@ game model title initMsg =
                             { gameState = model.gameState
                             , initMsg = initMsg
                             , gameSlug = model.visualsearchGame |> Maybe.map .slug |> Maybe.withDefault "visualsearch"
-                            , fmri = Game.NotFmri
+                            , fmriUser = Nothing
                             }
 
                     R.FmriRoute _ ->
@@ -521,11 +521,10 @@ game model title initMsg =
                             { gameState = model.gameState
                             , initMsg = initMsg
                             , gameSlug = model.stopsignalGame |> Maybe.map .slug |> Maybe.withDefault "stopsignal"
-                            , fmri =
+                            , fmriUser =
                                 model.fmriUserData
                                     |> RemoteData.toMaybe
-                                    |> Maybe.map (\fmriUserData -> Game.YesFmri { user = fmriUserData.user })
-                                    |> Maybe.withDefault Game.NotFmri
+                                    |> Maybe.map (\fmriUserData -> fmriUserData.user)
                             }
 
                     _ ->
@@ -552,16 +551,12 @@ goNoGoGame model =
 
 stopSignalGame : Model -> Html Msg
 stopSignalGame model =
-    game model
-        "Stop Signal"
-        (InitStopSignal
-            { fmri =
-                model.fmriUserData
-                    |> RemoteData.toMaybe
-                    |> Maybe.map (\{ user } -> Game.YesFmri { user = user })
-                    |> Maybe.withDefault Game.NotFmri
-            }
-        )
+    case RemoteData.toMaybe model.fmriUserData of
+        Nothing ->
+            game model "Stop Signal" InitStopSignal
+
+        Just { user } ->
+            game model "fMRI Stop Signal" (InitFmriStopSignal { user = user })
 
 
 instructionsPage : Model -> Html Msg
@@ -655,7 +650,7 @@ statements mesAnswers =
 
         Just mesAnswers ->
             [ h1 [ class "title" ] [ text "Statements" ] ]
-                ++ (List.map (div [ class "columns" ]) (List.map statement mesAnswers |> List.Extra.greedyGroupsOf 4))
+                ++ List.map (div [ class "columns" ]) (List.map statement mesAnswers |> List.Extra.greedyGroupsOf 4)
 
 
 statement : MesAnswer -> Html Msg

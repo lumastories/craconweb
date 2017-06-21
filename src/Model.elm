@@ -3,13 +3,13 @@ module Model exposing (..)
 import Entity
 import Game
 import Http
+import Json.Decode as JD
+import Json.Decode.Pipeline as JP
+import Json.Encode as JE
 import Navigation
+import RemoteData
 import Routing
 import Time
-import Json.Decode as JD
-import Json.Encode as JE
-import Json.Decode.Pipeline as JP
-import RemoteData
 
 
 type alias Model =
@@ -80,7 +80,8 @@ type Msg
     | SelectInput Int
     | DirectionInput Game.Direction
     | IndicationInput
-    | InitStopSignal { fmri : Game.Fmri }
+    | InitStopSignal
+    | InitFmriStopSignal { user : Entity.User }
     | InitGoNoGo
     | InitDotProbe
     | InitVisualSearch
@@ -200,10 +201,10 @@ mesAnswersDecoder =
 mesAnswerDecoder : JD.Decoder MesAnswer
 mesAnswerDecoder =
     JP.decode MesAnswer
-        |> JP.required "id" (JD.string)
-        |> JP.required "content" (JD.string)
+        |> JP.required "id" JD.string
+        |> JP.required "content" JD.string
         |> JP.hardcoded False
-        |> JP.required "mesqueryId" (JD.string)
+        |> JP.required "mesqueryId" JD.string
         |> JP.required "created" JD.string
 
 
@@ -302,9 +303,9 @@ errorCodeDecoder =
 jwtDecoder : JD.Decoder JwtPayload
 jwtDecoder =
     JP.decode JwtPayload
-        |> JP.required "aud" (JD.string)
-        |> JP.required "exp" (JD.float)
-        |> JP.required "iat" (JD.int)
-        |> JP.required "iss" (JD.string)
-        |> JP.required "sub" (JD.string)
+        |> JP.required "aud" JD.string
+        |> JP.required "exp" JD.float
+        |> JP.required "iat" JD.int
+        |> JP.required "iss" JD.string
+        |> JP.required "sub" JD.string
         |> JP.required "roles" (JD.list Entity.roleDecoder)

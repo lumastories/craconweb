@@ -1,30 +1,31 @@
 module Game.View exposing (view, viewResult)
 
+import Entity
 import Game exposing (BorderType(..))
 import Game.Card
 import Game.Result
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Markdown
-import Ui.Card
-import Numeral
-import Svg exposing (Svg, svg, circle)
-import Svg.Attributes as Svg exposing (cy, cx, r)
-import List.Extra
-import RemoteData
-import Model exposing (Msg(..))
 import Json.Decode
+import List.Extra
+import Markdown
+import Model exposing (Msg(..))
+import Numeral
+import RemoteData
+import Svg exposing (Svg, circle, svg)
+import Svg.Attributes as Svg exposing (cx, cy, r)
+import Ui.Card
 
 
 view :
     { gameState : Game.GameState Msg
     , initMsg : Msg
     , gameSlug : String
-    , fmri : Game.Fmri
+    , fmriUser : Maybe Entity.User
     }
     -> Html Msg
-view { gameSlug, gameState, initMsg, fmri } =
+view { gameSlug, gameState, initMsg, fmriUser } =
     case gameState of
         Game.Loading game remoteData ->
             case remoteData of
@@ -125,11 +126,11 @@ view { gameSlug, gameState, initMsg, fmri } =
 
         Game.NotPlaying ->
             div []
-                [ case fmri of
-                    Game.NotFmri ->
+                [ case fmriUser of
+                    Nothing ->
                         text ""
 
-                    Game.YesFmri { user } ->
+                    Just user ->
                         div [] [ h2 [ class "title is-3" ] [ text <| "FMRI for " ++ user.username ], Markdown.toHtml [ onClick IndicationInput ] """
 <h3 class="title">Instructions</h3>
 You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a grey border. Go as fast as you can, but don't sacrifice accuracy for speed.

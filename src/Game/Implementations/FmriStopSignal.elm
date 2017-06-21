@@ -1,4 +1,4 @@
-module Game.Implementations.StopSignal
+module Game.Implementations.FmriStopSignal
     exposing
         ( init
         )
@@ -80,13 +80,13 @@ init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages
                 |> Maybe.withDefault False
 
         addRests =
-            Game.addRests Nothing (500 * Time.millisecond) 0
+            Game.addRests Nothing (3 * Time.second) (4 * Time.second)
     in
         Random.List.shuffle trials
             |> Random.andThen addRests
             |> Random.map
                 (\trials ->
-                    (info infoString :: startSession :: log (BeginSession { seed = seedInt }) :: trials)
+                    (startSession :: log (BeginSession { seed = seedInt }) :: trials)
                         |> List.foldl (andThenCheckTimeout isTimeout) (Game.Card.complete (emptyState seedInt currentTime))
                 )
             |> (\generator -> Random.step generator (Random.initialSeed seedInt))

@@ -1,11 +1,11 @@
 module Game exposing (..)
 
+import Entity
 import Game.Card as Card exposing (Continuation(Complete, Continue))
 import Random exposing (Generator)
 import Random.Extra
-import Time exposing (Time)
 import RemoteData
-import Entity
+import Time exposing (Time)
 
 
 type GameState msg
@@ -14,11 +14,6 @@ type GameState msg
     | Playing (Game msg) Session
     | Saving State Session (RemoteData.WebData ( Session, List Cycle ))
     | Saved State { session : Session, cycles : List Cycle }
-
-
-type Fmri
-    = YesFmri { user : Entity.User }
-    | NotFmri
 
 
 type alias Session =
