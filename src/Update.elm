@@ -203,7 +203,7 @@ update msg model =
                 ( { model | adminModel = adminModel_ }, Cmd.none )
 
         UserEditResp (Ok _) ->
-            { model | informing = Nothing } ! []
+            { model | informing = Just "User saved." } ! []
 
         UserEditResp (Err err) ->
             { model | informing = Just (Helpers.httpHumanError err) } ! []
@@ -214,7 +214,7 @@ update msg model =
                     model ! []
 
                 Just user ->
-                    ( { model | informing = Just "Saving User..." }
+                    ( model
                     , Task.attempt UserEditResp
                         (Api.updateUser
                             { url = model.httpsrv
@@ -238,8 +238,14 @@ update msg model =
             let
                 resp =
                     errorCodeEncoder response
+
+                remark =
+                    if resp.error == "" then
+                        "Thanks, upload and processing succeeded."
+                    else
+                        resp.error
             in
-                ( { model | informing = Just resp.error }, Cmd.none )
+                ( { model | informing = Just remark }, Cmd.none )
 
         -- ADMIN
         GroupResp (Ok group) ->
@@ -1298,7 +1304,7 @@ fmriImagesResp resp model =
 onUpdateLocation : Navigation.Location -> Model -> ( Model, Cmd Msg )
 onUpdateLocation location model =
     let
-        updatedModel =
+        model_ =
             { model
                 | activeRoute =
                     model.visitor
@@ -1309,4 +1315,17 @@ onUpdateLocation location model =
                 , gameState = Game.NotPlaying
             }
     in
-        Api.fetchFmriUserData updatedModel
+        refetchDataOnChange model_
+
+
+refetchDataOnChange : Model -> ( Model, Cmd Msg )
+refetchDataOnChange model =
+    case model.activeRoute of
+        R.AdminRoute ->
+            ( model, Task.attempt UsersResp (Api.fetchUsers_ model.httpsrv model.jwtencoded) )
+
+        R.FmriRoute _ ->
+            Api.fetchFmriUserData model
+
+        _ ->
+            ( model, Cmd.none )

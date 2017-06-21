@@ -10,8 +10,11 @@ import Html.Events exposing (..)
 import Json.Decode
 import List.Extra
 import Markdown
-import Model exposing (Msg(..))
 import Numeral
+import Ui.Parts
+import Svg exposing (Svg, svg, circle)
+import Svg.Attributes as Svg exposing (cy, cx, r)
+import List.Extra
 import RemoteData
 import Svg exposing (Svg, circle, svg)
 import Svg.Attributes as Svg exposing (cx, cy, r)
@@ -70,7 +73,7 @@ view { gameSlug, gameState, initMsg, fmriUser } =
                             text ""
 
                         Just (Game.Info borderType string) ->
-                            Ui.Card.middleBlock [ Markdown.toHtml [ onClick IndicationInput ] string ]
+                            Ui.Parts.middleBlock [ Markdown.toHtml [ onClick IndicationInput ] string ]
 
                         Just (Game.Single borderType image) ->
                             viewSingleLayout borderType image
@@ -126,22 +129,30 @@ view { gameSlug, gameState, initMsg, fmriUser } =
 
         Game.NotPlaying ->
             div []
-                [ case fmriUser of
-                    Nothing ->
-                        text ""
+                [ case fmri of
+                    Game.NotFmri ->
+                        div []
+                            [ a
+                                [ class "button is-info is-large"
+                                , onClick initMsg
+                                ]
+                                [ text "Start Game" ]
+                            ]
 
-                    Just user ->
-                        div [] [ h2 [ class "title is-3" ] [ text <| "FMRI for " ++ user.username ], Markdown.toHtml [ onClick IndicationInput ] """
-<h3 class="title">Instructions</h3>
-You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a grey border. Go as fast as you can, but don't sacrifice accuracy for speed.
-<br>
-<br>
-""" ]
-                , a
-                    [ class "button is-info is-large"
-                    , onClick initMsg
-                    ]
-                    [ text "Start Game" ]
+                    Game.YesFmri { user } ->
+                        div []
+                            [ p [ class "" ]
+                                [ text "fMRI for "
+                                , strong [] [ text user.username ]
+                                , Ui.Parts.middleBlock
+                                    [ h3 [ class "title is-3" ] [ text "Instructions" ]
+                                    , p [] [ text """You will see pictures presented in either a dark blue or light gray border.
+                                    Press the space bar as quickly as you can. BUT only if you see a blue border around the picture.
+                                    Do not press if you see a grey border. Go as fast as you can, but don't sacrifice accuracy for speed.""" ]
+                                    , p [] [ br [] [], strong [] [ text "Waiting for signal..." ] ]
+                                    ]
+                                ]
+                            ]
                 ]
 
 
@@ -156,7 +167,7 @@ viewResult state session { percentCorrect, averageResponseTimeResult, savingStat
                 Ok result ->
                     Numeral.format "0.00" result ++ " milliseconds"
     in
-        Ui.Card.middleBlock
+        Ui.Parts.middleBlock
             [ h1 [ class "title" ] [ text "Results" ]
             , ul []
                 [ li [] [ text <| "Average Response Time: " ++ averageResponseTime ]

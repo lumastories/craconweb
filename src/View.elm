@@ -10,6 +10,7 @@ import List.Extra
 import Model exposing (..)
 import RemoteData
 import Routing as R
+import Entity
 import Ui.Admin as Admin
 import Ui.Card as Card
 import Ui.Parts as Parts
@@ -359,7 +360,7 @@ notFoundPage model =
     basicPage model
         [ div
             [ class "container" ]
-            [ Card.middleBlock
+            [ Parts.middleBlock
                 [ h1 [ class "title is-1" ] [ text "Poem 404" ]
                 , h5 [ class "subtitle is-5" ] [ text "Page Not Found" ]
                 , p []
@@ -640,7 +641,7 @@ statements : Maybe (List MesAnswer) -> List (Html Msg)
 statements mesAnswers =
     case mesAnswers of
         Nothing ->
-            [ Card.middleBlock
+            [ Parts.middleBlock
                 [ h1 [ class "title" ] [ text "Statements" ]
                 , p [] [ text """Coming soon! You will be able to see personal
                             statements from other members of the study about their journey to better

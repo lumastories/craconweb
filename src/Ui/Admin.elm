@@ -13,7 +13,6 @@ import Html.Events exposing (onClick, onSubmit, onCheck, onInput)
 import Model exposing (Model, Msg(..), AdminModel)
 import Routing as R
 import Ui.Parts as Parts
-import Ui.Card as C
 import Dropdown exposing (Options)
 
 
@@ -63,7 +62,7 @@ mesTable am =
                 |> mesTableHelper
 
         Nothing ->
-            C.middleBlock [ p [] [ text "No statements yet! Check back later." ] ]
+            Parts.middleBlock [ p [] [ text "No statements yet! Check back later." ] ]
 
 
 mesTableHelper : List (Html Msg) -> Html Msg
@@ -157,7 +156,7 @@ usersTable model =
                 [ th [] [ text "First Name" ]
                 , th [] [ text "Last Name" ]
                 , th [] [ text "Username" ]
-                , th [] [ text "FMRI" ]
+                , th [] [ text "fMRI" ]
                 , th [] [ text "Email" ]
                 , th [] [ text "Group" ]
                 , th [] [ text "Actions" ]
@@ -291,6 +290,8 @@ editUser exp con informing tasksrv user ugimgsets =
         [ divColumns
             [ div [ class "column is-half is-offset-one-quarter" ]
                 [ Parts.notification informing "is-info is-small"
+                , backButton
+                , hr [] []
                 , userForm user
                     exp
                     con
@@ -308,7 +309,7 @@ editUser exp con informing tasksrv user ugimgsets =
                 [ uploadCsvForm tasksrv user.id
                 , br [] []
                 , text "Download the control group image set "
-                , a [ href "https://file.cravecontrol.org/controlimgs.csv" ] [ text "csv file" ]
+                , a [ href "https://file.cravecontrol.org/repo/controlimgs.csv" ] [ text "csv file" ]
                 , text "."
                 ]
             ]
@@ -456,7 +457,6 @@ editButtons =
                 ]
             ]
         , text " "
-        , backButton
         ]
 
 
