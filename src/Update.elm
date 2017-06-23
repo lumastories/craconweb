@@ -679,7 +679,9 @@ You will see pictures presented in either a dark blue or light gray border. Pres
                         , nonResponseImages = getFullImagePathsNew model.filesrv ugimages_i |> Maybe.withDefault []
                         , seedInt = seed
                         , currentTime = time
-                        , gameDuration = 5 * Time.minute
+                        , blockDuration = 5 * Time.minute
+                        , breakDuration = 5 * Time.second
+                        , totalBlocks = 2
                         , redCrossDuration = 500 * Time.millisecond
                         }
 
@@ -699,10 +701,7 @@ You will see pictures presented in either a dark blue or light gray border. Pres
                         |> Task.perform (\( time, seed, game ) -> StartSession { gameId = gameEntity.id, game = game, time = time, seed = seed })
             in
                 ( model
-                , Cmd.batch
-                    [ gameCmd
-                    , Navigation.newUrl "stopsignal"
-                    ]
+                , gameCmd
                 )
 
 
@@ -1072,7 +1071,7 @@ playGame : Game.Game Msg -> Game.Session -> Model -> ( Model, Cmd Msg )
 playGame game session model =
     handleInput Game.Initialize
         { model
-            | gameState = Game.Playing game session
+            | gameState = Game.Playing { game = game, session = session }
             , glitching = Nothing
         }
 
@@ -1090,7 +1089,7 @@ handleInput input model =
         Game.Loading _ _ ->
             ( model, Cmd.none )
 
-        Game.Playing game session ->
+        Game.Playing { game, session } ->
             case Game.Card.step input game of
                 ( Game.Card.Complete state, cmd ) ->
                     let
@@ -1108,7 +1107,10 @@ handleInput input model =
                         )
 
                 ( Game.Card.Continue _ newGame, cmd ) ->
-                    ( { model | gameState = Game.Playing newGame session }, cmd )
+                    ( { model | gameState = Game.Playing { game = newGame, session = session } }, cmd )
+
+                ( Game.Card.Break _ newGame, cmd ) ->
+                    ( { model | gameState = Game.Playing { game = newGame, session = session } }, cmd )
 
         Game.Saving _ _ _ ->
             ( model, Cmd.none )

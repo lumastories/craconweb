@@ -204,6 +204,12 @@ beginDisplay { sessionId, time, maybeLayout } cycles =
                 (updatedCycle :: tail)
                     |> beginBorder { borderType = borderType, time = time }
 
+        ( Just Game.Break, cycle :: tail ) ->
+            cycles
+
+        ( Just Game.Rest, cycle :: tail ) ->
+            cycles
+
 
 beginBorder : { borderType : Game.BorderType, time : Time } -> List Game.Cycle -> List Game.Cycle
 beginBorder { borderType, time } cycles =

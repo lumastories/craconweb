@@ -10,15 +10,12 @@ import Html.Events exposing (..)
 import Json.Decode
 import List.Extra
 import Markdown
+import Model exposing (Msg(..))
 import Numeral
-import Ui.Parts
-import Svg exposing (Svg, svg, circle)
-import Svg.Attributes as Svg exposing (cy, cx, r)
-import List.Extra
 import RemoteData
 import Svg exposing (Svg, circle, svg)
 import Svg.Attributes as Svg exposing (cx, cy, r)
-import Model exposing (Msg(..))
+import Ui.Parts
 
 
 view :
@@ -53,7 +50,7 @@ view { gameSlug, gameState, initMsg, fmriUser } =
                 _ ->
                     text ""
 
-        Game.Playing game session ->
+        Game.Playing { game, session } ->
             let
                 state =
                     game |> Game.unwrap
@@ -109,6 +106,12 @@ view { gameSlug, gameState, initMsg, fmriUser } =
 
                         Just (Game.Probe borderType direction) ->
                             viewProbe borderType direction
+
+                        Just Game.Break ->
+                            viewBreak state
+
+                        Just Game.Rest ->
+                            Html.text ""
                     ]
 
         Game.Saving state session remoteData ->
@@ -361,6 +364,25 @@ viewFixation borderType =
             [ class "column" ]
             [ div [ class "fixationCross" ] [ text "+" ] ]
         ]
+
+
+viewBreak : Game.State -> Html Msg
+viewBreak state =
+    let
+        counter =
+            state.blockStart
+                |> Maybe.map (\blockStart -> ceiling ((blockStart - state.currTime) / 1000))
+                |> Maybe.map (\countdown -> " in " ++ toString countdown ++ " seconds.")
+                |> Maybe.withDefault "."
+    in
+        Ui.Parts.middleBlock
+            [ text <|
+                "This concludes Block "
+                    ++ toString (state.blockCounter)
+                    ++ ". Please stand by to begin Block "
+                    ++ toString (state.blockCounter + 1)
+                    ++ counter
+            ]
 
 
 viewProbe : BorderType -> Game.Direction -> Html Msg

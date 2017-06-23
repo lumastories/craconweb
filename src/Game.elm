@@ -1,6 +1,5 @@
 module Game exposing (..)
 
-import Entity
 import Game.Card as Card exposing (Continuation(Complete, Continue))
 import Random exposing (Generator)
 import Random.Extra
@@ -11,7 +10,7 @@ import Time exposing (Time)
 type GameState msg
     = NotPlaying
     | Loading (Game msg) (RemoteData.WebData Session)
-    | Playing (Game msg) Session
+    | Playing { game : Game msg, session : Session }
     | Saving State Session (RemoteData.WebData ( Session, List Cycle ))
     | Saved State { session : Session, cycles : List Cycle }
 
@@ -102,6 +101,8 @@ type Layout
     | RedCross BorderType
     | Fixation BorderType
     | Probe BorderType Direction
+    | Rest
+    | Break
 
 
 type BorderType
@@ -133,12 +134,14 @@ type LogEntry
 
 type alias State =
     { sessionStart : Maybe Time
+    , blockStart : Maybe Time
     , trialStart : Time
     , segmentStart : Time
     , currTime : Time
     , log : List LogEntry
     , trialResult : Result
     , currentSeed : Random.Seed
+    , blockCounter : Int
     }
 
 
@@ -180,6 +183,35 @@ andThenCheckTimeout isTimeout =
     Card.andThen isTimeout resetSegmentStart Initialize
 
 
+andThenBreak : { breakDuration : Time, shouldBreak : State -> Bool, isFinish : State -> Bool } -> (State -> Game msg) -> Game msg -> Game msg
+andThenBreak { breakDuration, shouldBreak, isFinish } =
+    Card.andThenBreak
+        { breakCard = break breakDuration
+        , breakDuration = breakDuration
+        , shouldBreak = shouldBreak
+        , isFinish = isFinish
+        , isRest = isRest
+        , resetSegmentStart = resetSegmentStart
+        , resetBlockStart = resetBlockStart
+        , initialize = Initialize
+        }
+
+
+isRest : Game msg -> Bool
+isRest game =
+    case Card.layout game of
+        Just Rest ->
+            True
+
+        _ ->
+            False
+
+
+break : Time -> State -> Game msg
+break duration =
+    segment [ timeoutFromSegmentStart duration ] (Just Break)
+
+
 andThen : (State -> Game msg) -> Game msg -> Game msg
 andThen =
     Card.andThen (always False) resetSegmentStart Initialize
@@ -188,6 +220,14 @@ andThen =
 resetSegmentStart : State -> State
 resetSegmentStart state =
     { state | segmentStart = state.currTime }
+
+
+resetBlockStart : Time -> State -> State
+resetBlockStart breakDuration state =
+    { state
+        | blockStart = Just (state.currTime + breakDuration)
+        , blockCounter = state.blockCounter + 1
+    }
 
 
 oneOf : List Logic -> Logic
@@ -224,23 +264,27 @@ logWithCondition enabled logEntry state =
         )
 
 
-rest : Maybe Layout -> Time -> State -> Game msg
-rest layout expiration state =
-    log (BeginDisplay layout) (startTrial state)
-        |> andThen (segment [ timeout expiration ] layout)
+rest : Time -> State -> Game msg
+rest expiration state =
+    log (BeginDisplay (Just Rest)) (startTrial state)
+        |> andThen (segment [ timeout expiration ] (Just Rest))
 
 
 addRests : Maybe Layout -> Time -> Time -> List (State -> Game msg) -> Generator (List (State -> Game msg))
 addRests layout min jitter trials =
     trials
         |> List.map Random.Extra.constant
-        |> List.intersperse (Random.float min (min + jitter) |> Random.map (rest layout))
+        |> List.intersperse (Random.float min (min + jitter) |> Random.map (rest))
         |> Random.Extra.combine
 
 
 startSession : State -> Game msg
 startSession state =
-    Card.complete { state | sessionStart = Just state.currTime }
+    Card.complete
+        { state
+            | sessionStart = Just state.currTime
+            , blockStart = Just state.currTime
+        }
 
 
 startTrial : State -> State
@@ -412,19 +456,21 @@ updateCurrTime state input =
 emptyState : Int -> Time -> State
 emptyState initialSeed time =
     { sessionStart = Nothing
+    , blockStart = Nothing
     , trialStart = time
     , segmentStart = time
     , currTime = time
     , log = []
     , trialResult = NoResult
     , currentSeed = Random.initialSeed initialSeed
+    , blockCounter = 0
     }
 
 
 isPlaying : GameState msg -> Bool
 isPlaying gameState =
     case gameState of
-        Playing _ _ ->
+        Playing _ ->
             True
 
         Loading _ _ ->
