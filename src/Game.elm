@@ -38,6 +38,7 @@ type alias Cycle =
     , border : Maybe Time
     , timeout : Maybe Time
     , rest : Maybe Time
+    , break : Maybe Time
     , width : Maybe Int
     , height : Maybe Int
     , blue : Bool
@@ -207,11 +208,6 @@ isRest game =
             False
 
 
-break : Time -> State -> Game msg
-break duration =
-    segment [ timeoutFromSegmentStart duration ] (Just Break)
-
-
 andThen : (State -> Game msg) -> Game msg -> Game msg
 andThen =
     Card.andThen (always False) resetSegmentStart Initialize
@@ -262,6 +258,12 @@ logWithCondition enabled logEntry state =
             , Cmd.none
             )
         )
+
+
+break : Time -> State -> Game msg
+break duration state =
+    log (BeginDisplay (Just Break)) (startTrial state)
+        |> andThen (segment [ timeoutFromSegmentStart duration ] (Just Break))
 
 
 rest : Time -> State -> Game msg
