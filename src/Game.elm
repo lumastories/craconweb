@@ -38,7 +38,6 @@ type alias Cycle =
     , border : Maybe Time
     , timeout : Maybe Time
     , rest : Maybe Time
-    , break : Maybe Time
     , width : Maybe Int
     , height : Maybe Int
     , blue : Bool
@@ -102,8 +101,8 @@ type Layout
     | RedCross BorderType
     | Fixation BorderType
     | Probe BorderType Direction
+    | Interval
     | Rest
-    | Break
 
 
 type BorderType
@@ -184,24 +183,24 @@ andThenCheckTimeout isTimeout =
     Card.andThen isTimeout resetSegmentStart Initialize
 
 
-andThenBreak : { breakDuration : Time, shouldBreak : State -> Bool, isFinish : State -> Bool } -> (State -> Game msg) -> Game msg -> Game msg
-andThenBreak { breakDuration, shouldBreak, isFinish } =
-    Card.andThenBreak
-        { breakCard = break breakDuration
-        , breakDuration = breakDuration
-        , shouldBreak = shouldBreak
+andThenRest : { restDuration : Time, shouldRest : State -> Bool, isFinish : State -> Bool } -> (State -> Game msg) -> Game msg -> Game msg
+andThenRest { restDuration, shouldRest, isFinish } =
+    Card.andThenRest
+        { restCard = rest restDuration
+        , restDuration = restDuration
+        , shouldRest = shouldRest
         , isFinish = isFinish
-        , isRest = isRest
+        , isInterval = isInterval
         , resetSegmentStart = resetSegmentStart
         , resetBlockStart = resetBlockStart
         , initialize = Initialize
         }
 
 
-isRest : Game msg -> Bool
-isRest game =
+isInterval : Game msg -> Bool
+isInterval game =
     case Card.layout game of
-        Just Rest ->
+        Just Interval ->
             True
 
         _ ->
@@ -219,9 +218,9 @@ resetSegmentStart state =
 
 
 resetBlockStart : Time -> State -> State
-resetBlockStart breakDuration state =
+resetBlockStart restDuration state =
     { state
-        | blockStart = Just (state.currTime + breakDuration)
+        | blockStart = Just (state.currTime + restDuration)
         , blockCounter = state.blockCounter + 1
     }
 
@@ -260,23 +259,23 @@ logWithCondition enabled logEntry state =
         )
 
 
-break : Time -> State -> Game msg
-break duration state =
-    log (BeginDisplay (Just Break)) (startTrial state)
-        |> andThen (segment [ timeoutFromSegmentStart duration ] (Just Break))
-
-
 rest : Time -> State -> Game msg
-rest expiration state =
+rest duration state =
     log (BeginDisplay (Just Rest)) (startTrial state)
-        |> andThen (segment [ timeout expiration ] (Just Rest))
+        |> andThen (segment [ timeoutFromSegmentStart duration ] (Just Rest))
 
 
-addRests : Maybe Layout -> Time -> Time -> List (State -> Game msg) -> Generator (List (State -> Game msg))
-addRests layout min jitter trials =
+interval : Time -> State -> Game msg
+interval expiration state =
+    log (BeginDisplay (Just Interval)) (startTrial state)
+        |> andThen (segment [ timeout expiration ] (Just Interval))
+
+
+addIntervals : Maybe Layout -> Time -> Time -> List (State -> Game msg) -> Generator (List (State -> Game msg))
+addIntervals layout min jitter trials =
     trials
         |> List.map Random.Extra.constant
-        |> List.intersperse (Random.float min (min + jitter) |> Random.map (rest))
+        |> List.intersperse (Random.float min (min + jitter) |> Random.map interval)
         |> Random.Extra.combine
 
 

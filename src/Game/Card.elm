@@ -3,7 +3,7 @@ module Game.Card
         ( Card
         , Continuation(..)
         , andThen
-        , andThenBreak
+        , andThenRest
         , card
         , complete
         , layout
@@ -23,7 +23,7 @@ type Card state layout input msg
 
 type Continuation state layout input msg
     = Continue state (Card state layout input msg)
-    | Break state (Card state layout input msg)
+    | Rest state (Card state layout input msg)
     | Complete state
 
 
@@ -49,7 +49,7 @@ andThen isTimeout resetSegmentStart initialize f (Card card) =
                     , cmd
                     )
 
-                ( Break state newCard, cmd ) ->
+                ( Rest state newCard, cmd ) ->
                     ( Continue
                         state
                         (andThen isTimeout resetSegmentStart initialize f newCard)
@@ -59,12 +59,12 @@ andThen isTimeout resetSegmentStart initialize f (Card card) =
         Card { card | logic = newLogic }
 
 
-andThenBreak :
-    { breakCard : state -> Card state layout input msg
-    , breakDuration : Time
-    , shouldBreak : state -> Bool
+andThenRest :
+    { restCard : state -> Card state layout input msg
+    , restDuration : Time
+    , shouldRest : state -> Bool
     , isFinish : state -> Bool
-    , isRest : Card state layout input msg -> Bool
+    , isInterval : Card state layout input msg -> Bool
     , resetSegmentStart : state -> state
     , resetBlockStart : Time -> state -> state
     , initialize : input
@@ -72,7 +72,7 @@ andThenBreak :
     -> (state -> Card state layout input msg)
     -> Card state layout input msg
     -> Card state layout input msg
-andThenBreak ({ breakCard, isRest, breakDuration, shouldBreak, isFinish, resetSegmentStart, resetBlockStart, initialize } as args) f (Card card) =
+andThenRest ({ restCard, isInterval, restDuration, shouldRest, isFinish, resetSegmentStart, resetBlockStart, initialize } as args) f (Card card) =
     let
         newLogic input =
             case card.logic input of
@@ -81,12 +81,12 @@ andThenBreak ({ breakCard, isRest, breakDuration, shouldBreak, isFinish, resetSe
                         updatedState =
                             resetSegmentStart state
                     in
-                        case ( shouldBreak state, isFinish state ) of
+                        case ( shouldRest state, isFinish state ) of
                             ( True, False ) ->
                                 ( updatedState
-                                    |> resetBlockStart breakDuration
-                                    |> breakCard
-                                    |> Break updatedState
+                                    |> resetBlockStart restDuration
+                                    |> restCard
+                                    |> Rest updatedState
                                 , cmd1
                                 )
 
@@ -100,35 +100,35 @@ andThenBreak ({ breakCard, isRest, breakDuration, shouldBreak, isFinish, resetSe
                                 in
                                     ( continuation, Cmd.batch [ cmd1, cmd2 ] )
 
-                ( Break state newCard, cmd1 ) ->
-                    continuingFromBreak args cmd1 newCard f state
+                ( Rest state newCard, cmd1 ) ->
+                    continuingFromRest args cmd1 newCard f state
 
                 ( Continue state newCard, cmd ) ->
                     ( Continue
                         state
-                        (andThenBreak args f newCard)
+                        (andThenRest args f newCard)
                     , cmd
                     )
     in
         Card { card | logic = newLogic }
 
 
-continuingFromBreak :
-    { breakCard : state -> Card state layout input msg
-    , breakDuration : Time
+continuingFromRest :
+    { restCard : state -> Card state layout input msg
+    , restDuration : Time
     , initialize : input
     , isFinish : state -> Bool
-    , isRest : Card state layout input msg -> Bool
+    , isInterval : Card state layout input msg -> Bool
     , resetBlockStart : Time -> state -> state
     , resetSegmentStart : state -> state
-    , shouldBreak : state -> Bool
+    , shouldRest : state -> Bool
     }
     -> Cmd msg
     -> Card state layout input msg
     -> (state -> Card state layout input msg)
     -> state
     -> ( Continuation state layout input msg, Cmd msg )
-continuingFromBreak args cmd newCard f state =
+continuingFromRest args cmd newCard f state =
     let
         ( continuation, cmd2 ) =
             step args.initialize (f (args.resetSegmentStart state))
@@ -136,7 +136,7 @@ continuingFromBreak args cmd newCard f state =
         contCard =
             continuationCard continuation
     in
-        case ( contCard, Maybe.map args.isRest contCard ) of
+        case ( contCard, Maybe.map args.isInterval contCard ) of
             ( Just card, Just True ) ->
                 let
                     ( nextContinuation, cmd3 ) =
@@ -144,7 +144,7 @@ continuingFromBreak args cmd newCard f state =
                 in
                     ( nextContinuation
                         |> continuationCard
-                        |> Maybe.map (\nextCard -> Continue state (andThenBreak args f nextCard))
+                        |> Maybe.map (\nextCard -> Continue state (andThenRest args f nextCard))
                         |> Maybe.withDefault (Complete state)
                     , Cmd.batch [ cmd, cmd2, cmd3 ]
                     )
@@ -152,7 +152,7 @@ continuingFromBreak args cmd newCard f state =
             _ ->
                 ( Continue
                     state
-                    (andThenBreak args f newCard)
+                    (andThenRest args f newCard)
                 , cmd
                 )
 
@@ -194,7 +194,7 @@ unwrapContinuation continuation =
         Continue a _ ->
             a
 
-        Break a _ ->
+        Rest a _ ->
             a
 
         Complete a ->
@@ -207,7 +207,7 @@ continuationCard continuation =
         Continue _ layout ->
             Just layout
 
-        Break _ layout ->
+        Rest _ layout ->
             Just layout
 
         Complete _ ->

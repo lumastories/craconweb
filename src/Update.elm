@@ -679,8 +679,8 @@ You will see pictures presented in either a dark blue or light gray border. Pres
                         , nonResponseImages = getFullImagePathsNew model.filesrv ugimages_i |> Maybe.withDefault []
                         , seedInt = seed
                         , currentTime = time
-                        , blockDuration = 0.5 * Time.minute
-                        , breakDuration = 5 * Time.second
+                        , blockDuration = 5 * Time.minute
+                        , restDuration = 5 * Time.second
                         , totalBlocks = 2
                         , redCrossDuration = 500 * Time.millisecond
                         }
@@ -1109,7 +1109,7 @@ handleInput input model =
                 ( Game.Card.Continue _ newGame, cmd ) ->
                     ( { model | gameState = Game.Playing { game = newGame, session = session } }, cmd )
 
-                ( Game.Card.Break _ newGame, cmd ) ->
+                ( Game.Card.Rest _ newGame, cmd ) ->
                     ( { model | gameState = Game.Playing { game = newGame, session = session } }, cmd )
 
         Game.Saving _ _ _ ->

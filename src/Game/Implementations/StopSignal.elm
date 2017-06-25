@@ -79,11 +79,11 @@ init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages
                 |> Maybe.map (\sessionStart -> sessionStart + gameDuration < state.currTime)
                 |> Maybe.withDefault False
 
-        addRests =
-            Game.addRests Nothing (500 * Time.millisecond) 0
+        addIntervals =
+            Game.addIntervals Nothing (500 * Time.millisecond) 0
     in
         Random.List.shuffle trials
-            |> Random.andThen addRests
+            |> Random.andThen addIntervals
             |> Random.map
                 (\trials ->
                     (info infoString :: startSession :: log (BeginSession { seed = seedInt }) :: trials)

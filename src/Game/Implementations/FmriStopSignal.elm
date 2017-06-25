@@ -12,7 +12,7 @@ import Game
         , LogEntry(..)
         , State
         , andThen
-        , andThenBreak
+        , andThenRest
         , andThenCheckTimeout
         , emptyState
         , info
@@ -43,12 +43,12 @@ init :
     , seedInt : Int
     , currentTime : Time
     , blockDuration : Time
-    , breakDuration : Time
+    , restDuration : Time
     , totalBlocks : Int
     , redCrossDuration : Time
     }
     -> Game msg
-init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages, seedInt, currentTime, blockDuration, redCrossDuration, totalBlocks, breakDuration } =
+init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages, seedInt, currentTime, blockDuration, redCrossDuration, totalBlocks, restDuration } =
     let
         gos =
             responseImages
@@ -77,7 +77,7 @@ init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages
         trials =
             gos ++ noGos
 
-        shouldBreak state =
+        shouldRest state =
             state.blockStart
                 |> Maybe.map (\blockStart -> blockStart + blockDuration < state.currTime)
                 |> Maybe.withDefault False
@@ -85,18 +85,18 @@ init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages
         isFinish state =
             state.blockCounter + 1 >= totalBlocks
 
-        addRests =
-            Game.addRests Nothing (3 * Time.second) (4 * Time.second)
+        addIntervals =
+            Game.addIntervals Nothing (3 * Time.second) (4 * Time.second)
     in
         Random.List.shuffle trials
-            |> Random.andThen addRests
+            |> Random.andThen addIntervals
             |> Random.map
                 (\trials ->
                     (startSession :: log (BeginSession { seed = seedInt }) :: trials)
                         |> List.foldl
-                            (andThenBreak
-                                { breakDuration = breakDuration
-                                , shouldBreak = shouldBreak
+                            (andThenRest
+                                { restDuration = restDuration
+                                , shouldRest = shouldRest
                                 , isFinish = isFinish
                                 }
                             )

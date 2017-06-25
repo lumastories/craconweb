@@ -107,10 +107,10 @@ view { gameSlug, gameState, initMsg, fmriUser } =
                         Just (Game.Probe borderType direction) ->
                             viewProbe borderType direction
 
-                        Just Game.Break ->
-                            viewBreak state
-
                         Just Game.Rest ->
+                            viewRest state
+
+                        Just Game.Interval ->
                             Html.text ""
                     ]
 
@@ -366,8 +366,8 @@ viewFixation borderType =
         ]
 
 
-viewBreak : Game.State -> Html Msg
-viewBreak state =
+viewRest : Game.State -> Html Msg
+viewRest state =
     let
         counter =
             state.blockStart
