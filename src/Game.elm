@@ -3,22 +3,16 @@ module Game exposing (..)
 import Game.Card as Card exposing (Continuation(Complete, Continue))
 import Random exposing (Generator)
 import Random.Extra
-import Time exposing (Time)
 import RemoteData
-import Entity
+import Time exposing (Time)
 
 
 type GameState msg
     = NotPlaying
     | Loading (Game msg) (RemoteData.WebData Session)
-    | Playing (Game msg) Session
+    | Playing { game : Game msg, session : Session }
     | Saving State Session (RemoteData.WebData ( Session, List Cycle ))
     | Saved State { session : Session, cycles : List Cycle }
-
-
-type Fmri
-    = YesFmri { user : Entity.User }
-    | NotFmri
 
 
 type alias Session =
@@ -107,6 +101,8 @@ type Layout
     | RedCross BorderType
     | Fixation BorderType
     | Probe BorderType Direction
+    | Interval
+    | Rest
 
 
 type BorderType
@@ -138,12 +134,14 @@ type LogEntry
 
 type alias State =
     { sessionStart : Maybe Time
+    , blockStart : Maybe Time
     , trialStart : Time
     , segmentStart : Time
     , currTime : Time
     , log : List LogEntry
     , trialResult : Result
     , currentSeed : Random.Seed
+    , blockCounter : Int
     }
 
 
@@ -185,6 +183,30 @@ andThenCheckTimeout isTimeout =
     Card.andThen isTimeout resetSegmentStart Initialize
 
 
+andThenRest : { restDuration : Time, shouldRest : State -> Bool, isFinish : State -> Bool } -> (State -> Game msg) -> Game msg -> Game msg
+andThenRest { restDuration, shouldRest, isFinish } =
+    Card.andThenRest
+        { restCard = rest restDuration
+        , restDuration = restDuration
+        , shouldRest = shouldRest
+        , isFinish = isFinish
+        , isInterval = isInterval
+        , resetSegmentStart = resetSegmentStart
+        , resetBlockStart = resetBlockStart
+        , initialize = Initialize
+        }
+
+
+isInterval : Game msg -> Bool
+isInterval game =
+    case Card.layout game of
+        Just Interval ->
+            True
+
+        _ ->
+            False
+
+
 andThen : (State -> Game msg) -> Game msg -> Game msg
 andThen =
     Card.andThen (always False) resetSegmentStart Initialize
@@ -193,6 +215,14 @@ andThen =
 resetSegmentStart : State -> State
 resetSegmentStart state =
     { state | segmentStart = state.currTime }
+
+
+resetBlockStart : Time -> State -> State
+resetBlockStart restDuration state =
+    { state
+        | blockStart = Just (state.currTime + restDuration)
+        , blockCounter = state.blockCounter + 1
+    }
 
 
 oneOf : List Logic -> Logic
@@ -229,23 +259,33 @@ logWithCondition enabled logEntry state =
         )
 
 
-rest : Maybe Layout -> Time -> State -> Game msg
-rest layout expiration state =
-    log (BeginDisplay layout) (startTrial state)
-        |> andThen (segment [ timeout expiration ] layout)
+rest : Time -> State -> Game msg
+rest duration state =
+    log (BeginDisplay (Just Rest)) (startTrial state)
+        |> andThen (segment [ timeoutFromSegmentStart duration ] (Just Rest))
 
 
-addRests : Maybe Layout -> Time -> Time -> List (State -> Game msg) -> Generator (List (State -> Game msg))
-addRests layout min jitter trials =
+interval : Time -> State -> Game msg
+interval expiration state =
+    log (BeginDisplay (Just Interval)) (startTrial state)
+        |> andThen (segment [ timeout expiration ] (Just Interval))
+
+
+addIntervals : Maybe Layout -> Time -> Time -> List (State -> Game msg) -> Generator (List (State -> Game msg))
+addIntervals layout min jitter trials =
     trials
         |> List.map Random.Extra.constant
-        |> List.intersperse (Random.float min (min + jitter) |> Random.map (rest layout))
+        |> List.intersperse (Random.float min (min + jitter) |> Random.map interval)
         |> Random.Extra.combine
 
 
 startSession : State -> Game msg
 startSession state =
-    Card.complete { state | sessionStart = Just state.currTime }
+    Card.complete
+        { state
+            | sessionStart = Just state.currTime
+            , blockStart = Just state.currTime
+        }
 
 
 startTrial : State -> State
@@ -417,19 +457,21 @@ updateCurrTime state input =
 emptyState : Int -> Time -> State
 emptyState initialSeed time =
     { sessionStart = Nothing
+    , blockStart = Nothing
     , trialStart = time
     , segmentStart = time
     , currTime = time
     , log = []
     , trialResult = NoResult
     , currentSeed = Random.initialSeed initialSeed
+    , blockCounter = 0
     }
 
 
 isPlaying : GameState msg -> Bool
 isPlaying gameState =
     case gameState of
-        Playing _ _ ->
+        Playing _ ->
             True
 
         Loading _ _ ->

@@ -23,7 +23,7 @@ fillCycles sessionId logEntry cycles =
             beginCycle { sessionId = sessionId, time = time, sort = List.length cycles } cycles
 
         Game.EndTrial time ->
-            endCycle time cycles
+            cycles
 
         Game.BeginDisplay maybeLayout time ->
             beginDisplay { sessionId = sessionId, maybeLayout = maybeLayout, time = time } cycles
@@ -69,16 +69,6 @@ beginCycle { sessionId, time, sort } cycles =
     , images = []
     }
         :: cycles
-
-
-endCycle : Time -> List Game.Cycle -> List Game.Cycle
-endCycle time cycles =
-    case cycles of
-        [] ->
-            cycles
-
-        cycle :: tail ->
-            { cycle | rest = Just time } :: tail
 
 
 beginDisplay : { sessionId : String, time : Time, maybeLayout : Maybe Game.Layout } -> List Game.Cycle -> List Game.Cycle
@@ -203,6 +193,19 @@ beginDisplay { sessionId, time, maybeLayout } cycles =
             in
                 (updatedCycle :: tail)
                     |> beginBorder { borderType = borderType, time = time }
+
+        ( Just Game.Rest, cycle :: tail ) ->
+            let
+                updatedCycle =
+                    if cycle.rest == Nothing then
+                        { cycle | rest = Just time }
+                    else
+                        cycle
+            in
+                (updatedCycle :: tail)
+
+        ( Just Game.Interval, cycle :: tail ) ->
+            cycles
 
 
 beginBorder : { borderType : Game.BorderType, time : Time } -> List Game.Cycle -> List Game.Cycle

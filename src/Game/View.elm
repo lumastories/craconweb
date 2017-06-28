@@ -1,30 +1,31 @@
 module Game.View exposing (view, viewResult)
 
+import Entity
 import Game exposing (BorderType(..))
 import Game.Card
 import Game.Result
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Markdown
-import Numeral
-import Ui.Parts
-import Svg exposing (Svg, svg, circle)
-import Svg.Attributes as Svg exposing (cy, cx, r)
-import List.Extra
-import RemoteData
-import Model exposing (Msg(..))
 import Json.Decode
+import List.Extra
+import Markdown
+import Model exposing (Msg(..))
+import Numeral
+import RemoteData
+import Svg exposing (Svg, circle, svg)
+import Svg.Attributes as Svg exposing (cx, cy, r)
+import Ui.Parts
 
 
 view :
     { gameState : Game.GameState Msg
     , initMsg : Msg
     , gameSlug : String
-    , fmri : Game.Fmri
+    , fmriUser : Maybe Entity.User
     }
     -> Html Msg
-view { gameSlug, gameState, initMsg, fmri } =
+view { gameSlug, gameState, initMsg, fmriUser } =
     case gameState of
         Game.Loading game remoteData ->
             case remoteData of
@@ -49,7 +50,7 @@ view { gameSlug, gameState, initMsg, fmri } =
                 _ ->
                     text ""
 
-        Game.Playing game session ->
+        Game.Playing { game, session } ->
             let
                 state =
                     game |> Game.unwrap
@@ -105,6 +106,12 @@ view { gameSlug, gameState, initMsg, fmri } =
 
                         Just (Game.Probe borderType direction) ->
                             viewProbe borderType direction
+
+                        Just Game.Rest ->
+                            viewRest state
+
+                        Just Game.Interval ->
+                            Html.text ""
                     ]
 
         Game.Saving state session remoteData ->
@@ -125,8 +132,8 @@ view { gameSlug, gameState, initMsg, fmri } =
 
         Game.NotPlaying ->
             div []
-                [ case fmri of
-                    Game.NotFmri ->
+                [ case fmriUser of
+                    Nothing ->
                         div []
                             [ a
                                 [ class "button is-info is-large"
@@ -135,7 +142,7 @@ view { gameSlug, gameState, initMsg, fmri } =
                                 [ text "Start Game" ]
                             ]
 
-                    Game.YesFmri { user } ->
+                    Just user ->
                         div []
                             [ p [ class "" ]
                                 [ text "fMRI for "
@@ -357,6 +364,25 @@ viewFixation borderType =
             [ class "column" ]
             [ div [ class "fixationCross" ] [ text "+" ] ]
         ]
+
+
+viewRest : Game.State -> Html Msg
+viewRest state =
+    let
+        counter =
+            state.blockStart
+                |> Maybe.map (\blockStart -> ceiling ((blockStart - state.currTime) / 1000))
+                |> Maybe.map (\countdown -> " in " ++ toString countdown ++ " seconds.")
+                |> Maybe.withDefault "."
+    in
+        Ui.Parts.middleBlock
+            [ text <|
+                "This concludes Block "
+                    ++ toString (state.blockCounter)
+                    ++ ". Please stand by to begin Block "
+                    ++ toString (state.blockCounter + 1)
+                    ++ counter
+            ]
 
 
 viewProbe : BorderType -> Game.Direction -> Html Msg

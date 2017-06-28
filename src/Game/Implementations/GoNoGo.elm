@@ -15,7 +15,7 @@ import Game
         , segment
         , log
         , logWithCondition
-        , addRests
+        , addIntervals
         , info
         , onIndication
         , timeout
@@ -88,7 +88,7 @@ init { totalDuration, infoString, responseImages, nonResponseImages, fillerImage
     in
         trials
             |> Random.List.shuffle
-            |> Random.andThen (addRests Nothing 500 0)
+            |> Random.andThen (addIntervals Nothing 500 0)
             |> Random.map
                 (\trials ->
                     (info infoString :: startSession :: log (BeginSession { seed = seedInt }) :: trials)

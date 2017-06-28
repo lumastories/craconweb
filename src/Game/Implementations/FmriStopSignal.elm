@@ -1,4 +1,4 @@
-module Game.Implementations.StopSignal
+module Game.Implementations.FmriStopSignal
     exposing
         ( init
         )
@@ -12,6 +12,7 @@ import Game
         , LogEntry(..)
         , State
         , andThen
+        , andThenRest
         , andThenCheckTimeout
         , emptyState
         , info
@@ -41,11 +42,13 @@ init :
     , nonResponseImages : List Image
     , seedInt : Int
     , currentTime : Time
-    , gameDuration : Time
+    , blockDuration : Time
+    , restDuration : Time
+    , totalBlocks : Int
     , redCrossDuration : Time
     }
     -> Game msg
-init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages, seedInt, currentTime, gameDuration, redCrossDuration } =
+init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages, seedInt, currentTime, blockDuration, redCrossDuration, totalBlocks, restDuration } =
     let
         gos =
             responseImages
@@ -54,7 +57,7 @@ init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages
                         { borderDelay = borderDelay
                         , totalDuration = totalDuration
                         , goTrial = True
-                        , gameDuration = gameDuration
+                        , blockDuration = blockDuration
                         , redCrossDuration = redCrossDuration
                         }
                     )
@@ -66,7 +69,7 @@ init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages
                         { borderDelay = borderDelay
                         , totalDuration = totalDuration
                         , goTrial = False
-                        , gameDuration = gameDuration
+                        , blockDuration = blockDuration
                         , redCrossDuration = redCrossDuration
                         }
                     )
@@ -74,20 +77,30 @@ init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages
         trials =
             gos ++ noGos
 
-        isTimeout state =
-            state.sessionStart
-                |> Maybe.map (\sessionStart -> sessionStart + gameDuration < state.currTime)
+        shouldRest state =
+            state.blockStart
+                |> Maybe.map (\blockStart -> blockStart + blockDuration < state.currTime)
                 |> Maybe.withDefault False
 
+        isFinish state =
+            state.blockCounter + 1 >= totalBlocks
+
         addIntervals =
-            Game.addIntervals Nothing (500 * Time.millisecond) 0
+            Game.addIntervals Nothing (3 * Time.second) (4 * Time.second)
     in
         Random.List.shuffle trials
             |> Random.andThen addIntervals
             |> Random.map
                 (\trials ->
-                    (info infoString :: startSession :: log (BeginSession { seed = seedInt }) :: trials)
-                        |> List.foldl (andThenCheckTimeout isTimeout) (Game.Card.complete (emptyState seedInt currentTime))
+                    (startSession :: log (BeginSession { seed = seedInt }) :: trials)
+                        |> List.foldl
+                            (andThenRest
+                                { restDuration = restDuration
+                                , shouldRest = shouldRest
+                                , isFinish = isFinish
+                                }
+                            )
+                            (Game.Card.complete (emptyState seedInt currentTime))
                 )
             |> (\generator -> Random.step generator (Random.initialSeed seedInt))
             |> Tuple.first
@@ -96,14 +109,14 @@ init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages
 trial :
     { borderDelay : Time
     , totalDuration : Time
-    , gameDuration : Time
+    , blockDuration : Time
     , redCrossDuration : Time
     , goTrial : Bool
     }
     -> Image
     -> State
     -> Game msg
-trial { borderDelay, totalDuration, goTrial, gameDuration, redCrossDuration } image state =
+trial { borderDelay, totalDuration, goTrial, blockDuration, redCrossDuration } image state =
     let
         borderType =
             if goTrial then

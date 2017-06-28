@@ -7,6 +7,7 @@ import Game
 import Game.Card
 import Game.Cycle
 import Game.Implementations.DotProbe
+import Game.Implementations.FmriStopSignal
 import Game.Implementations.GoNoGo
 import Game.Implementations.StopSignal
 import Game.Implementations.VisualSearch
@@ -520,8 +521,11 @@ update msg model =
             saveGameData state session model
 
         -- TODO fetch configuration from the model
-        InitStopSignal fmri ->
-            initStopSignal fmri model
+        InitStopSignal ->
+            initStopSignal model
+
+        InitFmriStopSignal user ->
+            initFmriStopSignal user model
 
         FmriImagesResp result ->
             ( { model | fmriUserData = result }, Cmd.none )
@@ -640,8 +644,8 @@ update msg model =
             httpErrorState model err
 
 
-initStopSignal : { fmri : Game.Fmri } -> Model -> ( Model, Cmd Msg )
-initStopSignal { fmri } model =
+initFmriStopSignal : { user : Entity.User } -> Model -> ( Model, Cmd Msg )
+initFmriStopSignal { user } model =
     case model.stopsignalGame of
         Nothing ->
             model ! []
@@ -649,26 +653,71 @@ initStopSignal { fmri } model =
         Just gameEntity ->
             let
                 ugimages_v =
-                    case fmri of
-                        Game.NotFmri ->
-                            model.ugimages_v
-
-                        Game.YesFmri _ ->
-                            model.fmriUserData
-                                |> RemoteData.toMaybe
-                                |> Maybe.map (\{ ugimages_v } -> Just ugimages_v)
-                                |> Maybe.withDefault model.ugimages_v
+                    model.fmriUserData
+                        |> RemoteData.toMaybe
+                        |> Maybe.map (\{ ugimages_v } -> Just ugimages_v)
+                        |> Maybe.withDefault model.ugimages_v
 
                 ugimages_i =
-                    case fmri of
-                        Game.NotFmri ->
-                            model.ugimages_i
+                    model.fmriUserData
+                        |> RemoteData.toMaybe
+                        |> Maybe.map (\{ ugimages_i } -> Just ugimages_i)
+                        |> Maybe.withDefault model.ugimages_i
 
-                        Game.YesFmri _ ->
-                            model.fmriUserData
-                                |> RemoteData.toMaybe
-                                |> Maybe.map (\{ ugimages_i } -> Just ugimages_i)
-                                |> Maybe.withDefault model.ugimages_i
+                game time seed =
+                    Game.Implementations.FmriStopSignal.init
+                        { borderDelay = 100 * Time.millisecond
+                        , totalDuration = 1000 * Time.millisecond
+                        , infoString = """
+<h3 class="title">Instructions</h3>
+You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a grey border. Go as fast as you can, but don't sacrifice accuracy for speed.
+<br>
+<br>
+**Press any key to continue.**
+"""
+                        , responseImages = getFullImagePathsNew model.filesrv ugimages_v |> Maybe.withDefault []
+                        , nonResponseImages = getFullImagePathsNew model.filesrv ugimages_i |> Maybe.withDefault []
+                        , seedInt = seed
+                        , currentTime = time
+                        , blockDuration = 1 * Time.minute
+                        , restDuration = 5 * Time.second
+                        , totalBlocks = 2
+                        , redCrossDuration = 500 * Time.millisecond
+                        }
+
+                gameCmd =
+                    Time.now
+                        |> Task.map
+                            (\time ->
+                                let
+                                    seed =
+                                        42
+                                in
+                                    ( time
+                                    , seed
+                                    , game time seed
+                                    )
+                            )
+                        |> Task.perform (\( time, seed, game ) -> StartSession { gameId = gameEntity.id, game = game, time = time, seed = seed })
+            in
+                ( model
+                , gameCmd
+                )
+
+
+initStopSignal : Model -> ( Model, Cmd Msg )
+initStopSignal model =
+    case model.stopsignalGame of
+        Nothing ->
+            model ! []
+
+        Just gameEntity ->
+            let
+                ugimages_v =
+                    model.ugimages_v
+
+                ugimages_i =
+                    model.ugimages_i
 
                 game time seed =
                     Game.Implementations.StopSignal.init
@@ -687,7 +736,6 @@ You will see pictures presented in either a dark blue or light gray border. Pres
                         , currentTime = time
                         , gameDuration = 5 * Time.minute
                         , redCrossDuration = 500 * Time.millisecond
-                        , fmri = fmri
                         }
 
                 gameCmd =
@@ -696,12 +744,7 @@ You will see pictures presented in either a dark blue or light gray border. Pres
                             (\time ->
                                 let
                                     seed =
-                                        case fmri of
-                                            Game.YesFmri _ ->
-                                                42
-
-                                            Game.NotFmri ->
-                                                round time
+                                        round time
                                 in
                                     ( time
                                     , seed
@@ -711,15 +754,7 @@ You will see pictures presented in either a dark blue or light gray border. Pres
                         |> Task.perform (\( time, seed, game ) -> StartSession { gameId = gameEntity.id, game = game, time = time, seed = seed })
             in
                 ( model
-                , Cmd.batch
-                    [ gameCmd
-                    , case fmri of
-                        Game.YesFmri _ ->
-                            Navigation.newUrl "stopsignal"
-
-                        Game.NotFmri ->
-                            Cmd.none
-                    ]
+                , gameCmd
                 )
 
 
@@ -1036,7 +1071,7 @@ playGame : Game.Game Msg -> Game.Session -> Model -> ( Model, Cmd Msg )
 playGame game session model =
     handleInput Game.Initialize
         { model
-            | gameState = Game.Playing game session
+            | gameState = Game.Playing { game = game, session = session }
             , glitching = Nothing
         }
 
@@ -1054,7 +1089,7 @@ handleInput input model =
         Game.Loading _ _ ->
             ( model, Cmd.none )
 
-        Game.Playing game session ->
+        Game.Playing { game, session } ->
             case Game.Card.step input game of
                 ( Game.Card.Complete state, cmd ) ->
                     let
@@ -1072,7 +1107,10 @@ handleInput input model =
                         )
 
                 ( Game.Card.Continue _ newGame, cmd ) ->
-                    ( { model | gameState = Game.Playing newGame session }, cmd )
+                    ( { model | gameState = Game.Playing { game = newGame, session = session } }, cmd )
+
+                ( Game.Card.Rest _ newGame, cmd ) ->
+                    ( { model | gameState = Game.Playing { game = newGame, session = session } }, cmd )
 
         Game.Saving _ _ _ ->
             ( model, Cmd.none )
@@ -1106,7 +1144,7 @@ presses : number -> Model -> ( Model, Cmd Msg )
 presses keyCode model =
     let
         ( newModel1, cmd1 ) =
-            if (keyCode == 32 {- space -} || (keyCode >= 48 && keyCode <= 57) {- numeric -}) then
+            if keyCode == 32 {- space -} || (keyCode >= 48 && keyCode <= 57) {- numeric -} then
                 handleInput Game.Indication model
             else
                 ( model, Cmd.none )
@@ -1127,7 +1165,7 @@ presses keyCode model =
         cmd3 =
             case ( keyCode, newModel2.gameState, RemoteData.toMaybe newModel2.fmriUserData ) of
                 ( 222 {- ' -}, Game.NotPlaying, Just { user } ) ->
-                    Task.perform InitStopSignal (Task.succeed { fmri = Game.YesFmri { user = user } })
+                    Task.perform InitFmriStopSignal (Task.succeed { user = user })
 
                 _ ->
                     Cmd.none
@@ -1228,8 +1266,12 @@ saveGameDataCmd state session model =
                 , httpsrv = model.httpsrv
                 }
 
+        _ =
+            Debug.log "logs" state.log
+
         cycles =
             Game.Cycle.generate session.id state.log
+                |> Debug.log "cycles"
     in
         Task.map2 (,) endSessionTask postCyclesTask
             |> Task.map (\( a, b ) -> RemoteData.map2 (,) a b)
@@ -1239,7 +1281,7 @@ saveGameDataCmd state session model =
 fix_email : Entity.UserRecord -> Entity.UserRecord
 fix_email ur =
     if ur.email == "" then
-        { ur | email = (ur.username ++ "@example.com") }
+        { ur | email = ur.username ++ "@example.com" }
     else
         ur
 

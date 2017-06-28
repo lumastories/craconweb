@@ -15,7 +15,7 @@ import Game
         , emptyState
         , segment
         , log
-        , addRests
+        , addIntervals
         , info
         , onIndication
         , timeout
@@ -63,7 +63,7 @@ init { fixationDuration, imageDuration, infoString, responseImages, nonResponseI
     in
         trials
             |> Random.List.shuffle
-            |> Random.andThen (addRests Nothing 500 0)
+            |> Random.andThen (addIntervals Nothing 500 0)
             |> Random.map
                 (\trials ->
                     (info infoString :: startSession :: log (BeginSession { seed = seedInt }) :: trials)
