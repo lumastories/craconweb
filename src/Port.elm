@@ -42,7 +42,6 @@ port remove : Key -> Cmd msg
 port clear : () -> Cmd msg
 
 
-port ping : () -> Cmd msg
 
 
 port preload : List String -> Cmd msg

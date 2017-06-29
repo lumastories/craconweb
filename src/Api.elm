@@ -66,7 +66,6 @@ shared httpsrv token sub =
     [ Task.attempt M.GameResp (fetchGame httpsrv token "gonogo")
     , Task.attempt M.GameResp (fetchGame httpsrv token "dotprobe")
     , Task.attempt M.GameResp (fetchGame httpsrv token "stopsignal")
-    , Task.attempt M.GameResp (fetchGame httpsrv token "respondsignal")
     , Task.attempt M.GameResp (fetchGame httpsrv token "visualsearch")
     , Task.attempt M.UserResp (fetchUser httpsrv token sub)
     , Task.attempt M.PublicMesResp (fetchPublicMesAnswers { url = httpsrv, token = token, sub = sub })
