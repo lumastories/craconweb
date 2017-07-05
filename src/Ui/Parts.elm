@@ -56,7 +56,7 @@ linkAttrs path =
 modal : List (Html msg) -> Html msg
 modal children =
     div
-        [ class <| "modal is-active" ]
+        [ class "modal is-active" ]
         [ div
             [ class "modal-background" ]
             []
