@@ -650,7 +650,9 @@ statements mesAnswers =
 
         Just mesAnswers ->
             [ h1 [ class "title" ] [ text "Statements" ] ]
-                ++ List.map (div [ class "columns" ]) (List.map statement mesAnswers |> List.Extra.greedyGroupsOf 4)
+                ++ List.map statement mesAnswers
+                |> List.Extra.greedyGroupsOf 4
+                |> List.map (div [ class "columns" ])
 
 
 statement : MesAnswer -> Html Msg
