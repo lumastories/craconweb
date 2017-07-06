@@ -68,7 +68,9 @@ modal children =
 
 grid : Int -> List (Html Msg) -> List (Html Msg)
 grid num children =
-    (List.map (div [ class "columns" ]) (List.map column children |> List.Extra.greedyGroupsOf num))
+    List.map column children
+        |> List.Extra.greedyGroupsOf num
+        |> List.map (div [ class "columns" ])
 
 
 column : Html Msg -> Html Msg
