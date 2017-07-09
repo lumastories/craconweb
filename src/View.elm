@@ -328,7 +328,7 @@ mesQueryModal q feedback =
                         [ class "control" ]
                         [ textarea
                             [ class "textarea"
-                            , placeholder "Answer the above question. Please sign with your first and last initial."
+                            , placeholder "Please answer the above question."
                             , onInput UpdateMesAnswer
                             ]
                             []
