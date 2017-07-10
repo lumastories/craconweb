@@ -174,6 +174,7 @@ type alias MesAnswer =
     , essay : String
     , public : Bool
     , queryId : String
+    , initials : String
     , created : String
     }
 
@@ -184,6 +185,7 @@ newMesAnswerWithqueryId qId =
     , essay = ""
     , public = False
     , queryId = qId
+    , initials = ""
     , created = ""
     }
 
@@ -203,8 +205,9 @@ mesAnswerDecoder =
     JP.decode MesAnswer
         |> JP.required "id" JD.string
         |> JP.required "content" JD.string
-        |> JP.hardcoded False
+        |> JP.required "public" JD.bool
         |> JP.required "mesqueryId" JD.string
+        |> JP.required "initials" JD.string
         |> JP.required "created" JD.string
 
 
