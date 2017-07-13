@@ -324,6 +324,20 @@ update msg model =
                     )
                 )
 
+        MesAuthorsResp (Ok mesAuthors) ->
+            case model.statements of
+                Nothing ->
+                    model ! []
+
+                Just mesAnswers ->
+                    ( { model
+                        | statements =
+                            Just
+                                (List.map (up_mesAnswersDisplayName mesAuthors) mesAnswers)
+                      }
+                    , Cmd.none
+                    )
+
         MesResp (Ok mesAnswers) ->
             ( { model
                 | adminModel =
@@ -333,7 +347,23 @@ update msg model =
             )
 
         PublicMesResp (Ok publicMes) ->
-            ( { model | statements = Just publicMes }, Cmd.none )
+            let
+                cmd =
+                    case model.visitor of
+                        LoggedIn jwt ->
+                            Api.fetchMesAuthors
+                                { url = model.httpsrv
+                                , token = model.jwtencoded
+                                , sub = ""
+                                }
+                                publicMes
+                                jwt.groupId
+                                |> Task.attempt MesAuthorsResp
+
+                        _ ->
+                            Cmd.none
+            in
+                ( { model | statements = Just publicMes }, cmd )
 
         PublishMes id ->
             case model.adminModel.mesAnswers of
@@ -627,6 +657,9 @@ update msg model =
 
         RoleResp (Err err) ->
             httpErrorState model err
+
+        MesAuthorsResp (Err err) ->
+            model ! []
 
         MesAnswersResp (Err err) ->
             model ! []

@@ -663,7 +663,7 @@ statement mes =
             , p [] [ text mes.essay ]
             , i [ class "fa fa-quote-right" ] []
             , br [] []
-            , p [] [ text <| "- " ++ mes.initials ]
+            , p [] [ text <| "- " ++ mes.displayName ]
             ]
         ]
 

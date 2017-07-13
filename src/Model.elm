@@ -6,6 +6,7 @@ import Http
 import Json.Decode as JD
 import Json.Decode.Pipeline as JP
 import Json.Encode as JE
+import List.Extra as LE
 import Navigation
 import RemoteData
 import Routing
@@ -91,6 +92,7 @@ type Msg
     | ResendSession Game.State Game.Session
     | AuthResp (Result Http.Error String)
     | PublicMesResp (Result Http.Error (List MesAnswer))
+    | MesAuthorsResp (Result Http.Error (List MesAuthor))
     | UserResp (Result Http.Error Entity.User)
     | GameResp (Result Http.Error Entity.Game)
     | UsersResp (Result Http.Error (List Entity.User))
@@ -169,12 +171,40 @@ up_tmpUserEdit am tue =
     { am | tmpUserEdit = tue }
 
 
+up_mesAnswersDisplayName : List MesAuthor -> MesAnswer -> MesAnswer
+up_mesAnswersDisplayName authors ans =
+    case LE.find (\auth -> auth.answerId == ans.id) authors of
+        Just auth ->
+            { ans | displayName = auth.userName }
+
+        Nothing ->
+            ans
+
+
+type alias MesAuthor =
+    { answerId : String
+    , userName : String
+    }
+
+
+mesAuthorsDecoder : JD.Decoder (List MesAuthor)
+mesAuthorsDecoder =
+    JD.field "mesauthors" (JD.list mesAuthorDecoder)
+
+
+mesAuthorDecoder : JD.Decoder MesAuthor
+mesAuthorDecoder =
+    JP.decode MesAuthor
+        |> JP.required "mesanswerId" JD.string
+        |> JP.required "userName" JD.string
+
+
 type alias MesAnswer =
     { id : String
     , essay : String
     , public : Bool
     , queryId : String
-    , initials : String
+    , displayName : String
     , created : String
     }
 
@@ -185,7 +215,7 @@ newMesAnswerWithqueryId qId =
     , essay = ""
     , public = False
     , queryId = qId
-    , initials = ""
+    , displayName = ""
     , created = ""
     }
 
@@ -205,7 +235,7 @@ mesAnswerDecoder =
     JP.decode MesAnswer
         |> JP.required "id" JD.string
         |> JP.required "content" JD.string
-        |> JP.required "public" JD.bool
+        |> JP.optional "public" JD.bool False
         |> JP.required "mesqueryId" JD.string
         |> JP.required "initials" JD.string
         |> JP.required "created" JD.string
@@ -258,6 +288,7 @@ type alias JwtPayload =
     , iss : String
     , sub : String
     , roles : List Entity.Role
+    , groupId : String
     }
 
 
@@ -312,3 +343,4 @@ jwtDecoder =
         |> JP.required "iss" JD.string
         |> JP.required "sub" JD.string
         |> JP.required "roles" (JD.list Entity.roleDecoder)
+        |> JP.optional "groupId" JD.string ""
