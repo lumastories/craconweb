@@ -108,6 +108,7 @@ init flags location =
             , badgeRules = RemoteData.NotAsked
             , badgesEarned = RemoteData.NotAsked
             , fmriUserData = RemoteData.NotAsked
+            , statementsModal = False
             }
     in
         Api.fetchFmriUserData model_

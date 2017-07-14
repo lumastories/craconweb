@@ -4,6 +4,7 @@ module Ui.Parts
         , linkAttrs
         , notificationRemoteData
         , modal
+        , modalCard
         , grid
         , middleBlock
         )
@@ -63,6 +64,30 @@ modal children =
         , div
             [ class "modal-content" ]
             children
+        ]
+
+
+modalCard : msg -> String -> List (Html msg) -> Html msg
+modalCard msg title children =
+    div
+        [ class "modal is-active" ]
+        [ div
+            [ class "modal-background" ]
+            []
+        , div
+            [ class "modal-card" ]
+            [ header
+                [ class "modal-card-head" ]
+                [ p
+                    [ class "modal-card-title" ]
+                    [ text title ]
+                , button [ class "delete", onClick msg ] []
+                ]
+            , section
+                [ class "modal-card-body" ]
+                children
+            , footer [ class "modal-card-foot" ] []
+            ]
         ]
 
 

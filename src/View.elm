@@ -27,10 +27,34 @@ bigLogo filesrv =
         ]
 
 
+statementsModalButtonClass : Bool -> String
+statementsModalButtonClass isOn =
+    case isOn of
+        True ->
+            "button is-fullwidth is-info"
+
+        False ->
+            "button is-fullwidth is-info is-outlined"
+
+
+statementsModal : Model -> Html Msg
+statementsModal model =
+    case model.statementsModal of
+        False ->
+            text ""
+
+        True ->
+            Parts.modalCard
+                ToggleStatementsModal
+                "From Participants"
+                (statements model.statements)
+
+
 loginPage : Model -> Html Msg
 loginPage model =
     section []
-        [ div [ class "container scale-in-center" ]
+        [ statementsModal model
+        , div [ class "container scale-in-center" ]
             [ div [ class "columns is-desktop" ]
                 [ div [ class "column is-half is-offset-one-quarter" ]
                     [ bigLogo model.filesrv
@@ -42,6 +66,14 @@ loginPage model =
                         , text "Click "
                         , a [ href "https://ori.qualtrics.com/jfe/form/SV_0wxvIDQwmJLlL2B", target "_blank" ] [ text "here" ]
                         , text " to see if you're eligible to participate!"
+                        , br [] []
+                        ]
+                    , div [ class "is-centered", style [ ( "text-align", "center" ) ] ]
+                        [ button
+                            [ class <| statementsModalButtonClass model.statementsModal
+                            , onClick ToggleStatementsModal
+                            ]
+                            [ text "Read Statements From Participants" ]
                         ]
                     ]
                 ]

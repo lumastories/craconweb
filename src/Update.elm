@@ -354,7 +354,7 @@ update msg model =
                             Api.fetchMesAuthors
                                 { url = model.httpsrv
                                 , token = model.jwtencoded
-                                , sub = ""
+                                , sub = jwt.sub
                                 }
                                 publicMes
                                 jwt.groupId
@@ -626,6 +626,16 @@ update msg model =
         InvalidResp (Ok ugimages) ->
             ( { model | ugimages_i = Just ugimages }
             , preloadUgImages model.filesrv ugimages
+            )
+
+        ToggleStatementsModal ->
+            ( { model | statementsModal = not model.statementsModal }
+            , Api.fetchPublicMesAnswers
+                { url = model.httpsrv
+                , token = ""
+                , sub = ""
+                }
+                |> Task.attempt PublicMesResp
             )
 
         FillerResp (Err err) ->

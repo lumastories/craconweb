@@ -8,6 +8,7 @@ module Api
         , fetchGroup
         , fetchRole
         , fetchMesAuthors
+        , fetchPublicMesAnswers
         , fetchMesQuerys
         , createUserRecord
         , createAuthRecord

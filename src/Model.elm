@@ -53,6 +53,7 @@ type alias Model =
     , domLoaded : Bool
     , badgesEarned : RemoteData.WebData (List String)
     , fmriUserData : RemoteData.RemoteData ValuationsError FmriUserData
+    , statementsModal : Bool
     }
 
 
@@ -111,6 +112,7 @@ type Msg
     | InvalidResp (Result ValuationsError (List Entity.Ugimage))
     | BadgeRulesResp (RemoteData.WebData (List BadgeRule))
     | BadgesResp (RemoteData.WebData (List String))
+    | ToggleStatementsModal
     | TryRegisterUser
     | SetRegistration String String
     | TryCsvUpload
