@@ -109,7 +109,7 @@ trial { borderDelay, totalDuration, goTrial, gameDuration, redCrossDuration } im
             if goTrial then
                 Blue
             else
-                Grey
+                Gray
 
         borderless =
             Just (Single None image)

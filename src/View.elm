@@ -617,7 +617,7 @@ instructionsPage model =
                 , instBlock "Stop Signal" """You will see pictures presented
                      in either a dark blue or light gray border. Press the space
                       bar if you see a blue border around the picture.
-                    Do not press if you see a grey border.
+                    Do not press if you see a gray border.
                         Go as fast as you can, but don't sacrifice accuracy for speed."""
                 , instBlock "Visual search" """You will see a grid of images.
                     Select the target image as quickly as you can. Don't sacrifice

@@ -26,7 +26,7 @@ adminPage model =
 
 basicAdminPage : Maybe String -> List (Html Msg) -> Html Msg
 basicAdminPage glitching children =
-    section [ class "section grey" ]
+    section [ class "section gray" ]
         [ div
             [ class "container" ]
             ([ Parts.notification glitching "is-warning" ] ++ children)
