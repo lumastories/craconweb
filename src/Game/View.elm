@@ -107,10 +107,10 @@ view { gameSlug, gameState, initMsg, fmriUser } =
                         Just (Game.Probe borderType direction) ->
                             viewProbe borderType direction
 
-                        Just Game.Rest ->
+                        Just (Game.Rest) ->
                             viewRest state
 
-                        Just Game.Interval ->
+                        Just (Game.Interval) ->
                             Html.text ""
                     ]
 
@@ -151,7 +151,7 @@ view { gameSlug, gameState, initMsg, fmriUser } =
                                     [ h3 [ class "title is-3" ] [ text "Instructions" ]
                                     , p [] [ text """You will see pictures presented in either a dark blue or light gray border.
                                     Press the space bar as quickly as you can. BUT only if you see a blue border around the picture.
-                                    Do not press if you see a grey border. Go as fast as you can, but don't sacrifice accuracy for speed.""" ]
+                                    Do not press if you see a gray border. Go as fast as you can, but don't sacrifice accuracy for speed.""" ]
                                     , p [] [ br [] [], strong [] [ text "Waiting for signal..." ] ]
                                     ]
                                 ]
@@ -209,8 +209,8 @@ border borderType attributes content =
         None ->
             div (class "imageBox whiteBorder sized" :: attributes) content
 
-        Grey ->
-            div (class "imageBox greyBorder sized" :: attributes) content
+        Gray ->
+            div (class "imageBox grayBorder sized" :: attributes) content
 
         Blue ->
             div (class "imageBox blueBorder sized" :: attributes) content

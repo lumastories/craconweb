@@ -713,7 +713,7 @@ initFmriStopSignal { user } model =
                         , totalDuration = 1000 * Time.millisecond
                         , infoString = """
 <h3 class="title">Instructions</h3>
-You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a grey border. Go as fast as you can, but don't sacrifice accuracy for speed.
+You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a gray border. Go as fast as you can, but don't sacrifice accuracy for speed.
 <br>
 <br>
 **Press any key to continue.**
@@ -768,7 +768,7 @@ initStopSignal model =
                         , totalDuration = 1000 * Time.millisecond
                         , infoString = """
 <h3 class="title">Instructions</h3>
-You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a grey border. Go as fast as you can, but don't sacrifice accuracy for speed.
+You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a gray border. Go as fast as you can, but don't sacrifice accuracy for speed.
 <br>
 <br>
 **Press any key to continue.**
@@ -1056,7 +1056,7 @@ ssInstructions : Html Msg
 ssInstructions =
     base
         [ title
-        , text "You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a grey border. Go as fast as you can, but don't sacrifice accuracy for speed."
+        , text "You will see pictures presented in either a dark blue or light gray border. Press the space bar as quickly as you can. BUT only if you see a blue border around the picture. Do not press if you see a gray border. Go as fast as you can, but don't sacrifice accuracy for speed."
         , pressAnyKey
         ]
 

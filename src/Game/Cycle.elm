@@ -60,7 +60,7 @@ beginCycle { sessionId, time, sort } cycles =
     , width = Nothing
     , height = Nothing
     , blue = False
-    , grey = False
+    , gray = False
     , dash = False
     , probeIndex = Nothing
     , targetIndex = 0
@@ -194,7 +194,7 @@ beginDisplay { sessionId, time, maybeLayout } cycles =
                 (updatedCycle :: tail)
                     |> beginBorder { borderType = borderType, time = time }
 
-        ( Just Game.Rest, cycle :: tail ) ->
+        ( Just (Game.Rest), cycle :: tail ) ->
             let
                 updatedCycle =
                     if cycle.rest == Nothing then
@@ -204,7 +204,7 @@ beginDisplay { sessionId, time, maybeLayout } cycles =
             in
                 (updatedCycle :: tail)
 
-        ( Just Game.Interval, cycle :: tail ) ->
+        ( Just (Game.Interval), cycle :: tail ) ->
             cycles
 
 
@@ -223,15 +223,15 @@ beginBorder { borderType, time } cycles =
             else
                 cycles
 
-        ( Game.Grey, cycle :: tail ) ->
+        ( Game.Gray, cycle :: tail ) ->
             if cycle.border == Nothing then
-                { cycle | border = Just time, grey = True } :: tail
+                { cycle | border = Just time, gray = True } :: tail
             else
                 cycles
 
         ( Game.Black, cycle :: tail ) ->
             if cycle.border == Nothing then
-                { cycle | border = Just time, blue = False, grey = False } :: tail
+                { cycle | border = Just time, blue = False, gray = False } :: tail
             else
                 cycles
 

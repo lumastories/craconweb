@@ -41,7 +41,7 @@ type alias Cycle =
     , width : Maybe Int
     , height : Maybe Int
     , blue : Bool
-    , grey : Bool
+    , gray : Bool
     , dash : Bool
     , probeIndex : Maybe Int
     , targetIndex : Int
@@ -107,7 +107,7 @@ type Layout
 
 type BorderType
     = None
-    | Grey
+    | Gray
     | Blue
     | Black
     | Dashed

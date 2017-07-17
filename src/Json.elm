@@ -52,7 +52,7 @@ cycleDecoder =
         |> optional "width" (JD.int |> JD.map numberToMaybe) Nothing
         |> optional "height" (JD.int |> JD.map numberToMaybe) Nothing
         |> optional "blue" JD.bool False
-        |> optional "grey" JD.bool False
+        |> optional "gray" JD.bool False
         |> optional "dash" JD.bool False
         |> optional "probeIndex" (JD.int |> JD.map numberToMaybe) Nothing
         |> optional "targetIndex" JD.int 0
