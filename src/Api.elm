@@ -7,6 +7,8 @@ module Api
         , fetchUsers_
         , fetchGroup
         , fetchRole
+        , fetchMesAuthors
+        , fetchPublicMesAnswers
         , fetchMesQuerys
         , createUserRecord
         , createAuthRecord
@@ -148,6 +150,28 @@ createMesAnswer b answer sub =
 fetchMesAnswers : M.Base -> Task Http.Error (List M.MesAnswer)
 fetchMesAnswers b =
     getRequest b.token (b.url ++ "/mesanswers?userEach=true&createdEach=true&public=false") M.mesAnswersDecoder
+
+
+answersToParams : List M.MesAnswer -> String
+answersToParams answers =
+    "mesanswerIds="
+        ++ (answers
+                |> List.map .id
+                |> List.filter (\a -> a /= "")
+                |> String.join "&mesanswerIds="
+           )
+
+
+fetchMesAuthors : M.Base -> List M.MesAnswer -> String -> Task Http.Error (List M.MesAuthor)
+fetchMesAuthors b answers groupId =
+    getRequest b.token
+        (b.url
+            ++ "/mesauthors?groupId="
+            ++ groupId
+            ++ "&"
+            ++ (answersToParams answers)
+        )
+        M.mesAuthorsDecoder
 
 
 fetchBadgeRules : M.Base -> Cmd M.Msg

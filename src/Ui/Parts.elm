@@ -4,6 +4,7 @@ module Ui.Parts
         , linkAttrs
         , notificationRemoteData
         , modal
+        , modalCard
         , grid
         , middleBlock
         )
@@ -56,7 +57,7 @@ linkAttrs path =
 modal : List (Html msg) -> Html msg
 modal children =
     div
-        [ class <| "modal is-active" ]
+        [ class "modal is-active" ]
         [ div
             [ class "modal-background" ]
             []
@@ -66,9 +67,35 @@ modal children =
         ]
 
 
+modalCard : msg -> String -> List (Html msg) -> Html msg
+modalCard msg title children =
+    div
+        [ class "modal is-active" ]
+        [ div
+            [ class "modal-background" ]
+            []
+        , div
+            [ class "modal-card" ]
+            [ header
+                [ class "modal-card-head" ]
+                [ p
+                    [ class "modal-card-title" ]
+                    [ text title ]
+                , button [ class "delete", onClick msg ] []
+                ]
+            , section
+                [ class "modal-card-body" ]
+                children
+            , footer [ class "modal-card-foot" ] []
+            ]
+        ]
+
+
 grid : Int -> List (Html Msg) -> List (Html Msg)
 grid num children =
-    (List.map (div [ class "columns" ]) (List.map column children |> List.Extra.greedyGroupsOf num))
+    List.map column children
+        |> List.Extra.greedyGroupsOf num
+        |> List.map (div [ class "columns" ])
 
 
 column : Html Msg -> Html Msg

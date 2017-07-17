@@ -6,6 +6,7 @@ import Http
 import Json.Decode as JD
 import Json.Decode.Pipeline as JP
 import Json.Encode as JE
+import List.Extra as LE
 import Navigation
 import RemoteData
 import Routing
@@ -52,6 +53,7 @@ type alias Model =
     , domLoaded : Bool
     , badgesEarned : RemoteData.WebData (List String)
     , fmriUserData : RemoteData.RemoteData ValuationsError FmriUserData
+    , statementsModal : Bool
     }
 
 
@@ -91,6 +93,7 @@ type Msg
     | ResendSession Game.State Game.Session
     | AuthResp (Result Http.Error String)
     | PublicMesResp (Result Http.Error (List MesAnswer))
+    | MesAuthorsResp (Result Http.Error (List MesAuthor))
     | UserResp (Result Http.Error Entity.User)
     | GameResp (Result Http.Error Entity.Game)
     | UsersResp (Result Http.Error (List Entity.User))
@@ -109,6 +112,7 @@ type Msg
     | InvalidResp (Result ValuationsError (List Entity.Ugimage))
     | BadgeRulesResp (RemoteData.WebData (List BadgeRule))
     | BadgesResp (RemoteData.WebData (List String))
+    | ToggleStatementsModal
     | TryRegisterUser
     | SetRegistration String String
     | TryCsvUpload
@@ -169,11 +173,40 @@ up_tmpUserEdit am tue =
     { am | tmpUserEdit = tue }
 
 
+up_mesAnswersDisplayName : List MesAuthor -> MesAnswer -> MesAnswer
+up_mesAnswersDisplayName authors ans =
+    case LE.find (\auth -> auth.answerId == ans.id) authors of
+        Just auth ->
+            { ans | displayName = auth.userName }
+
+        Nothing ->
+            ans
+
+
+type alias MesAuthor =
+    { answerId : String
+    , userName : String
+    }
+
+
+mesAuthorsDecoder : JD.Decoder (List MesAuthor)
+mesAuthorsDecoder =
+    JD.field "mesauthors" (JD.list mesAuthorDecoder)
+
+
+mesAuthorDecoder : JD.Decoder MesAuthor
+mesAuthorDecoder =
+    JP.decode MesAuthor
+        |> JP.required "mesanswerId" JD.string
+        |> JP.required "userName" JD.string
+
+
 type alias MesAnswer =
     { id : String
     , essay : String
     , public : Bool
     , queryId : String
+    , displayName : String
     , created : String
     }
 
@@ -184,6 +217,7 @@ newMesAnswerWithqueryId qId =
     , essay = ""
     , public = False
     , queryId = qId
+    , displayName = ""
     , created = ""
     }
 
@@ -203,8 +237,9 @@ mesAnswerDecoder =
     JP.decode MesAnswer
         |> JP.required "id" JD.string
         |> JP.required "content" JD.string
-        |> JP.hardcoded False
+        |> JP.optional "public" JD.bool False
         |> JP.required "mesqueryId" JD.string
+        |> JP.required "initials" JD.string
         |> JP.required "created" JD.string
 
 
@@ -255,6 +290,7 @@ type alias JwtPayload =
     , iss : String
     , sub : String
     , roles : List Entity.Role
+    , groupId : String
     }
 
 
@@ -309,3 +345,4 @@ jwtDecoder =
         |> JP.required "iss" JD.string
         |> JP.required "sub" JD.string
         |> JP.required "roles" (JD.list Entity.roleDecoder)
+        |> JP.optional "groupId" JD.string ""
