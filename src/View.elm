@@ -46,8 +46,8 @@ statementsModal model =
         True ->
             Parts.modalCard
                 ToggleStatementsModal
-                "From Participants"
-                (statements model.statements)
+                "Statements from participants"
+                (statements 2 model.statements)
 
 
 loginPage : Model -> Html Msg
@@ -665,25 +665,25 @@ toStyle styles =
 statementsPage : Model -> Html Msg
 statementsPage model =
     basicPage model
-        (statements model.statements)
+        ([ h1 [ class "title has-text-centered" ] [ text "Statements" ] ]
+            ++ (statements 4 model.statements)
+        )
 
 
-statements : Maybe (List MesAnswer) -> List (Html Msg)
-statements mesAnswers =
+statements : Int -> Maybe (List MesAnswer) -> List (Html Msg)
+statements groupsOfNum mesAnswers =
     case mesAnswers of
         Nothing ->
             [ Parts.middleBlock
-                [ h1 [ class "title" ] [ text "Statements" ]
-                , p [] [ text """Coming soon! You will be able to see personal
+                [ p [] [ text """Coming soon! You will be able to see personal
                             statements from other members of the study about their journey to better
                             health and some of the choices they made that helped them get there!""" ]
                 ]
             ]
 
         Just mesAnswers ->
-            [ h1 [ class "title" ] [ text "Statements" ] ]
-                ++ List.map statement mesAnswers
-                |> List.Extra.greedyGroupsOf 4
+            List.map statement mesAnswers
+                |> List.Extra.greedyGroupsOf groupsOfNum
                 |> List.map (div [ class "columns" ])
 
 
