@@ -9,8 +9,7 @@ all : Test
 all =
     describe "GoNoGo Tests"
         [ goTests
-
-        -- , noGoTests
+          -- , noGoTests
         ]
 
 
@@ -35,9 +34,8 @@ goTests =
                         , width = Nothing
                         , height = Nothing
                         , blue = False
-                        , grey = False
+                        , gray = False
                         , dash = False
-                        , probeIndex = Nothing
                         , targetIndex = 1
                         , selectedIndex = 0
                         , startIndex = 1
@@ -62,9 +60,8 @@ goTests =
                         , width = Nothing
                         , height = Nothing
                         , blue = False
-                        , grey = False
+                        , gray = False
                         , dash = False
-                        , probeIndex = Nothing
                         , targetIndex = 0
                         , selectedIndex = 0
                         , startIndex = 0
@@ -89,9 +86,8 @@ goTests =
                         , width = Nothing
                         , height = Nothing
                         , blue = False
-                        , grey = False
+                        , gray = False
                         , dash = False
-                        , probeIndex = Nothing
                         , targetIndex = 1
                         , selectedIndex = 0
                         , startIndex = 1
@@ -122,9 +118,8 @@ noGoTests =
                         , width = Nothing
                         , height = Nothing
                         , blue = False
-                        , grey = False
+                        , gray = False
                         , dash = True
-                        , probeIndex = Nothing
                         , targetIndex = 1
                         , selectedIndex = 0
                         , startIndex = 1
@@ -149,9 +144,8 @@ noGoTests =
                         , width = Nothing
                         , height = Nothing
                         , blue = False
-                        , grey = False
+                        , gray = False
                         , dash = True
-                        , probeIndex = Nothing
                         , targetIndex = 1
                         , selectedIndex = 1
                         , startIndex = 1

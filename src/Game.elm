@@ -43,7 +43,6 @@ type alias Cycle =
     , blue : Bool
     , gray : Bool
     , dash : Bool
-    , probeIndex : Maybe Int
     , targetIndex : Int
     , selectedIndex : Int
     , startIndex : Int

@@ -54,7 +54,6 @@ cycleDecoder =
         |> optional "blue" JD.bool False
         |> optional "gray" JD.bool False
         |> optional "dash" JD.bool False
-        |> optional "probeIndex" (JD.int |> JD.map numberToMaybe) Nothing
         |> optional "targetIndex" JD.int 0
         |> optional "selectedIndex" JD.int 0
         |> optional "startIndex" JD.int 0
@@ -134,7 +133,6 @@ cycleEncoder cycle =
         , ( "height", cycle.height |> Maybe.withDefault 1 |> JE.int )
         , ( "blue", cycle.blue |> JE.bool )
         , ( "dash", cycle.dash |> JE.bool )
-        , ( "probeIndex", cycle.probeIndex |> Maybe.withDefault 0 |> JE.int )
         , ( "targetIndex", cycle.targetIndex |> JE.int )
         , ( "selectedIndex", cycle.selectedIndex |> JE.int )
         , ( "startIndex", cycle.startIndex |> JE.int )
