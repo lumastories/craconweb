@@ -134,7 +134,7 @@ navBar model =
         R.FmriRoute _ ->
             div
                 [ style
-                    [ ( "height", "12em" )
+                    [ ( "min-height", "15vh" )
                     , ( "cursor", "none" )
                     ]
                 ]
