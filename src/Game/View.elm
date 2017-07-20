@@ -107,10 +107,10 @@ view { gameSlug, gameState, initMsg, fmriUser } =
                         Just (Game.Probe borderType direction) ->
                             viewProbe borderType direction
 
-                        Just (Game.Rest) ->
+                        Just Game.Rest ->
                             viewRest state
 
-                        Just (Game.Interval) ->
+                        Just Game.Interval ->
                             Html.text ""
                     ]
 
