@@ -132,6 +132,7 @@ cycleEncoder cycle =
         , ( "width", cycle.width |> Maybe.withDefault 1 |> JE.int )
         , ( "height", cycle.height |> Maybe.withDefault 1 |> JE.int )
         , ( "blue", cycle.blue |> JE.bool )
+        , ( "gray", cycle.gray |> JE.bool )
         , ( "dash", cycle.dash |> JE.bool )
         , ( "targetIndex", cycle.targetIndex |> JE.int )
         , ( "selectedIndex", cycle.selectedIndex |> JE.int )
