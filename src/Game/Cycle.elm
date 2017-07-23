@@ -62,7 +62,6 @@ beginCycle { sessionId, time, sort } cycles =
     , blue = False
     , gray = False
     , dash = False
-    , probeIndex = Nothing
     , targetIndex = 0
     , selectedIndex = 0
     , startIndex = 0
@@ -186,7 +185,7 @@ beginDisplay { sessionId, time, maybeLayout } cycles =
                     if cycle.probe == Nothing then
                         { cycle
                             | probe = Just time
-                            , probeIndex = Just (Game.directionToIndex direction)
+                            , targetIndex = Game.directionToIndex direction
                         }
                     else
                         cycle
