@@ -130,16 +130,27 @@ loginPageBoxForm model =
 
 navBar : Model -> Html Msg
 navBar model =
-    nav
-        [ class "nav has-shadow" ]
-        [ div [ class "container" ]
-            [ div [ class "nav-left" ]
-                [ tinyLogo model.filesrv
+    case model.activeRoute of
+        R.FmriRoute _ ->
+            div
+                [ style
+                    [ ( "min-height", "15vh" )
+                    , ( "cursor", "none" )
+                    ]
                 ]
-            , navToggler model.isMenuActive
-            , navRight model.isMenuActive model.activeRoute model.visitor
-            ]
-        ]
+                []
+
+        _ ->
+            nav
+                [ class "nav has-shadow" ]
+                [ div [ class "container" ]
+                    [ div [ class "nav-left" ]
+                        [ tinyLogo model.filesrv
+                        ]
+                    , navToggler model.isMenuActive
+                    , navRight model.isMenuActive model.activeRoute model.visitor
+                    ]
+                ]
 
 
 isPowerful : Visitor -> Bool

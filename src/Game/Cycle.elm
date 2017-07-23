@@ -193,7 +193,7 @@ beginDisplay { sessionId, time, maybeLayout } cycles =
                 (updatedCycle :: tail)
                     |> beginBorder { borderType = borderType, time = time }
 
-        ( Just (Game.Rest), cycle :: tail ) ->
+        ( Just Game.Rest, cycle :: tail ) ->
             let
                 updatedCycle =
                     if cycle.rest == Nothing then
@@ -203,7 +203,7 @@ beginDisplay { sessionId, time, maybeLayout } cycles =
             in
                 (updatedCycle :: tail)
 
-        ( Just (Game.Interval), cycle :: tail ) ->
+        ( Just Game.Interval, cycle :: tail ) ->
             cycles
 
 

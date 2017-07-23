@@ -722,9 +722,9 @@ You will see pictures presented in either a dark blue or light gray border. Pres
                         , nonResponseImages = getFullImagePathsNew model.filesrv ugimages_i |> Maybe.withDefault []
                         , seedInt = seed
                         , currentTime = time
-                        , blockDuration = 5 * Time.minute
+                        , blockDuration = 150 * Time.second
                         , restDuration = 5 * Time.second
-                        , totalBlocks = 2
+                        , totalBlocks = 4
                         , redCrossDuration = 500 * Time.millisecond
                         }
 
