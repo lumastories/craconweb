@@ -115,6 +115,7 @@ beginDisplay { sessionId, time, maybeLayout } cycles =
                             , startIndex = targetIndex
                             , targetIndex = targetIndex
                             , selectedIndex = 0
+                            , width = Just 2
                         }
                     else
                         cycle
@@ -130,6 +131,7 @@ beginDisplay { sessionId, time, maybeLayout } cycles =
                             | pictures = Just time
                             , images = [ leftImage.id, rightImage.id ]
                             , startIndex = 0
+                            , width = Just 2
                             , targetIndex = Game.directionToIndex direction
                         }
                     else
