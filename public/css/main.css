@@ -125,8 +125,8 @@ blockquote i {
     border: 5px solid blue;
 }
 
-.greyBorder {
-    border: 5px solid grey;
+.grayBorder {
+    border: 5px solid gray;
 }
 
 .whiteBorder {
@@ -166,6 +166,6 @@ blockquote i {
     z-index: 9000;
 }
 
-.grey {
+.gray {
     background: #efefef;
 }
