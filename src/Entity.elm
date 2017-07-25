@@ -72,54 +72,58 @@ type alias User =
         String
 
     -- 1
-    , username :
+    , subject :
         String
 
     -- 2
-    , email :
+    , username :
         String
 
     -- 3
-    , firstName :
+    , email :
         String
 
     -- 4
-    , lastName :
+    , firstName :
         String
 
     -- 5
-    , avatar :
+    , lastName :
         String
 
     -- 6
-    , groupId :
+    , avatar :
         String
 
     -- 7
+    , groupId :
+        String
+
+    -- 8
     , roles :
         List Role
 
-    -- 8
+    -- 9
     , lastLogin :
         Maybe Timestamp
 
-    -- 9
+    -- 10
     , blocked :
         Maybe Timestamp
 
-    -- 10
+    -- 11
     , created :
         Maybe Timestamp
 
-    -- 11
+    -- 12
     , updated :
         Maybe Timestamp
 
-    -- 12
+    -- 13
     , deleted :
         Maybe Timestamp
 
-    -- 13
+    -- 14
     }
 
 
@@ -129,6 +133,7 @@ userDecoder =
         \_ ->
             decode User
                 |> required "id" JD.string ""
+                |> required "subject" JD.string ""
                 |> required "username" JD.string ""
                 |> required "email" JD.string ""
                 |> required "firstName" JD.string ""

@@ -153,7 +153,8 @@ usersTable model =
     table [ class "table is-bordered is-striped is-narrow" ]
         [ thead []
             [ tr []
-                [ th [] [ text "First Name" ]
+                [ th [] [ text "Subject" ]
+                , th [] [ text "First Name" ]
                 , th [] [ text "Last Name" ]
                 , th [] [ text "Username" ]
                 , th [] [ text "fMRI" ]
@@ -179,7 +180,8 @@ userRows ( expId, conId ) users request =
 
         row user =
             tr []
-                [ td [] [ text user.firstName ]
+                [ td [] [ text user.subject ]
+                , td [] [ text user.firstName ]
                 , td [] [ text user.lastName ]
                 , td [] [ text user.username ]
                 , td []

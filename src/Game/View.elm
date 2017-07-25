@@ -146,7 +146,7 @@ view { gameSlug, gameState, initMsg, fmriUser } =
                         div []
                             [ p [ class "" ]
                                 [ text "fMRI for "
-                                , strong [] [ text user.username ]
+                                , strong [] [ text <| user.username ++ " (" ++ user.subject ++ ")" ]
                                 , Ui.Parts.middleBlock
                                     [ h3 [ class "title is-3" ] [ text "Instructions" ]
                                     , p [] [ text """You will see pictures presented in either a dark blue or light gray border.
