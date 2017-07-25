@@ -49,6 +49,7 @@ cycleDecoder =
         |> optional "border" (stringToFloatDecoder |> JD.map numberToMaybe) Nothing
         |> optional "timeout" (stringToFloatDecoder |> JD.map numberToMaybe) Nothing
         |> optional "rest" (stringToFloatDecoder |> JD.map numberToMaybe) Nothing
+        |> optional "interval" (stringToFloatDecoder |> JD.map numberToMaybe) Nothing
         |> optional "width" (JD.int |> JD.map numberToMaybe) Nothing
         |> optional "height" (JD.int |> JD.map numberToMaybe) Nothing
         |> optional "blue" JD.bool False
@@ -129,6 +130,7 @@ cycleEncoder cycle =
         , ( "border", cycle.border |> Maybe.withDefault 0 |> (toString >> JE.string) )
         , ( "timeout", cycle.timeout |> Maybe.withDefault 0 |> (toString >> JE.string) )
         , ( "rest", cycle.rest |> Maybe.withDefault 0 |> (toString >> JE.string) )
+        , ( "interval", cycle.interval |> Maybe.withDefault 0 |> (toString >> JE.string) )
         , ( "width", cycle.width |> Maybe.withDefault 1 |> JE.int )
         , ( "height", cycle.height |> Maybe.withDefault 1 |> JE.int )
         , ( "blue", cycle.blue |> JE.bool )

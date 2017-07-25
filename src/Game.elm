@@ -38,6 +38,7 @@ type alias Cycle =
     , border : Maybe Time
     , timeout : Maybe Time
     , rest : Maybe Time
+    , interval : Maybe Time
     , width : Maybe Int
     , height : Maybe Int
     , blue : Bool

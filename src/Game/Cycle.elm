@@ -57,6 +57,7 @@ beginCycle { sessionId, time, sort } cycles =
     , border = Nothing
     , timeout = Nothing
     , rest = Nothing
+    , interval = Nothing
     , width = Nothing
     , height = Nothing
     , blue = False
@@ -206,7 +207,14 @@ beginDisplay { sessionId, time, maybeLayout } cycles =
                 (updatedCycle :: tail)
 
         ( Just Game.Interval, cycle :: tail ) ->
-            cycles
+            let
+                updatedCycle =
+                    if cycle.interval == Nothing then
+                        { cycle | interval = Just time }
+                    else
+                        cycle
+            in
+                (updatedCycle :: tail)
 
 
 beginBorder : { borderType : Game.BorderType, time : Time } -> List Game.Cycle -> List Game.Cycle
