@@ -392,7 +392,9 @@ userForm user exp con saving =
             ]
         , div [ class "columns" ]
             [ div [ class "column" ]
-                [ checkboxInput ToggleTmpUserEditMesOptin user.mesOptin ]
+                [ label_ "MES Opt-In"
+                , checkboxInput ToggleTmpUserEditMesOptin user.mesOptin
+                ]
             ]
         , div [ class "columns" ]
             [ div [ class "column" ]
