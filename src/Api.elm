@@ -149,7 +149,7 @@ createMesAnswer b answer sub =
 
 fetchMesAnswers : M.Base -> Task Http.Error (List M.MesAnswer)
 fetchMesAnswers b =
-    getRequest b.token (b.url ++ "/mesanswers?userEach=true&createdEach=true&public=false") M.mesAnswersDecoder
+    getRequest b.token (b.url ++ "/mesanswers?userEach=true&groupEach=true&createdEach=true&optin=true&public=false") M.mesAnswersDecoder
 
 
 answersToParams : List M.MesAnswer -> String
@@ -206,12 +206,12 @@ fetchBadgesByUserId { url, token, sub } =
 
 fetchPublicMesAnswers : M.Base -> Task Http.Error (List M.MesAnswer)
 fetchPublicMesAnswers b =
-    getRequest b.token (b.url ++ "/mesanswers?userEach=true&createdEach=true&public=true") M.mesAnswersDecoder
+    getRequest b.token (b.url ++ "/mesanswers?userEach=true&groupEach=true&createdEach=true&public=true&optin=true") M.mesAnswersDecoder
 
 
 fetchMesAnswersByUser : M.Base -> Task Http.Error (List M.MesAnswer)
 fetchMesAnswersByUser { url, token, sub } =
-    getRequest token (url ++ "/mesanswers?userId=" ++ sub ++ "&createdEach=true&publicEach=true&createdDesc=true") M.mesAnswersDecoder
+    getRequest token (url ++ "/mesanswers?userId=" ++ sub ++ "&groupEach=true&createdEach=true&optinEach=true&publicEach=true&createdDesc=true") M.mesAnswersDecoder
 
 
 fetchMesQuerys : M.Base -> Task Http.Error (List M.MesQuery)
