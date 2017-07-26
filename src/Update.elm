@@ -74,6 +74,23 @@ update msg model =
                 , Cmd.none
                 )
 
+        ToggleTmpUserEditMesOptin ->
+            let
+                adminModel_ =
+                    model.adminModel
+
+                tue_ =
+                    case model.adminModel.tmpUserEdit of
+                        Nothing ->
+                            Nothing
+
+                        Just tue_ ->
+                            Just { tue_ | mesOptin = not tue_.mesOptin }
+            in
+                ( { model | adminModel = { adminModel_ | tmpUserEdit = tue_ } }
+                , Cmd.none
+                )
+
         FillTmpUserEdit userId ->
             let
                 user_ =
@@ -95,6 +112,7 @@ update msg model =
                                 , email = u.email
                                 , password = ""
                                 , groupId = u.groupId
+                                , mesOptin = u.mesOptin
                                 }
                             , Navigation.newUrl (R.editPath ++ u.id)
                             )
@@ -305,6 +323,19 @@ update msg model =
 
                         _ ->
                             tmpUserRecord_old
+            in
+                ( { model | adminModel = { adminModel_ | tmpUserRecord = tmpUserRecord_ } }, Cmd.none )
+
+        ToggleRegistrationMesOptin ->
+            let
+                adminModel_ =
+                    model.adminModel
+
+                tmpUserRecord_old =
+                    adminModel_.tmpUserRecord
+
+                tmpUserRecord_ =
+                    { tmpUserRecord_old | mesOptin = not tmpUserRecord_old.mesOptin }
             in
                 ( { model | adminModel = { adminModel_ | tmpUserRecord = tmpUserRecord_ } }, Cmd.none )
 

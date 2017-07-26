@@ -115,6 +115,7 @@ type Msg
     | ToggleStatementsModal
     | TryRegisterUser
     | SetRegistration String String
+    | ToggleRegistrationMesOptin
     | TryCsvUpload
     | TryPutUser
     | EditUserAccount String String
@@ -123,6 +124,7 @@ type Msg
     | TrySubmitMesAnswer
     | SetRequestNothing
     | SetTmpUserEdit String String
+    | ToggleTmpUserEditMesOptin
     | DomLoaded Bool
     | FmriImagesResp (RemoteData.RemoteData ValuationsError FmriUserData)
 
@@ -155,6 +157,7 @@ type alias UserEdit =
     , email : String
     , password : String
     , groupId : String
+    , mesOptin : Bool
     }
 
 

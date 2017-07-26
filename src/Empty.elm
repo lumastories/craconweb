@@ -36,6 +36,7 @@ emptyUserRecord =
     , lastName = ""
     , avatar = ""
     , groupId = ""
+    , mesOptin = True
     , roles = []
     , password = ""
     }

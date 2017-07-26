@@ -167,6 +167,7 @@ userEncoder u_ =
                 , ( "firstName", JE.string u_.firstName )
                 , ( "lastName", JE.string u_.lastName )
                 , ( "groupId", JE.string u_.groupId )
+                , ( "mesOptin", JE.bool u_.mesOptin )
                 , ( "password", JE.string u_.password )
                 ]
           )

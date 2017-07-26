@@ -100,30 +100,34 @@ type alias User =
         String
 
     -- 8
+    , mesOptin :
+        Bool
+
+    -- 9
     , roles :
         List Role
 
-    -- 9
+    -- 10
     , lastLogin :
         Maybe Timestamp
 
-    -- 10
+    -- 11
     , blocked :
         Maybe Timestamp
 
-    -- 11
+    -- 12
     , created :
         Maybe Timestamp
 
-    -- 12
+    -- 13
     , updated :
         Maybe Timestamp
 
-    -- 13
+    -- 14
     , deleted :
         Maybe Timestamp
 
-    -- 14
+    -- 15
     }
 
 
@@ -140,6 +144,7 @@ userDecoder =
                 |> required "lastName" JD.string ""
                 |> required "avatar" JD.string ""
                 |> required "groupId" JD.string ""
+                |> required "mesOptin" JD.bool False
                 |> repeated "roles" roleDecoder
                 |> optional "lastLogin" timestampDecoder
                 |> optional "blocked" timestampDecoder
@@ -173,14 +178,18 @@ type alias UserRecord =
         String
 
     -- 6
+    , mesOptin :
+        Bool
+
+    -- 7
     , roles :
         List String
 
-    -- 7
+    -- 8
     , password :
         String
 
-    -- 8
+    -- 9
     }
 
 
@@ -194,6 +203,7 @@ userRecordEncoder v =
             , (requiredFieldEncoder "lastName" JE.string "" v.lastName)
             , (requiredFieldEncoder "avatar" JE.string "" v.avatar)
             , (requiredFieldEncoder "groupId" JE.string "" v.groupId)
+            , (requiredFieldEncoder "mesOptin" JE.bool False v.mesOptin)
             , (repeatedFieldEncoder "roles" JE.string v.roles)
             , (requiredFieldEncoder "password" JE.string "" v.password)
             ]

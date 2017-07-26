@@ -392,6 +392,10 @@ userForm user exp con saving =
             ]
         , div [ class "columns" ]
             [ div [ class "column" ]
+                [ checkboxInput ToggleTmpUserEditMesOptin user.mesOptin ]
+            ]
+        , div [ class "columns" ]
+            [ div [ class "column" ]
                 [ p [ class "control" ]
                     [ label_ "Group"
                     , span
@@ -462,6 +466,19 @@ editButtons =
         ]
 
 
+checkboxInput : Msg -> Bool -> Html Msg
+checkboxInput msg chked =
+    p [ class "control" ]
+        [ input
+            [ class "checkbox"
+            , type_ "checkbox"
+            , checked chked
+            , onClick msg
+            ]
+            []
+        ]
+
+
 textInput : String -> String -> Html Msg
 textInput field_ placeholder_ =
     p [ class "control" ]
@@ -526,6 +543,16 @@ userEmailPassReg =
         ]
 
 
+checkboxesReg : Model -> Html Msg
+checkboxesReg model =
+    div [ class "columns" ]
+        [ div [ class "column" ]
+            [ label_ "MES Opt-In"
+            , checkboxInput ToggleRegistrationMesOptin model.adminModel.tmpUserRecord.mesOptin
+            ]
+        ]
+
+
 dropdownOptions : Maybe String -> Maybe String -> Options Msg
 dropdownOptions groupIdExp groupIdCon =
     let
@@ -562,6 +589,7 @@ registerUserForm model =
         [ onSubmit TryRegisterUser ]
         [ firstLastReg
         , userEmailPassReg
+        , checkboxesReg model
         , div [ class "field" ]
             [ label_ "Group *"
             , p
