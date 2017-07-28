@@ -312,7 +312,7 @@ onIndication : Bool -> Logic
 onIndication desired state input =
     case ( input, state.trialResult ) of
         ( Indication, NoResult ) ->
-            ( True
+            ( False
             , { state
                 | log = AcceptIndication { desired = desired } state.currTime :: state.log
                 , trialResult = BoolResult desired
