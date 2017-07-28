@@ -26,6 +26,7 @@ import Game
         , segment
         , startSession
         , timeout
+        , timeoutFromSegmentStart
         , trialFailed
         )
 import Game.Card exposing (complete)
@@ -140,5 +141,5 @@ trial { borderDelay, totalDuration, goTrial, blockDuration, redCrossDuration } i
             |> andThen (log (BeginDisplay bordered))
             |> andThen (segment [ onIndication goTrial, resultTimeout (not goTrial) totalDuration ] bordered)
             |> andThen (logWithCondition isFailed (BeginDisplay redCross))
-            |> andThen (segment [ trialFailed, timeout (totalDuration + redCrossDuration) ] redCross)
+            |> andThen (segment [ trialFailed, timeoutFromSegmentStart redCrossDuration ] redCross)
             |> andThen (log EndTrial)
