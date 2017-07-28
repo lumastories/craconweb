@@ -18,6 +18,7 @@ import Game
         , addIntervals
         , info
         , onIndication
+        , timeoutFromSegmentStart
         , timeout
         , resultTimeout
         , startSession
@@ -135,5 +136,5 @@ trial { totalDuration, goTrial, gameDuration, redCrossDuration } image state =
                     bordered
                 )
             |> andThen (logWithCondition isFailed (BeginDisplay redCross))
-            |> andThen (segment [ trialFailed, timeout (totalDuration + redCrossDuration) ] redCross)
+            |> andThen (segment [ trialFailed, timeoutFromSegmentStart redCrossDuration ] redCross)
             |> andThen (log EndTrial)
