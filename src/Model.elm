@@ -11,6 +11,7 @@ import Navigation
 import RemoteData
 import Routing
 import Time
+import Window as W
 
 
 type alias Model =
@@ -54,6 +55,7 @@ type alias Model =
     , badgesEarned : RemoteData.WebData (List String)
     , fmriUserData : RemoteData.RemoteData ValuationsError FmriUserData
     , statementsModal : Bool
+    , windowSize : Maybe W.Size
     }
 
 
@@ -127,6 +129,7 @@ type Msg
     | ToggleTmpUserEditMesOptin
     | DomLoaded Bool
     | FmriImagesResp (RemoteData.RemoteData ValuationsError FmriUserData)
+    | WindowResize W.Size
 
 
 type alias Login =

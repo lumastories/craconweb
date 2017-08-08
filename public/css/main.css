@@ -97,8 +97,33 @@ blockquote i {
     margin: 2em auto;
 }
 
+.zoom90 {
+    transform: scale(.9);
+    transform-origin: 50% 0;
+}
+
+.zoom80 {
+    transform: scale(.8);
+    transform-origin: 50% 0;
+}
+
+.zoom70 {
+    transform: scale(.7);
+    transform-origin: 50% 0;
+}
+
+.zoom60 {
+    transform: scale(.6);
+    transform-origin: 50% 0;
+}
+
+.zoom50 {
+    transform: scale(.5);
+    transform-origin: 50% 0;
+}
+
 .vsImg {
-    width: 200px;
+    width: 90%;
 }
 
 .sized {

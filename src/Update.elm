@@ -669,6 +669,9 @@ update msg model =
                 |> Task.attempt PublicMesResp
             )
 
+        WindowResize size ->
+            ( { model | windowSize = Just size }, Cmd.none )
+
         FillerResp (Err err) ->
             valuationsErrState model err
 

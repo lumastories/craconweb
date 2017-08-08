@@ -10,9 +10,11 @@ import Routing as R
 import Update
 import View
 import Port
+import Window
 import AnimationFrame
 import RemoteData
 import Helpers
+import Task
 
 
 main : Program Flags M.Model M.Msg
@@ -32,6 +34,7 @@ subscriptions model =
         , ticker model.gameState
         , Port.status M.SetStatus
         , Port.domLoaded M.DomLoaded
+        , Window.resizes M.WindowResize
         ]
 
 
@@ -109,10 +112,18 @@ init flags location =
             , badgesEarned = RemoteData.NotAsked
             , fmriUserData = RemoteData.NotAsked
             , statementsModal = False
+            , windowSize = Nothing
             }
     in
         Api.fetchFmriUserData model_
-            |> Tuple.mapSecond (\cmd -> Cmd.batch [ commands_, cmd ])
+            |> Tuple.mapSecond
+                (\cmd ->
+                    Cmd.batch
+                        [ commands_
+                        , cmd
+                        , (Task.perform M.WindowResize Window.size)
+                        ]
+                )
 
 
 type alias Flags =
