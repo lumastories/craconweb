@@ -13,6 +13,7 @@ import Routing as R
 import Entity
 import Ui.Admin as Admin
 import Ui.Parts as Parts
+import Window as W
 
 
 bigLogo : String -> Html Msg
@@ -508,6 +509,39 @@ settingsPage model =
         ]
 
 
+zoomClass : R.Route -> Maybe W.Size -> String
+zoomClass route size =
+    case route of
+        R.GameRouteVs ->
+            case size of
+                Just s ->
+                    let
+                        rat =
+                            toFloat s.height / toFloat s.width
+                    in
+                        if s.width < 1500 then
+                            if rat < 0.8 && rat >= 0.7 then
+                                "zoom90"
+                            else if rat < 0.7 && rat >= 0.675 then
+                                "zoom80"
+                            else if rat < 0.675 && rat >= 0.6 then
+                                "zoom70"
+                            else if rat < 0.6 && rat >= 0.5 then
+                                "zoom60"
+                            else if rat < 0.5 then
+                                "zoom50"
+                            else
+                                ""
+                        else
+                            ""
+
+                _ ->
+                    ""
+
+        _ ->
+            ""
+
+
 game : Model -> String -> Msg -> Html Msg
 game model title initMsg =
     let
@@ -524,7 +558,7 @@ game model title initMsg =
     in
         basicPage model
             [ div
-                [ class "container" ]
+                [ class <| "container " ++ (zoomClass model.activeRoute model.windowSize) ]
                 [ title_
                 , case model.activeRoute of
                     R.GameRouteSs ->
