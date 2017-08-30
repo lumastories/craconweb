@@ -509,37 +509,75 @@ settingsPage model =
         ]
 
 
-zoomClass : R.Route -> Maybe W.Size -> String
-zoomClass route size =
+easeIOTransform : Float -> Float -> Float -> Float
+easeIOTransform curr base mod =
+    let
+        m =
+            if mod >= 1.0 then
+                2.125
+            else if mod <= 0.0 then
+                1.125
+            else
+                mod + 1.125
+    in
+        (curr ^ m) / ((curr ^ m) + ((base - curr) ^ m))
+
+
+easeInTransform : Float -> Float -> Float -> Float
+easeInTransform curr base mod =
+    let
+        m =
+            if mod > 1.0 then
+                1.0
+            else if mod < 0.0 then
+                0.0
+            else
+                mod
+    in
+        (curr - (base - curr) * (m * (curr / base))) / base
+
+
+visSearchScale : W.Size -> Float
+visSearchScale size =
+    let
+        baseRatio =
+            720.0 / 955.0
+
+        currRatio =
+            toFloat size.height / toFloat size.width
+    in
+        if baseRatio > currRatio then
+            if size.width < 955 then
+                easeInTransform currRatio baseRatio 0.5
+            else if size.width < 1384 then
+                easeInTransform currRatio baseRatio 0.25
+            else
+                easeIOTransform currRatio baseRatio 0.5
+        else
+            1.0
+
+
+scaleStyleFromFloat : Float -> Attribute msg
+scaleStyleFromFloat scale =
+    style
+        [ ( "transform", "scale(" ++ (toString scale) ++ ")" )
+        , ( "transform-origin", "50% 0" )
+        ]
+
+
+scaleStyle : R.Route -> Maybe W.Size -> Attribute msg
+scaleStyle route size =
     case route of
         R.GameRouteVs ->
             case size of
                 Just s ->
-                    let
-                        rat =
-                            toFloat s.height / toFloat s.width
-                    in
-                        if s.width < 1500 then
-                            if rat < 0.8 && rat >= 0.7 then
-                                "zoom90"
-                            else if rat < 0.7 && rat >= 0.675 then
-                                "zoom80"
-                            else if rat < 0.675 && rat >= 0.6 then
-                                "zoom70"
-                            else if rat < 0.6 && rat >= 0.5 then
-                                "zoom60"
-                            else if rat < 0.5 then
-                                "zoom50"
-                            else
-                                ""
-                        else
-                            ""
+                    scaleStyleFromFloat <| visSearchScale s
 
                 _ ->
-                    ""
+                    style []
 
         _ ->
-            ""
+            style []
 
 
 game : Model -> String -> Msg -> Html Msg
@@ -558,7 +596,7 @@ game model title initMsg =
     in
         basicPage model
             [ div
-                [ class <| "container " ++ (zoomClass model.activeRoute model.windowSize) ]
+                [ class "container ", (scaleStyle model.activeRoute model.windowSize) ]
                 [ title_
                 , case model.activeRoute of
                     R.GameRouteSs ->
