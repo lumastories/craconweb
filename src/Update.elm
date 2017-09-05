@@ -22,6 +22,7 @@ import RemoteData
 import Routing as R
 import Task exposing (Task)
 import Time exposing (Time)
+import Random
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -443,11 +444,7 @@ update msg model =
                                 )
 
         PutMesResp (Ok r) ->
-            let
-                l =
-                    Debug.log "change publicity of MES" r
-            in
-                model ! []
+            model ! []
 
         RegisterUserResp (Ok newUser) ->
             ( { model
@@ -572,8 +569,8 @@ update msg model =
         StartSession data ->
             startSession data model
 
-        StartSessionResp game remoteData ->
-            startSessionResp game remoteData model
+        StartSessionResp nextSeed game remoteData ->
+            startSessionResp nextSeed game remoteData model
 
         GameDataSaved state session remoteData ->
             gameDataSaved state session remoteData model
@@ -775,7 +772,7 @@ You will see pictures presented in either a dark blue or light gray border. Pres
                                     , game time seed
                                     )
                             )
-                        |> Task.perform (\( time, seed, game ) -> StartSession { gameId = gameEntity.id, game = game, time = time, seed = seed })
+                        |> Task.perform (\( time, seed, ( game, nextSeed ) ) -> StartSession { gameId = gameEntity.id, game = game, time = time, initialSeed = seed, nextSeed = nextSeed })
             in
                 ( model
                 , gameCmd
@@ -828,7 +825,7 @@ You will see pictures presented in either a dark blue or light gray border. Pres
                                     , game time seed
                                     )
                             )
-                        |> Task.perform (\( time, seed, game ) -> StartSession { gameId = gameEntity.id, game = game, time = time, seed = seed })
+                        |> Task.perform (\( time, seed, ( game, nextSeed ) ) -> StartSession { gameId = gameEntity.id, game = game, time = time, initialSeed = seed, nextSeed = nextSeed })
             in
                 ( model
                 , gameCmd
@@ -867,12 +864,12 @@ initGoNoGo model =
                                 , fillerImages = getFullImagePathsNew model.filesrv model.ugimages_f |> Maybe.withDefault []
                                 , seedInt = round time
                                 , currentTime = time
-                                , gameDuration = 5 * Time.minute
+                                , gameDuration = 1 * Time.minute
                                 , redCrossDuration = 500 * Time.millisecond
                                 }
                             )
                     )
-                |> Task.perform (\( time, seed, game ) -> StartSession { gameId = gameEntity.id, game = game, time = time, seed = seed })
+                |> Task.perform (\( time, seed, ( game, nextSeed ) ) -> StartSession { gameId = gameEntity.id, game = game, time = time, initialSeed = seed, nextSeed = nextSeed })
             )
 
 
@@ -912,7 +909,7 @@ You will see pictures on the left and right side of the screen, followed by a do
                                 }
                             )
                     )
-                |> Task.perform (\( time, seed, game ) -> StartSession { gameId = gameEntity.id, game = game, time = time, seed = seed })
+                |> Task.perform (\( time, seed, ( game, nextSeed ) ) -> StartSession { gameId = gameEntity.id, game = game, time = time, initialSeed = seed, nextSeed = nextSeed })
             )
 
 
@@ -953,7 +950,7 @@ You will see a grid of images. Select the target image as quickly as you can.
                                 }
                             )
                     )
-                |> Task.perform (\( time, seed, game ) -> StartSession { gameId = gameEntity.id, game = game, time = time, seed = seed })
+                |> Task.perform (\( time, seed, ( game, nextSeed ) ) -> StartSession { gameId = gameEntity.id, game = game, time = time, initialSeed = seed, nextSeed = nextSeed })
             )
 
 
@@ -1123,8 +1120,8 @@ missing ur =
         ]
 
 
-startSession : { gameId : String, game : Game.Game Msg, time : Time, seed : Int } -> Model -> ( Model, Cmd Msg )
-startSession { gameId, game, time, seed } model =
+startSession : { gameId : String, game : Game.Game Msg, time : Time, initialSeed : Int, nextSeed : Random.Seed } -> Model -> ( Model, Cmd Msg )
+startSession { gameId, game, time, initialSeed, nextSeed } model =
     case model.visitor of
         Anon ->
             model ! []
@@ -1136,19 +1133,19 @@ startSession { gameId, game, time, seed } model =
                         , userId = model.fmriUserData |> RemoteData.toMaybe |> Maybe.map (\{ user } -> user.id) |> Maybe.withDefault jwt.sub
                         , gameId = gameId
                         , start = time
-                        , seed = seed
+                        , initialSeed = initialSeed
                         , httpsrv = model.httpsrv
                         , jitter = model.fmriUserData |> RemoteData.toMaybe |> Maybe.map (always True) |> Maybe.withDefault False
                         }
-                        |> Task.perform (StartSessionResp game)
+                        |> Task.perform (StartSessionResp nextSeed game)
                   ]
 
 
-playGame : Game.Game Msg -> Game.Session -> Model -> ( Model, Cmd Msg )
-playGame game session model =
+playGame : Game.Game Msg -> Game.Session -> Random.Seed -> Model -> ( Model, Cmd Msg )
+playGame game session nextSeed model =
     handleInput Game.Initialize
         { model
-            | gameState = Game.Playing { game = game, session = session }
+            | gameState = Game.Playing { game = game, session = session, nextSeed = nextSeed }
             , glitching = Nothing
         }
 
@@ -1166,7 +1163,7 @@ handleInput input model =
         Game.Loading _ _ ->
             ( model, Cmd.none )
 
-        Game.Playing { game, session } ->
+        Game.Playing { game, session, nextSeed } ->
             case Game.Card.step input game of
                 ( Game.Card.Complete state, cmd ) ->
                     let
@@ -1184,10 +1181,13 @@ handleInput input model =
                         )
 
                 ( Game.Card.Continue _ newGame, cmd ) ->
-                    ( { model | gameState = Game.Playing { game = newGame, session = session } }, cmd )
+                    ( { model | gameState = Game.Playing { game = newGame, session = session, nextSeed = nextSeed } }, cmd )
 
                 ( Game.Card.Rest _ newGame, cmd ) ->
-                    ( { model | gameState = Game.Playing { game = newGame, session = session } }, cmd )
+                    ( { model | gameState = Game.Playing { game = newGame, session = session, nextSeed = nextSeed } }, cmd )
+
+                ( Game.Card.Restart args state, cmd ) ->
+                    ( { model | gameState = Game.restart args model.gameState }, cmd )
 
         Game.Saving _ _ _ ->
             ( model, Cmd.none )
@@ -1270,15 +1270,15 @@ handleTimeUpdate t model =
     handleInput (Game.Tick t) model
 
 
-startSessionResp : Game.Game Msg -> RemoteData.WebData Game.Session -> Model -> ( Model, Cmd Msg )
-startSessionResp game remoteData model =
+startSessionResp : Random.Seed -> Game.Game Msg -> RemoteData.WebData Game.Session -> Model -> ( Model, Cmd Msg )
+startSessionResp nextSeed game remoteData model =
     let
         updatedModel =
             { model | gameState = Game.Loading game remoteData }
     in
         case remoteData of
             RemoteData.Success session ->
-                playGame game session updatedModel
+                playGame game session nextSeed updatedModel
 
             RemoteData.Failure err ->
                 { updatedModel | glitching = Just <| Helpers.httpHumanError err }
@@ -1343,12 +1343,8 @@ saveGameDataCmd state session model =
                 , httpsrv = model.httpsrv
                 }
 
-        _ =
-            Debug.log "logs" state.log
-
         cycles =
             Game.Cycle.generate session.id state.log
-                |> Debug.log "cycles"
     in
         Task.map2 (,) endSessionTask postCyclesTask
             |> Task.map (\( a, b ) -> RemoteData.map2 (,) a b)

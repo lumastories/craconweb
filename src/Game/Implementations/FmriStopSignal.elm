@@ -48,7 +48,7 @@ init :
     , totalBlocks : Int
     , redCrossDuration : Time
     }
-    -> Game msg
+    -> ( Game msg, Random.Seed )
 init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages, seedInt, currentTime, blockDuration, redCrossDuration, totalBlocks, restDuration } =
     let
         gos =
@@ -92,8 +92,21 @@ init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages
         Random.List.shuffle trials
             |> Random.andThen addIntervals
             |> Random.map
-                (\trials ->
-                    (startSession :: log (BeginSession { seed = seedInt }) :: trials)
+                (\shuffledTrials ->
+                    (startSession
+                        :: log (BeginSession { seed = seedInt })
+                        :: (shuffledTrials
+                                ++ [ Game.Card.restart
+                                        { gameDuration = blockDuration
+                                        , nextTrials =
+                                            trials
+                                                |> Random.List.shuffle
+                                                |> Random.andThen (Game.addIntervals Nothing 500 0)
+                                                |> Random.andThen (Game.prependInterval Nothing 500 0)
+                                        }
+                                   ]
+                           )
+                    )
                         |> List.foldl
                             (andThenRest
                                 { restDuration = restDuration
@@ -104,7 +117,6 @@ init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages
                             (Game.Card.complete (emptyState seedInt currentTime))
                 )
             |> (\generator -> Random.step generator (Random.initialSeed seedInt))
-            |> Tuple.first
 
 
 trial :

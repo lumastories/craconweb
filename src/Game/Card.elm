@@ -6,12 +6,14 @@ module Game.Card
         , andThenRest
         , card
         , complete
+        , restart
         , layout
         , step
         , unwrap
         )
 
 import Time exposing (Time)
+import Random
 
 
 type Card state layout input msg
@@ -25,6 +27,11 @@ type Continuation state layout input msg
     = Continue state (Card state layout input msg)
     | Rest state (Card state layout input msg)
     | Complete state
+    | Restart
+        { gameDuration : Time
+        , nextTrials : Random.Generator (List (state -> Card state layout input msg))
+        }
+        state
 
 
 andThen : (state -> Bool) -> (state -> state) -> input -> (state -> Card state layout input msg) -> Card state layout input msg -> Card state layout input msg
@@ -55,6 +62,9 @@ andThen isTimeout resetSegmentStart initialize f (Card card) =
                         (andThen isTimeout resetSegmentStart initialize f newCard)
                     , cmd
                     )
+
+                ( Restart _ _, cmd ) ->
+                    Debug.crash "andThen"
     in
         Card { card | logic = newLogic }
 
@@ -109,6 +119,9 @@ andThenRest ({ restCard, isInterval, restDuration, shouldRest, isFinish, resetSe
                         (andThenRest args f newCard)
                     , cmd
                     )
+
+                ( Restart _ _, cmd ) ->
+                    Debug.crash "andThenRest"
     in
         Card { card | logic = newLogic }
 
@@ -167,6 +180,11 @@ complete x =
     Card { logic = always ( Complete x, Cmd.none ), layout = Nothing }
 
 
+restart : { gameDuration : Time, nextTrials : Random.Generator (List (a -> Card a layout input msg)) } -> a -> Card a layout input msg
+restart args a =
+    Card { logic = always ( Restart args a, Cmd.none ), layout = Nothing }
+
+
 layout : Card a layout input msg -> Maybe layout
 layout (Card card) =
     card.layout
@@ -200,6 +218,9 @@ unwrapContinuation continuation =
         Complete a ->
             a
 
+        Restart _ a ->
+            a
+
 
 continuationCard : Continuation a layout input msg -> Maybe (Card a layout input msg)
 continuationCard continuation =
@@ -211,4 +232,7 @@ continuationCard continuation =
             Just layout
 
         Complete _ ->
+            Nothing
+
+        Restart _ _ ->
             Nothing

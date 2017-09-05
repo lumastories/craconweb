@@ -10,7 +10,7 @@ import Time exposing (Time)
 type GameState msg
     = NotPlaying
     | Loading (Game msg) (RemoteData.WebData Session)
-    | Playing { game : Game msg, session : Session }
+    | Playing { game : Game msg, session : Session, nextSeed : Random.Seed }
     | Saving State Session (RemoteData.WebData ( Session, List Cycle ))
     | Saved State { session : Session, cycles : List Cycle }
 
@@ -178,9 +178,16 @@ segment logics layout state =
             )
 
 
-andThenCheckTimeout : (State -> Bool) -> (State -> Game msg) -> Game msg -> Game msg
-andThenCheckTimeout isTimeout =
-    Card.andThen isTimeout resetSegmentStart Initialize
+andThenCheckTimeout : Time -> (State -> Game msg) -> Game msg -> Game msg
+andThenCheckTimeout gameDuration =
+    Card.andThen (isTimeout gameDuration) resetSegmentStart Initialize
+
+
+isTimeout : Time -> State -> Bool
+isTimeout gameDuration state =
+    state.sessionStart
+        |> Maybe.map (\sessionStart -> sessionStart + gameDuration < state.currTime)
+        |> Maybe.withDefault False
 
 
 andThenRest : { restDuration : Time, shouldRest : State -> Bool, isFinish : State -> Bool } -> (State -> Game msg) -> Game msg -> Game msg
@@ -271,11 +278,24 @@ interval expiration state =
         |> andThen (segment [ timeout expiration ] (Just Interval))
 
 
+randomInterval : Time -> Time -> Generator (State -> Game msg)
+randomInterval min jitter =
+    Random.float min (min + jitter)
+        |> Random.map interval
+
+
 addIntervals : Maybe Layout -> Time -> Time -> List (State -> Game msg) -> Generator (List (State -> Game msg))
 addIntervals layout min jitter trials =
     trials
         |> List.map Random.Extra.constant
-        |> List.intersperse (Random.float min (min + jitter) |> Random.map interval)
+        |> List.intersperse (randomInterval min jitter)
+        |> Random.Extra.combine
+
+
+prependInterval : Maybe Layout -> Time -> Time -> List (State -> Game msg) -> Generator (List (State -> Game msg))
+prependInterval layout min jitter trials =
+    (randomInterval min jitter)
+        :: (List.map Random.Extra.constant trials)
         |> Random.Extra.combine
 
 
@@ -497,3 +517,40 @@ leftOrRight =
                 else
                     Right
             )
+
+
+restart : { gameDuration : Time, nextTrials : Generator (List (State -> Game msg)) } -> GameState msg -> GameState msg
+restart args gameState =
+    case gameState of
+        Playing { game, session, nextSeed } ->
+            let
+                state =
+                    unwrap game
+
+                ( newGame, newSeed ) =
+                    (args.nextTrials
+                        |> Random.map
+                            (\trials ->
+                                (trials ++ [ Card.restart { gameDuration = args.gameDuration, nextTrials = args.nextTrials } ])
+                                    |> List.foldl (andThenCheckTimeout args.gameDuration) (Card.complete (state))
+                            )
+                        |> (\generator -> Random.step generator nextSeed)
+                    )
+            in
+                Playing
+                    { game = newGame
+                    , session = session
+                    , nextSeed = newSeed
+                    }
+
+        Loading _ _ ->
+            gameState
+
+        NotPlaying ->
+            gameState
+
+        Saving _ _ _ ->
+            gameState
+
+        Saved _ _ ->
+            gameState

@@ -42,7 +42,7 @@ init :
     , gameDuration : Time
     , zoomDuration : Time
     }
-    -> Game msg
+    -> ( Game msg, Random.Seed )
 init { fixationDuration, imageDuration, zoomDuration, infoString, responseImages, nonResponseImages, seedInt, currentTime, gameDuration } =
     let
         trials =
@@ -57,22 +57,30 @@ init { fixationDuration, imageDuration, zoomDuration, infoString, responseImages
                         , noGoImages = nonResponseImages
                         }
                     )
-
-        isTimeout state =
-            state.sessionStart
-                |> Maybe.map (\sessionStart -> sessionStart + gameDuration < state.currTime)
-                |> Maybe.withDefault False
     in
         trials
             |> Random.List.shuffle
             |> Random.andThen (addIntervals Nothing 500 0)
             |> Random.map
-                (\trials ->
-                    (info infoString :: startSession :: log (BeginSession { seed = seedInt }) :: trials)
-                        |> List.foldl (andThenCheckTimeout isTimeout) (Game.Card.complete (emptyState seedInt currentTime))
+                (\shuffledTrials ->
+                    (info infoString
+                        :: startSession
+                        :: log (BeginSession { seed = seedInt })
+                        :: (shuffledTrials
+                                ++ [ Game.Card.restart
+                                        { gameDuration = gameDuration
+                                        , nextTrials =
+                                            trials
+                                                |> Random.List.shuffle
+                                                |> Random.andThen (Game.addIntervals Nothing 500 0)
+                                                |> Random.andThen (Game.prependInterval Nothing 500 0)
+                                        }
+                                   ]
+                           )
+                    )
+                        |> List.foldl (andThenCheckTimeout gameDuration) (Game.Card.complete (emptyState seedInt currentTime))
                 )
             |> (\generator -> Random.step generator (Random.initialSeed seedInt))
-            |> Tuple.first
 
 
 trial :
