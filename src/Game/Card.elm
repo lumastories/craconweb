@@ -120,8 +120,8 @@ andThenRest ({ restCard, isInterval, restDuration, shouldRest, isFinish, resetSe
                     , cmd
                     )
 
-                ( Restart _ _, cmd ) ->
-                    Debug.crash "andThenRest"
+                ( Restart _ state, cmd ) ->
+                    ( Complete state, cmd )
     in
         Card { card | logic = newLogic }
 
