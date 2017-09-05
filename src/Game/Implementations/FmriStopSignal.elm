@@ -76,7 +76,7 @@ init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages
                     )
 
         trials =
-            gos ++ noGos
+            gos ++ noGos |> List.take 3
 
         shouldRest state =
             state.blockStart
@@ -88,6 +88,9 @@ init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages
 
         addIntervals =
             Game.addIntervals Nothing (3 * Time.second) (4 * Time.second)
+
+        prependInterval =
+            Game.prependInterval Nothing (3 * Time.second) (4 * Time.second)
     in
         Random.List.shuffle trials
             |> Random.andThen addIntervals
@@ -101,8 +104,8 @@ init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages
                                         , nextTrials =
                                             trials
                                                 |> Random.List.shuffle
-                                                |> Random.andThen (Game.addIntervals Nothing 500 0)
-                                                |> Random.andThen (Game.prependInterval Nothing 500 0)
+                                                |> Random.andThen addIntervals
+                                                |> Random.andThen prependInterval
                                         }
                                    ]
                            )
