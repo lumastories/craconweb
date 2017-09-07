@@ -605,6 +605,7 @@ game model title initMsg =
                             , initMsg = initMsg
                             , gameSlug = model.stopsignalGame |> Maybe.map .slug |> Maybe.withDefault "stopsignal"
                             , fmriUser = Nothing
+                            , restMessages = [ "Great job! We’re going to take a quick 10 second break before we move on to the next section." ]
                             }
 
                     R.GameRouteGn ->
@@ -613,6 +614,7 @@ game model title initMsg =
                             , initMsg = initMsg
                             , gameSlug = model.gonogoGame |> Maybe.map .slug |> Maybe.withDefault "gonogo"
                             , fmriUser = Nothing
+                            , restMessages = [ "Great job! We’re going to take a quick 10 second break before we move on to the next section." ]
                             }
 
                     R.GameRouteDp ->
@@ -621,6 +623,7 @@ game model title initMsg =
                             , initMsg = initMsg
                             , gameSlug = model.dotprobeGame |> Maybe.map .slug |> Maybe.withDefault "dotprobe"
                             , fmriUser = Nothing
+                            , restMessages = [ "Great job! We’re going to take a quick 10 second break before we move on to the next section." ]
                             }
 
                     R.GameRouteVs ->
@@ -629,6 +632,7 @@ game model title initMsg =
                             , initMsg = initMsg
                             , gameSlug = model.visualsearchGame |> Maybe.map .slug |> Maybe.withDefault "visualsearch"
                             , fmriUser = Nothing
+                            , restMessages = [ "Great job! We’re going to take a quick 10 second break before we move on to the next section." ]
                             }
 
                     R.FmriRoute _ ->
@@ -640,6 +644,7 @@ game model title initMsg =
                                 model.fmriUserData
                                     |> RemoteData.toMaybe
                                     |> Maybe.map (\fmriUserData -> fmriUserData.user)
+                            , restMessages = []
                             }
 
                     _ ->

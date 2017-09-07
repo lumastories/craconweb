@@ -28,9 +28,7 @@ import Game
         , timeoutFromSegmentStart
         , trialFailed
         )
-import Game.Card exposing (complete)
 import Random exposing (Generator)
-import Random.List
 import Time exposing (Time)
 
 
@@ -42,11 +40,15 @@ init :
     , nonResponseImages : List Image
     , seedInt : Int
     , currentTime : Time
-    , gameDuration : Time
     , redCrossDuration : Time
+    , blockDuration : Time
+    , restDuration : Time
+    , totalBlocks : Int
+    , intervalMin : Time
+    , intervalJitter : Time
     }
     -> ( Game msg, Random.Seed )
-init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages, seedInt, currentTime, gameDuration, redCrossDuration } =
+init ({ borderDelay, totalDuration, infoString, responseImages, nonResponseImages, seedInt, currentTime, redCrossDuration } as args) =
     let
         gos =
             responseImages
@@ -55,7 +57,6 @@ init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages
                         { borderDelay = borderDelay
                         , totalDuration = totalDuration
                         , goTrial = True
-                        , gameDuration = gameDuration
                         , redCrossDuration = redCrossDuration
                         }
                     )
@@ -67,55 +68,26 @@ init { borderDelay, totalDuration, infoString, responseImages, nonResponseImages
                         { borderDelay = borderDelay
                         , totalDuration = totalDuration
                         , goTrial = False
-                        , gameDuration = gameDuration
                         , redCrossDuration = redCrossDuration
                         }
                     )
 
         trials =
             gos ++ noGos
-
-        addIntervals =
-            Game.addIntervals Nothing (500 * Time.millisecond) 0
-
-        prependInterval =
-            Game.prependInterval Nothing (500 * Time.millisecond) 0
     in
-        Random.List.shuffle trials
-            |> Random.andThen addIntervals
-            |> Random.map
-                (\shuffledTrials ->
-                    (info infoString
-                        :: startSession
-                        :: log (BeginSession { seed = seedInt })
-                        :: (shuffledTrials
-                                ++ [ Game.Card.restart
-                                        { gameDuration = gameDuration
-                                        , nextTrials =
-                                            trials
-                                                |> Random.List.shuffle
-                                                |> Random.andThen addIntervals
-                                                |> Random.andThen prependInterval
-                                        }
-                                   ]
-                           )
-                    )
-                        |> List.foldl (andThenCheckTimeout gameDuration) (Game.Card.complete (emptyState seedInt currentTime))
-                )
-            |> (\generator -> Random.step generator (Random.initialSeed seedInt))
+        Game.shuffle args trials
 
 
 trial :
     { borderDelay : Time
     , totalDuration : Time
-    , gameDuration : Time
     , redCrossDuration : Time
     , goTrial : Bool
     }
     -> Image
     -> State
     -> Game msg
-trial { borderDelay, totalDuration, goTrial, gameDuration, redCrossDuration } image state =
+trial { borderDelay, totalDuration, goTrial, redCrossDuration } image state =
     let
         borderType =
             if goTrial then

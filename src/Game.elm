@@ -5,6 +5,7 @@ import Random exposing (Generator)
 import Random.Extra
 import RemoteData
 import Time exposing (Time)
+import Random.List
 
 
 type GameState msg
@@ -519,7 +520,19 @@ leftOrRight =
             )
 
 
-restart : { gameDuration : Time, nextTrials : Generator (List (State -> Game msg)) } -> GameState msg -> GameState msg
+shouldRest : Time -> State -> Bool
+shouldRest blockDuration state =
+    state.blockStart
+        |> Maybe.map (\blockStart -> blockStart + blockDuration < state.currTime)
+        |> Maybe.withDefault False
+
+
+isFinish : Int -> State -> Bool
+isFinish totalBlocks state =
+    state.blockCounter + 1 >= totalBlocks
+
+
+restart : { totalBlocks : Int, blockDuration : Time, restDuration : Time, nextTrials : Generator (List (State -> Game msg)) } -> GameState msg -> GameState msg
 restart args gameState =
     case gameState of
         Playing { game, session, nextSeed } ->
@@ -531,8 +544,15 @@ restart args gameState =
                     (args.nextTrials
                         |> Random.map
                             (\trials ->
-                                (trials ++ [ Card.restart { gameDuration = args.gameDuration, nextTrials = args.nextTrials } ])
-                                    |> List.foldl (andThenCheckTimeout args.gameDuration) (Card.complete (state))
+                                (trials ++ [ Card.restart args ])
+                                    |> List.foldl
+                                        (andThenRest
+                                            { restDuration = args.restDuration
+                                            , isFinish = isFinish args.totalBlocks
+                                            , shouldRest = shouldRest args.blockDuration
+                                            }
+                                        )
+                                        (Card.complete state)
                             )
                         |> (\generator -> Random.step generator nextSeed)
                     )
@@ -554,3 +574,37 @@ restart args gameState =
 
         Saved _ _ ->
             gameState
+
+
+shuffle : { a | blockDuration : Time, currentTime : Time, intervalJitter : Time, intervalMin : Time, restDuration : Time, seedInt : Int, totalBlocks : Int } -> List (State -> Game msg) -> ( Game msg, Random.Seed )
+shuffle { seedInt, totalBlocks, blockDuration, restDuration, currentTime, intervalMin, intervalJitter } trials =
+    Random.List.shuffle trials
+        |> Random.andThen (addIntervals Nothing intervalMin intervalJitter)
+        |> Random.map
+            (\shuffledTrials ->
+                (startSession
+                    :: log (BeginSession { seed = seedInt })
+                    :: (shuffledTrials
+                            ++ [ Card.restart
+                                    { totalBlocks = totalBlocks
+                                    , blockDuration = blockDuration
+                                    , restDuration = restDuration
+                                    , nextTrials =
+                                        trials
+                                            |> Random.List.shuffle
+                                            |> Random.andThen (addIntervals Nothing intervalMin intervalJitter)
+                                            |> Random.andThen (prependInterval Nothing intervalMin intervalJitter)
+                                    }
+                               ]
+                       )
+                )
+                    |> List.foldl
+                        (andThenRest
+                            { restDuration = restDuration
+                            , shouldRest = shouldRest blockDuration
+                            , isFinish = isFinish totalBlocks
+                            }
+                        )
+                        (Card.complete (emptyState seedInt currentTime))
+            )
+        |> (\generator -> Random.step generator (Random.initialSeed seedInt))

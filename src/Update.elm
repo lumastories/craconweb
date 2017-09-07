@@ -757,6 +757,8 @@ You will see pictures presented in either a dark blue or light gray border. Pres
                         , restDuration = 5 * Time.second
                         , totalBlocks = 4
                         , redCrossDuration = 500 * Time.millisecond
+                        , intervalMin = 3 * Time.second
+                        , intervalJitter = 5 * Time.second
                         }
 
                 gameCmd =
@@ -808,8 +810,12 @@ You will see pictures presented in either a dark blue or light gray border. Pres
                         , nonResponseImages = getFullImagePathsNew model.filesrv ugimages_i |> Maybe.withDefault []
                         , seedInt = seed
                         , currentTime = time
-                        , gameDuration = 5 * Time.minute
                         , redCrossDuration = 500 * Time.millisecond
+                        , blockDuration = 1 * Time.minute
+                        , totalBlocks = 5
+                        , restDuration = 10 * Time.second
+                        , intervalMin = 500 * Time.millisecond
+                        , intervalJitter = 0
                         }
 
                 gameCmd =
@@ -864,8 +870,12 @@ initGoNoGo model =
                                 , fillerImages = getFullImagePathsNew model.filesrv model.ugimages_f |> Maybe.withDefault []
                                 , seedInt = round time
                                 , currentTime = time
-                                , gameDuration = 1 * Time.minute
                                 , redCrossDuration = 500 * Time.millisecond
+                                , blockDuration = 1 * Time.minute
+                                , totalBlocks = 5
+                                , restDuration = 10 * Time.second
+                                , intervalMin = 500 * Time.millisecond
+                                , intervalJitter = 0
                                 }
                             )
                     )
@@ -905,7 +915,11 @@ You will see pictures on the left and right side of the screen, followed by a do
                                 , nonResponseImages = getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault []
                                 , seedInt = round time
                                 , currentTime = time
-                                , gameDuration = 5 * Time.minute
+                                , blockDuration = 1 * Time.minute
+                                , totalBlocks = 5
+                                , restDuration = 10 * Time.second
+                                , intervalMin = 500 * Time.millisecond
+                                , intervalJitter = 0
                                 }
                             )
                     )
@@ -946,7 +960,11 @@ You will see a grid of images. Select the target image as quickly as you can.
                                 , nonResponseImages = getFullImagePathsNew model.filesrv model.ugimages_i |> Maybe.withDefault []
                                 , seedInt = round time
                                 , currentTime = time
-                                , gameDuration = 5 * Time.minute
+                                , blockDuration = 1 * Time.minute
+                                , totalBlocks = 5
+                                , restDuration = 10 * Time.second
+                                , intervalMin = 500 * Time.millisecond
+                                , intervalJitter = 0
                                 }
                             )
                     )

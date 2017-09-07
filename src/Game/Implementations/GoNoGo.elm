@@ -1,6 +1,5 @@
 module Game.Implementations.GoNoGo exposing (init)
 
-import Game.Card exposing (complete)
 import Game
     exposing
         ( Game
@@ -28,7 +27,6 @@ import Game
         , onDirection
         )
 import Random exposing (Generator)
-import Random.List
 import Time exposing (Time)
 
 
@@ -40,11 +38,15 @@ init :
     , fillerImages : List Image
     , seedInt : Int
     , currentTime : Time
-    , gameDuration : Time
+    , blockDuration : Time
     , redCrossDuration : Time
+    , totalBlocks : Int
+    , restDuration : Time
+    , intervalMin : Time
+    , intervalJitter : Time
     }
     -> ( Game msg, Random.Seed )
-init { totalDuration, infoString, responseImages, nonResponseImages, fillerImages, seedInt, currentTime, gameDuration, redCrossDuration } =
+init ({ totalDuration, infoString, responseImages, nonResponseImages, fillerImages, seedInt, currentTime, redCrossDuration } as args) =
     let
         gos =
             responseImages
@@ -52,7 +54,6 @@ init { totalDuration, infoString, responseImages, nonResponseImages, fillerImage
                     (trial
                         { totalDuration = totalDuration
                         , goTrial = True
-                        , gameDuration = gameDuration
                         , redCrossDuration = redCrossDuration
                         }
                     )
@@ -63,7 +64,6 @@ init { totalDuration, infoString, responseImages, nonResponseImages, fillerImage
                     (trial
                         { totalDuration = totalDuration
                         , goTrial = False
-                        , gameDuration = gameDuration
                         , redCrossDuration = redCrossDuration
                         }
                     )
@@ -74,49 +74,25 @@ init { totalDuration, infoString, responseImages, nonResponseImages, fillerImage
                     (trial
                         { totalDuration = totalDuration
                         , goTrial = True
-                        , gameDuration = gameDuration
                         , redCrossDuration = redCrossDuration
                         }
                     )
 
         trials =
-            gos ++ noGos ++ fillers |> List.take 3
+            gos ++ noGos ++ fillers
     in
-        trials
-            |> Random.List.shuffle
-            |> Random.andThen (addIntervals Nothing 500 0)
-            |> Random.map
-                (\shuffledTrials ->
-                    (info infoString
-                        :: startSession
-                        :: log (BeginSession { seed = seedInt })
-                        :: (shuffledTrials
-                                ++ [ Game.Card.restart
-                                        { gameDuration = gameDuration
-                                        , nextTrials =
-                                            trials
-                                                |> Random.List.shuffle
-                                                |> Random.andThen (Game.addIntervals Nothing 500 0)
-                                                |> Random.andThen (Game.prependInterval Nothing 500 0)
-                                        }
-                                   ]
-                           )
-                    )
-                        |> List.foldl (andThenCheckTimeout gameDuration) (Game.Card.complete (emptyState seedInt currentTime))
-                )
-            |> (\generator -> Random.step generator (Random.initialSeed seedInt))
+        Game.shuffle args trials
 
 
 trial :
     { totalDuration : Time
-    , gameDuration : Time
     , redCrossDuration : Time
     , goTrial : Bool
     }
     -> Image
     -> State
     -> Game msg
-trial { totalDuration, goTrial, gameDuration, redCrossDuration } image state =
+trial { totalDuration, goTrial, redCrossDuration } image state =
     let
         ( direction, nextSeed ) =
             Random.step Game.leftOrRight state.currentSeed

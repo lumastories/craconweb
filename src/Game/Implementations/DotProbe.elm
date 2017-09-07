@@ -1,6 +1,5 @@
 module Game.Implementations.DotProbe exposing (init)
 
-import Game.Card exposing (complete)
 import Game
     exposing
         ( Game
@@ -24,7 +23,6 @@ import Game
         , leftOrRight
         )
 import Random exposing (Generator)
-import Random.List
 import Time exposing (Time)
 
 
@@ -36,10 +34,14 @@ init :
     , nonResponseImages : List Image
     , seedInt : Int
     , currentTime : Time
-    , gameDuration : Time
+    , blockDuration : Time
+    , restDuration : Time
+    , totalBlocks : Int
+    , intervalMin : Time
+    , intervalJitter : Time
     }
     -> ( Game msg, Random.Seed )
-init { fixationDuration, imageDuration, infoString, responseImages, nonResponseImages, seedInt, currentTime, gameDuration } =
+init ({ fixationDuration, imageDuration, infoString, responseImages, nonResponseImages, seedInt, currentTime, blockDuration, restDuration, totalBlocks } as args) =
     let
         trials =
             List.map2
@@ -48,7 +50,6 @@ init { fixationDuration, imageDuration, infoString, responseImages, nonResponseI
                         { fixationDuration = fixationDuration
                         , imageDuration = imageDuration
                         , goTrial = True
-                        , gameDuration = gameDuration
                         , goImage = goImage
                         , noGoImage = noGoImage
                         }
@@ -56,42 +57,19 @@ init { fixationDuration, imageDuration, infoString, responseImages, nonResponseI
                 responseImages
                 nonResponseImages
     in
-        trials
-            |> Random.List.shuffle
-            |> Random.andThen (addIntervals Nothing 500 0)
-            |> Random.map
-                (\shuffledTrials ->
-                    (info infoString
-                        :: startSession
-                        :: log (BeginSession { seed = seedInt })
-                        :: (shuffledTrials
-                                ++ [ Game.Card.restart
-                                        { gameDuration = gameDuration
-                                        , nextTrials =
-                                            trials
-                                                |> Random.List.shuffle
-                                                |> Random.andThen (Game.addIntervals Nothing 500 0)
-                                                |> Random.andThen (Game.prependInterval Nothing 500 0)
-                                        }
-                                   ]
-                           )
-                    )
-                        |> List.foldl (andThenCheckTimeout gameDuration) (Game.Card.complete (emptyState seedInt currentTime))
-                )
-            |> (\generator -> Random.step generator (Random.initialSeed seedInt))
+        Game.shuffle args trials
 
 
 trial :
     { fixationDuration : Time
     , imageDuration : Time
-    , gameDuration : Time
     , goTrial : Bool
     , goImage : Image
     , noGoImage : Image
     }
     -> State
     -> Game msg
-trial { fixationDuration, imageDuration, goTrial, gameDuration, goImage, noGoImage } state =
+trial { fixationDuration, imageDuration, goTrial, goImage, noGoImage } state =
     let
         ( direction, firstSeed ) =
             Random.step Game.leftOrRight state.currentSeed

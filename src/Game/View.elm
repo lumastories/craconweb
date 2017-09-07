@@ -22,10 +22,11 @@ view :
     { gameState : Game.GameState Msg
     , initMsg : Msg
     , gameSlug : String
+    , restMessages : List String
     , fmriUser : Maybe Entity.User
     }
     -> Html Msg
-view { gameSlug, gameState, initMsg, fmriUser } =
+view { gameSlug, gameState, initMsg, fmriUser, restMessages } =
     case gameState of
         Game.Loading game remoteData ->
             case remoteData of
@@ -108,7 +109,7 @@ view { gameSlug, gameState, initMsg, fmriUser } =
                             viewProbe borderType direction
 
                         Just Game.Rest ->
-                            viewRest state
+                            viewRest restMessages state
 
                         Just Game.Interval ->
                             Html.text ""
@@ -366,22 +367,33 @@ viewFixation borderType =
         ]
 
 
-viewRest : Game.State -> Html Msg
-viewRest state =
+viewRest : List String -> Game.State -> Html Msg
+viewRest messages state =
     let
         counter =
             state.blockStart
                 |> Maybe.map (\blockStart -> ceiling ((blockStart - state.currTime) / 1000))
                 |> Maybe.map (\countdown -> " in " ++ toString countdown ++ " seconds.")
                 |> Maybe.withDefault "."
+
+        defaultMessage =
+            "This concludes Block "
+                ++ toString (state.blockCounter)
+                ++ ". Please stand by to begin Block "
+                ++ toString (state.blockCounter + 1)
+                ++ counter
+
+        index =
+            if List.length messages == 0 then
+                0
+            else
+                ((state.blockCounter - 1) % (List.length messages))
+
+        message =
+            messages |> List.Extra.getAt index |> Maybe.withDefault defaultMessage
     in
         Ui.Parts.middleBlock
-            [ text <|
-                "This concludes Block "
-                    ++ toString (state.blockCounter)
-                    ++ ". Please stand by to begin Block "
-                    ++ toString (state.blockCounter + 1)
-                    ++ counter
+            [ text <| message
             ]
 
 

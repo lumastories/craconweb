@@ -28,7 +28,9 @@ type Continuation state layout input msg
     | Rest state (Card state layout input msg)
     | Complete state
     | Restart
-        { gameDuration : Time
+        { totalBlocks : Int
+        , blockDuration : Time
+        , restDuration : Time
         , nextTrials : Random.Generator (List (state -> Card state layout input msg))
         }
         state
@@ -180,7 +182,7 @@ complete x =
     Card { logic = always ( Complete x, Cmd.none ), layout = Nothing }
 
 
-restart : { gameDuration : Time, nextTrials : Random.Generator (List (a -> Card a layout input msg)) } -> a -> Card a layout input msg
+restart : { totalBlocks : Int, blockDuration : Time, restDuration : Time, nextTrials : Random.Generator (List (a -> Card a layout input msg)) } -> a -> Card a layout input msg
 restart args a =
     Card { logic = always ( Restart args a, Cmd.none ), layout = Nothing }
 
