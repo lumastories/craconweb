@@ -448,14 +448,14 @@ jwtDecoded token =
     Jwt.decodeToken M.jwtDecoder token
 
 
-startSession : { token : String, userId : String, gameId : String, start : Time, httpsrv : String, seed : Int, jitter : Bool } -> Task Never (RemoteData.WebData Game.Session)
-startSession { token, userId, gameId, start, httpsrv, seed, jitter } =
+startSession : { token : String, userId : String, gameId : String, start : Time, httpsrv : String, initialSeed : Int, jitter : Bool } -> Task Never (RemoteData.WebData Game.Session)
+startSession { token, userId, gameId, start, httpsrv, initialSeed, jitter } =
     let
         json =
             Json.sessionEncoder
                 { userId = userId
                 , gameId = gameId
-                , seed = seed
+                , seed = initialSeed
                 , start = start
                 , end = Nothing
                 , jitter = jitter

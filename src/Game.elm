@@ -5,12 +5,13 @@ import Random exposing (Generator)
 import Random.Extra
 import RemoteData
 import Time exposing (Time)
+import Random.List
 
 
 type GameState msg
     = NotPlaying
     | Loading (Game msg) (RemoteData.WebData Session)
-    | Playing { game : Game msg, session : Session }
+    | Playing { game : Game msg, session : Session, nextSeed : Random.Seed }
     | Saving State Session (RemoteData.WebData ( Session, List Cycle ))
     | Saved State { session : Session, cycles : List Cycle }
 
@@ -178,9 +179,16 @@ segment logics layout state =
             )
 
 
-andThenCheckTimeout : (State -> Bool) -> (State -> Game msg) -> Game msg -> Game msg
-andThenCheckTimeout isTimeout =
-    Card.andThen isTimeout resetSegmentStart Initialize
+andThenCheckTimeout : Time -> (State -> Game msg) -> Game msg -> Game msg
+andThenCheckTimeout gameDuration =
+    Card.andThen (isTimeout gameDuration) resetSegmentStart Initialize
+
+
+isTimeout : Time -> State -> Bool
+isTimeout gameDuration state =
+    state.sessionStart
+        |> Maybe.map (\sessionStart -> sessionStart + gameDuration < state.currTime)
+        |> Maybe.withDefault False
 
 
 andThenRest : { restDuration : Time, shouldRest : State -> Bool, isFinish : State -> Bool } -> (State -> Game msg) -> Game msg -> Game msg
@@ -271,11 +279,24 @@ interval expiration state =
         |> andThen (segment [ timeout expiration ] (Just Interval))
 
 
+randomInterval : Time -> Time -> Generator (State -> Game msg)
+randomInterval min jitter =
+    Random.float min (min + jitter)
+        |> Random.map interval
+
+
 addIntervals : Maybe Layout -> Time -> Time -> List (State -> Game msg) -> Generator (List (State -> Game msg))
 addIntervals layout min jitter trials =
     trials
         |> List.map Random.Extra.constant
-        |> List.intersperse (Random.float min (min + jitter) |> Random.map interval)
+        |> List.intersperse (randomInterval min jitter)
+        |> Random.Extra.combine
+
+
+prependInterval : Maybe Layout -> Time -> Time -> List (State -> Game msg) -> Generator (List (State -> Game msg))
+prependInterval layout min jitter trials =
+    (randomInterval min jitter)
+        :: (List.map Random.Extra.constant trials)
         |> Random.Extra.combine
 
 
@@ -497,3 +518,93 @@ leftOrRight =
                 else
                     Right
             )
+
+
+shouldRest : Time -> State -> Bool
+shouldRest blockDuration state =
+    state.blockStart
+        |> Maybe.map (\blockStart -> blockStart + blockDuration < state.currTime)
+        |> Maybe.withDefault False
+
+
+isFinish : Int -> State -> Bool
+isFinish totalBlocks state =
+    state.blockCounter + 1 >= totalBlocks
+
+
+restart : { totalBlocks : Int, blockDuration : Time, restDuration : Time, nextTrials : Generator (List (State -> Game msg)) } -> GameState msg -> GameState msg
+restart args gameState =
+    case gameState of
+        Playing { game, session, nextSeed } ->
+            let
+                state =
+                    unwrap game
+
+                ( newGame, newSeed ) =
+                    (args.nextTrials
+                        |> Random.map
+                            (\trials ->
+                                (trials ++ [ Card.restart args ])
+                                    |> List.foldl
+                                        (andThenRest
+                                            { restDuration = args.restDuration
+                                            , isFinish = isFinish args.totalBlocks
+                                            , shouldRest = shouldRest args.blockDuration
+                                            }
+                                        )
+                                        (Card.complete state)
+                            )
+                        |> (\generator -> Random.step generator nextSeed)
+                    )
+            in
+                Playing
+                    { game = newGame
+                    , session = session
+                    , nextSeed = newSeed
+                    }
+
+        Loading _ _ ->
+            gameState
+
+        NotPlaying ->
+            gameState
+
+        Saving _ _ _ ->
+            gameState
+
+        Saved _ _ ->
+            gameState
+
+
+shuffle : { a | blockDuration : Time, currentTime : Time, intervalJitter : Time, intervalMin : Time, restDuration : Time, seedInt : Int, totalBlocks : Int } -> List (State -> Game msg) -> ( Game msg, Random.Seed )
+shuffle { seedInt, totalBlocks, blockDuration, restDuration, currentTime, intervalMin, intervalJitter } trials =
+    Random.List.shuffle trials
+        |> Random.andThen (addIntervals Nothing intervalMin intervalJitter)
+        |> Random.map
+            (\shuffledTrials ->
+                (startSession
+                    :: log (BeginSession { seed = seedInt })
+                    :: (shuffledTrials
+                            ++ [ Card.restart
+                                    { totalBlocks = totalBlocks
+                                    , blockDuration = blockDuration
+                                    , restDuration = restDuration
+                                    , nextTrials =
+                                        trials
+                                            |> Random.List.shuffle
+                                            |> Random.andThen (addIntervals Nothing intervalMin intervalJitter)
+                                            |> Random.andThen (prependInterval Nothing intervalMin intervalJitter)
+                                    }
+                               ]
+                       )
+                )
+                    |> List.foldl
+                        (andThenRest
+                            { restDuration = restDuration
+                            , shouldRest = shouldRest blockDuration
+                            , isFinish = isFinish totalBlocks
+                            }
+                        )
+                        (Card.complete (emptyState seedInt currentTime))
+            )
+        |> (\generator -> Random.step generator (Random.initialSeed seedInt))
