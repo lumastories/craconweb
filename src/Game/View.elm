@@ -108,10 +108,10 @@ view { gameSlug, gameState, initMsg, fmriUser, restMessages } =
                         Just (Game.Probe borderType direction) ->
                             viewProbe borderType direction
 
-                        Just Game.Rest ->
+                        Just (Game.Rest) ->
                             viewRest restMessages state
 
-                        Just Game.Interval ->
+                        Just (Game.Interval) ->
                             Html.text ""
                     ]
 
@@ -136,7 +136,8 @@ view { gameSlug, gameState, initMsg, fmriUser, restMessages } =
                 [ case fmriUser of
                     Nothing ->
                         div []
-                            [ a
+                            [ gameInstructions gameSlug
+                            , a
                                 [ class "button is-info is-large"
                                 , onClick initMsg
                                 ]
@@ -425,6 +426,48 @@ viewProbe borderType direction =
 probe : Svg msg
 probe =
     svg [ Svg.width "20", Svg.height "20" ] [ circle [ cx "10", cy "10", r "10" ] [] ]
+
+
+gameInstructions : String -> Html msg
+gameInstructions gameSlug =
+    case gameSlug of
+        "gonogo" ->
+            instBlock """You will see pictures either on
+                                the left or right side of the screen, surrounded by a solid
+                                or dashed border. Press 'c' when the picture is on the left
+                                side of the screen or 'm' when the picture is on the right
+                                side of the screen. BUT only if you see a solid bar around
+                                the picture. Do not press if you see a dashed border. Go as
+                                fast as you can, but don't sacrifice accuracy for speed."""
+
+        "dotprobe" ->
+            instBlock """You will see pictures on the
+                    left and right side of the screen, followed by a dot on the
+                    left or right side of the screen. Press the "c" if the dot is
+                    on the left side of the screen or "m" when the dot is on the
+                    right side of the screen. Go as fast as you can, but don't
+                    sacrifice accuracy for speed."""
+
+        "stopsignal" ->
+            instBlock """You will see pictures presented
+                     in either a dark blue or light gray border. Press the space
+                      bar if you see a blue border around the picture.
+                    Do not press if you see a gray border.
+                        Go as fast as you can, but don't sacrifice accuracy for speed."""
+
+        "visualsearch" ->
+            instBlock """You will see a grid of images.
+                    Select the target image as quickly as you can. Don't sacrifice
+                    accuracy for speed."""
+
+        _ ->
+            text ""
+
+
+instBlock : String -> Html msg
+instBlock text_ =
+    div [ class "box" ]
+        [ p [] [ text text_ ] ]
 
 
 onTouch : msg -> Html.Attribute msg
