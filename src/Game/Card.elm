@@ -28,12 +28,12 @@ type Continuation state layout input msg
     | Rest state (Card state layout input msg)
     | Complete state
     | Restart
+        state
         { totalBlocks : Int
         , blockDuration : Time
         , restDuration : Time
         , nextTrials : Random.Generator (List (state -> Card state layout input msg))
         }
-        state
 
 
 andThen : (state -> Bool) -> (state -> state) -> input -> (state -> Card state layout input msg) -> Card state layout input msg -> Card state layout input msg
@@ -122,7 +122,7 @@ andThenRest ({ restCard, isInterval, restDuration, shouldRest, isFinish, resetSe
                     , cmd
                     )
 
-                ( Restart _ state, cmd ) ->
+                ( Restart state _, cmd ) ->
                     ( Complete state, cmd )
     in
         Card { card | logic = newLogic }
@@ -184,7 +184,7 @@ complete x =
 
 restart : { totalBlocks : Int, blockDuration : Time, restDuration : Time, nextTrials : Random.Generator (List (a -> Card a layout input msg)) } -> a -> Card a layout input msg
 restart args a =
-    Card { logic = always ( Restart args a, Cmd.none ), layout = Nothing }
+    Card { logic = always ( Restart a args, Cmd.none ), layout = Nothing }
 
 
 layout : Card a layout input msg -> Maybe layout
@@ -220,7 +220,7 @@ unwrapContinuation continuation =
         Complete a ->
             a
 
-        Restart _ a ->
+        Restart a _ ->
             a
 
 

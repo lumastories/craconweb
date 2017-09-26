@@ -1204,8 +1204,8 @@ handleInput input model =
                 ( Game.Card.Rest _ newGame, cmd ) ->
                     ( { model | gameState = Game.Playing { game = newGame, session = session, nextSeed = nextSeed } }, cmd )
 
-                ( Game.Card.Restart args state, cmd ) ->
-                    ( { model | gameState = Game.restart args model.gameState }, cmd )
+                ( Game.Card.Restart state args, cmd ) ->
+                    ( { model | gameState = Game.restart args state model.gameState }, cmd )
 
         Game.Saving _ _ _ ->
             ( model, Cmd.none )

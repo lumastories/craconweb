@@ -532,14 +532,11 @@ isFinish totalBlocks state =
     state.blockCounter + 1 >= totalBlocks
 
 
-restart : { totalBlocks : Int, blockDuration : Time, restDuration : Time, nextTrials : Generator (List (State -> Game msg)) } -> GameState msg -> GameState msg
-restart args gameState =
+restart : { totalBlocks : Int, blockDuration : Time, restDuration : Time, nextTrials : Generator (List (State -> Game msg)) } -> State -> GameState msg -> GameState msg
+restart args state gameState =
     case gameState of
         Playing { game, session, nextSeed } ->
             let
-                state =
-                    unwrap game
-
                 ( newGame, newSeed ) =
                     (args.nextTrials
                         |> Random.map
