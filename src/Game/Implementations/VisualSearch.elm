@@ -10,7 +10,6 @@ import Game
         , State
         , onDirection
         , andThen
-        , andThenCheckTimeout
         , emptyState
         , segment
         , log

@@ -4,13 +4,18 @@ import Test exposing (..)
 import Expect
 import Fuzz exposing (list, int, tuple, string)
 import String
-import CycleTests
-import ResultTests
+
+
+-- import CycleTests
+-- import ResultTests
+
+import GoNoGoTests
 
 
 all : Test
 all =
     describe "Test Suite"
-        [ CycleTests.all
-        , ResultTests.all
+        [ --CycleTests.all
+          --, ResultTests.all
+          GoNoGoTests.all
         ]

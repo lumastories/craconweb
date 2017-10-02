@@ -318,6 +318,7 @@ gameDecoder =
                 |> optional "created" timestampDecoder
                 |> optional "updated" timestampDecoder
                 |> optional "deleted" timestampDecoder
+                |> JD.map (Debug.log "gameData")
 
 
 type alias Gimage =

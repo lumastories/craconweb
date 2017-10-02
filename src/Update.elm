@@ -1198,7 +1198,7 @@ handleInput input model =
                             ]
                         )
 
-                ( Game.Card.Continue _ newGame, cmd ) ->
+                ( Game.Card.Continue state newGame, cmd ) ->
                     ( { model | gameState = Game.Playing { game = newGame, session = session, nextSeed = nextSeed } }, cmd )
 
                 ( Game.Card.Rest _ newGame, cmd ) ->

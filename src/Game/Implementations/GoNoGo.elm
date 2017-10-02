@@ -9,7 +9,6 @@ import Game
         , LogEntry(..)
         , State
         , andThen
-        , andThenCheckTimeout
         , emptyState
         , segment
         , log
