@@ -18,7 +18,9 @@ import Game.Cycle as Cycle
 all : Test
 all =
     describe "Go/No Go Game"
-        [ currentTimeShouldBeUpdated ]
+        [ currentTimeShouldBeUpdated
+        , shouldTimedout
+        ]
 
 
 currentTimeShouldBeUpdated : Test
@@ -57,11 +59,33 @@ shouldTimedout =
                         , initialSeed = (round timestamp)
                         , nextSeed = nextSeed
                         }
-                    , NewCurrentTime (timestamp + (1250 * Time.millisecond))
+                    , NewCurrentTime (timestamp + (1251 * Time.millisecond))
                     ]
             in
                 Expect.equal
-                    []
+                    [ { id = Nothing
+                      , sessionId = "SessionId"
+                      , sort = 0
+                      , fixation = Nothing
+                      , selection = Nothing
+                      , pictures = Just 0
+                      , redcross = Nothing
+                      , probe = Nothing
+                      , border = Just 0
+                      , timeout = Just 1251
+                      , rest = Nothing
+                      , interval = Nothing
+                      , width = Just 2
+                      , height = Nothing
+                      , blue = False
+                      , gray = False
+                      , dash = True
+                      , targetIndex = 0
+                      , selectedIndex = 0
+                      , startIndex = 0
+                      , images = [ "non-response" ]
+                      }
+                    ]
                     ((List.foldl (\msg model -> Update.update msg model |> Tuple.first |> debug) goNoGoModel msgs) |> toCycles)
 
 
