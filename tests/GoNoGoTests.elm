@@ -18,12 +18,12 @@ import Game.Cycle as Cycle
 all : Test
 all =
     describe "Go/No Go Game"
-        [ singleCycle ]
+        [ currentTimeShouldBeUpdated ]
 
 
-singleCycle : Test
-singleCycle =
-    test "Single Cycle" <|
+currentTimeShouldBeUpdated : Test
+currentTimeShouldBeUpdated =
+    test "Current Time should be updated" <|
         \() ->
             let
                 msgs =
@@ -36,38 +36,37 @@ singleCycle =
                         , nextSeed = nextSeed
                         }
                     , NewCurrentTime (timestamp + (10 * Time.millisecond))
-                    , DirectionInput Game.Left
-
-                    -- , NewCurrentTime (timestamp + (1250 * Time.millisecond))
-                    -- , NewCurrentTime (timestamp + (1262 * Time.millisecond))
                     ]
             in
                 Expect.equal
-                    ([ { id = Nothing
-                       , sessionId = "SessionId"
-                       , sort = 0
-                       , fixation = Nothing
-                       , selection = Just 0
-                       , pictures = Just 0
-                       , redcross = Just 0
-                       , probe = Nothing
-                       , border = Just 0
-                       , timeout = Nothing
-                       , rest = Nothing
-                       , interval = Nothing
-                       , width = Just 2
-                       , height = Nothing
-                       , blue = False
-                       , gray = False
-                       , dash = True
-                       , targetIndex = 0
-                       , selectedIndex = 0
-                       , startIndex = 0
-                       , images = [ "non-response" ]
-                       }
-                     ]
-                    )
+                    (Just (10 * Time.millisecond))
+                    ((List.foldl (\msg model -> Update.update msg model |> Tuple.first |> debug) goNoGoModel msgs) |> toTime)
+
+
+shouldTimedout : Test
+shouldTimedout =
+    test "Game should timed out" <|
+        \() ->
+            let
+                msgs =
+                    [ InitGoNoGo
+                    , StartSession
+                        { gameId = game.id
+                        , game = gameStateData
+                        , time = timestamp
+                        , initialSeed = (round timestamp)
+                        , nextSeed = nextSeed
+                        }
+                    , NewCurrentTime (timestamp + (1250 * Time.millisecond))
+                    ]
+            in
+                Expect.equal
+                    []
                     ((List.foldl (\msg model -> Update.update msg model |> Tuple.first |> debug) goNoGoModel msgs) |> toCycles)
+
+
+
+-- HELPERS
 
 
 toLogEntries : Model.Model -> List Game.LogEntry
@@ -214,6 +213,11 @@ debug model =
         -- _ =
         --     Debug.log "Cycles" (model |> toCycles)
         _ =
-            Debug.log "time" (model |> toState |> Maybe.map .currTime)
+            Debug.log "time" (model |> toTime)
     in
         model
+
+
+toTime : Model.Model -> Maybe Time.Time
+toTime model =
+    model |> toState |> Maybe.map .currTime
