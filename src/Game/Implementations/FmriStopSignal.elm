@@ -13,7 +13,6 @@ import Game
         , State
         , andThen
         , andThenRest
-        , andThenCheckTimeout
         , emptyState
         , info
         , isFailed

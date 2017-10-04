@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Api
-import Empty
+import Empty exposing (initialModel)
 import Keyboard
 import Model as M
 import Game
@@ -12,12 +12,11 @@ import View
 import Port
 import Window
 import AnimationFrame
-import RemoteData
 import Helpers
 import Task
 
 
-main : Program Flags M.Model M.Msg
+main : Program M.Flags M.Model M.Msg
 main =
     Navigation.programWithFlags M.OnUpdateLocation
         { init = init
@@ -46,7 +45,7 @@ ticker gameState =
         Sub.none
 
 
-init : Flags -> Navigation.Location -> ( M.Model, Cmd M.Msg )
+init : M.Flags -> Navigation.Location -> ( M.Model, Cmd M.Msg )
 init flags location =
     let
         ( httpsrv, tasksrv, filesrv ) =
@@ -68,51 +67,14 @@ init flags location =
                     )
 
         model_ =
-            { httpsrv = httpsrv
-            , tasksrv = tasksrv
-            , filesrv = filesrv
-            , jwtencoded = flags.token
-            , activeRoute = route_
-            , visitor = visitor_
-            , isMenuActive = False
-            , user = Nothing
-            , login = { username = "", password = "" }
-            , ugimages_v = Nothing
-            , ugimages_i = Nothing
-            , ugimages_f = Nothing
-            , loading = Nothing
-            , glitching = Nothing
-            , informing = Nothing
-            , users = []
-            , userRole = Empty.emptyRole
-            , groupIdExp = Nothing
-            , groupIdCon = Nothing
-            , httpErr = ""
-            , gonogoGame = Nothing
-            , dotprobeGame = Nothing
-            , stopsignalGame = Nothing
-            , respondsignalGame = Nothing
-            , visualsearchGame = Nothing
-            , gameState = Game.NotPlaying
-            , ugimgsets = Nothing
-            , statements = Nothing
-            , mesQuery = Nothing
-            , mesQuerys = Nothing
-            , mesAnswers = Nothing
-            , mesAnswer = Nothing
-            , request = Nothing
-            , adminModel =
-                { tmpUserRecord = Empty.emptyUserRecord
-                , mesAnswers = Nothing
-                , tmpUserEdit = Nothing
-                }
-            , loadTime = flags.time
-            , domLoaded = False
-            , badgeRules = RemoteData.NotAsked
-            , badgesEarned = RemoteData.NotAsked
-            , fmriUserData = RemoteData.NotAsked
-            , statementsModal = False
-            , windowSize = Nothing
+            { initialModel
+                | httpsrv = httpsrv
+                , tasksrv = tasksrv
+                , filesrv = filesrv
+                , jwtencoded = flags.token
+                , activeRoute = route_
+                , visitor = visitor_
+                , loadTime = flags.time
             }
     in
         Api.fetchFmriUserData model_
@@ -124,12 +86,6 @@ init flags location =
                         , (Task.perform M.WindowResize Window.size)
                         ]
                 )
-
-
-type alias Flags =
-    { token : String
-    , time : Float
-    }
 
 
 servers : String -> ( String, String, String )

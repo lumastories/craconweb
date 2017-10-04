@@ -15,6 +15,12 @@ import Window as W
 import Random
 
 
+type alias Flags =
+    { token : String
+    , time : Float
+    }
+
+
 type alias Model =
     { httpsrv : String
     , tasksrv : String
