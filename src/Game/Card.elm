@@ -47,7 +47,7 @@ andThen isTimeout resetSegmentStart initialize f (Card card) =
                     else
                         let
                             ( continuation, cmd2 ) =
-                                step initialize (f (resetSegmentStart state))
+                                step input (f (resetSegmentStart state))
                         in
                             ( continuation, Cmd.batch [ cmd1, cmd2 ] )
 
@@ -108,7 +108,7 @@ andThenRest ({ restCard, isInterval, restDuration, shouldRest, isFinish, resetSe
                             ( False, _ ) ->
                                 let
                                     ( continuation, cmd2 ) =
-                                        step initialize (f updatedState)
+                                        step input (f updatedState)
                                 in
                                     ( continuation, Cmd.batch [ cmd1, cmd2 ] )
 
