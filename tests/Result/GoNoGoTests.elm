@@ -9,7 +9,8 @@ all : Test
 all =
     describe "GoNoGo Tests"
         [ goTests
-          -- , noGoTests
+
+        -- , noGoTests
         ]
 
 
@@ -31,7 +32,8 @@ goTests =
                         , border = Just 1495162244273
                         , timeout = Just 1495162245538
                         , rest = Just 1495162246038
-                        , width = Nothing
+                        , interval = Nothing
+                        , width = Just 2
                         , height = Nothing
                         , blue = False
                         , gray = False
@@ -57,7 +59,8 @@ goTests =
                         , border = Just 1495240100139
                         , timeout = Nothing
                         , rest = Just 1495240100609
-                        , width = Nothing
+                        , interval = Nothing
+                        , width = Just 2
                         , height = Nothing
                         , blue = False
                         , gray = False
@@ -83,7 +86,8 @@ goTests =
                         , border = Just 1495248756701
                         , timeout = Nothing
                         , rest = Just 1495248758455
-                        , width = Nothing
+                        , interval = Nothing
+                        , width = Just 2
                         , height = Nothing
                         , blue = False
                         , gray = False
@@ -115,7 +119,8 @@ noGoTests =
                         , border = Just 1495249097925
                         , timeout = Just 1495249099189
                         , rest = Just 1495249099189
-                        , width = Nothing
+                        , interval = Nothing
+                        , width = Just 2
                         , height = Nothing
                         , blue = False
                         , gray = False
@@ -141,7 +146,8 @@ noGoTests =
                         , border = Just 1495250615013
                         , timeout = Nothing
                         , rest = Just 1495250616779
-                        , width = Nothing
+                        , interval = Nothing
+                        , width = Just 2
                         , height = Nothing
                         , blue = False
                         , gray = False

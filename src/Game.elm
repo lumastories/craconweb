@@ -252,18 +252,22 @@ log =
 
 
 logWithCondition : (State -> Bool) -> (Time -> LogEntry) -> State -> Game msg
-logWithCondition enabled logEntry state =
+logWithCondition enabled logEntry originalState =
     Card.card
         Nothing
-        (\_ ->
-            ( Complete
-                (if enabled state then
-                    { state | log = logEntry state.currTime :: state.log }
-                 else
-                    state
+        (\input ->
+            let
+                ( _, updatedState ) =
+                    updateCurrTime originalState input
+            in
+                ( Complete
+                    (if enabled updatedState then
+                        { updatedState | log = logEntry updatedState.currTime :: updatedState.log }
+                     else
+                        updatedState
+                    )
+                , Cmd.none
                 )
-            , Cmd.none
-            )
         )
 
 

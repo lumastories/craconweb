@@ -23,6 +23,7 @@ all =
                       , border = Just 1498361908494
                       , timeout = Just 1498361909395
                       , rest = Just 1498361920394
+                      , interval = Just 1498361909395
                       , width = Nothing
                       , height = Nothing
                       , blue = False
