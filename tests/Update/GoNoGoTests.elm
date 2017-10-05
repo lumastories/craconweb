@@ -21,6 +21,7 @@ all =
         [ currentTimeShouldBeUpdated
         , shouldTimedout
         , answerBeforeTimeout
+        , shouldHaveSelection
         ]
 
 
@@ -69,6 +70,7 @@ shouldTimedout =
                         }
                     , NewCurrentTime (timestamp + (0 * Time.millisecond))
                     , NewCurrentTime (timestamp + (1250 * Time.millisecond))
+                    , DirectionInput Game.Left
                     ]
             in
                 Expect.equal
@@ -93,6 +95,56 @@ shouldTimedout =
                       , selectedIndex = 0
                       , startIndex = 0
                       , images = [ "non-response" ]
+                      }
+                    ]
+                    ((List.foldl (\msg model -> Update.update msg model |> Tuple.first) (goNoGoModel timestamp) msgs) |> toCycles)
+
+
+shouldHaveSelection : Test
+shouldHaveSelection =
+    test "Game should have selection" <|
+        \() ->
+            let
+                timestamp =
+                    1000
+
+                msgs =
+                    [ InitGoNoGo
+                    , StartSession
+                        { gameId = (game timestamp).id
+                        , game = gameStateData timestamp
+                        , time = timestamp
+                        , initialSeed = (round timestamp)
+                        , nextSeed = nextSeed timestamp
+                        }
+                    , NewCurrentTime (timestamp + (0 * Time.millisecond))
+                    , NewCurrentTime (timestamp + (1249 * Time.millisecond))
+                    , DirectionInput Game.Left
+                    , NewCurrentTime (timestamp + (1250 * Time.millisecond))
+                    ]
+            in
+                Expect.equal
+                    [ { id = Nothing
+                      , sessionId = "SessionId"
+                      , sort = 0
+                      , fixation = Nothing
+                      , selection = Just (timestamp + (1249 * Time.millisecond))
+                      , pictures = Just timestamp
+                      , redcross = Nothing
+                      , probe = Nothing
+                      , border = Just timestamp
+                      , timeout = Nothing
+                      , rest = Nothing
+                      , interval = Just (timestamp + (1249 * Time.millisecond))
+                      , width = Just 2
+                      , height = Nothing
+                      , blue = False
+                      , gray = False
+                      , dash = False
+                      , targetIndex = 0
+                      , selectedIndex = 0
+                      , startIndex = 0
+                      , images = [ "filler" ]
                       }
                     ]
                     ((List.foldl (\msg model -> Update.update msg model |> Tuple.first) (goNoGoModel timestamp) msgs) |> toCycles)
@@ -263,8 +315,8 @@ nonResponseImage =
 
 fillerImage : Game.Image
 fillerImage =
-    { id = "fillter"
-    , url = "fillter"
+    { id = "filler"
+    , url = "filler"
     }
 
 
