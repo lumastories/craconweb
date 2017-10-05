@@ -1,4 +1,4 @@
-module GoNoGoTests exposing (all)
+module Update.GoNoGoTests exposing (all)
 
 import Test exposing (..)
 import Empty exposing (initialModel)
