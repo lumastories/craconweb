@@ -220,6 +220,7 @@ type alias MesAnswer =
     , public : Bool
     , queryId : String
     , displayName : String
+    , userId : String
     , created : String
     }
 
@@ -231,6 +232,7 @@ newMesAnswerWithqueryId qId =
     , public = False
     , queryId = qId
     , displayName = ""
+    , userId = ""
     , created = ""
     }
 
@@ -253,6 +255,7 @@ mesAnswerDecoder =
         |> JP.optional "public" JD.bool False
         |> JP.required "mesqueryId" JD.string
         |> JP.required "initials" JD.string
+        |> JP.optional "userId" JD.string ""
         |> JP.required "created" JD.string
 
 
