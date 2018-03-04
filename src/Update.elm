@@ -436,7 +436,7 @@ update msg model =
                                     (Api.updateMesStatus
                                         { url = model.httpsrv
                                         , token = model.jwtencoded
-                                        , sub = userId
+                                        , sub = mesAnswer.userId
                                         }
                                         id
                                         mesAnswer
